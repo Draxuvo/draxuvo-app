@@ -1,15 +1,15 @@
-# grupo-bothi-app
+# draxuvo-app
 
-Aplicación del ecosistema **Grupo Bothi**.
+App operativa de **Draxuvo**: el personal opera el día a día desde aquí.
 
 ## Ecosistema
 
 | Repositorio | Descripción |
 |---|---|
-| [grupo-bothi-api](https://github.com/Grupo-Bothi/grupo-bothi-api) | API REST (Rails 8, PostgreSQL) — ERP multi-tenant |
-| [grupo-bothi-ui](https://github.com/Grupo-Bothi/grupo-bothi-ui) | Dashboard del ERP (Next.js 16) |
-| [grupo-bothi-web](https://github.com/Grupo-Bothi/grupo-bothi-web) | Sitio web (Next.js 16) |
-| **grupo-bothi-app** | Este repositorio |
+| [draxuvo-api](https://github.com/Draxuvo/draxuvo-api) | API REST (Rails 8, PostgreSQL) — ERP multi-tenant |
+| [draxuvo-ui](https://github.com/Draxuvo/draxuvo-ui) | Panel del ERP (Next.js 16) |
+| [draxuvo-web](https://github.com/Draxuvo/draxuvo-web) | Sitio público (Next.js 16) |
+| **draxuvo-app** | Este repositorio |
 
 ## Estado
 
