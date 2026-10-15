@@ -37,19 +37,22 @@ export async function pickImage(source: "camera" | "library"): Promise<ImagePick
   return result.canceled ? null : (result.assets[0] ?? null);
 }
 
-/** Valida que sea imagen y la reduce a 1600 px y menos de 10 MB, siempre como JPEG. */
-export async function prepareImage(asset: ImagePicker.ImagePickerAsset): Promise<PreparedImage> {
+/** Valida que sea imagen y la reduce (por defecto a 1600 px y menos de 10 MB), siempre como JPEG. */
+export async function prepareImage(
+  asset: ImagePicker.ImagePickerAsset,
+  { maxSide = MAX_SIDE, maxBytes = MAX_BYTES }: { maxSide?: number; maxBytes?: number } = {},
+): Promise<PreparedImage> {
   const isImage = (asset.type ? asset.type === "image" : true) && (asset.mimeType ? asset.mimeType.startsWith("image/") : true);
   if (!isImage) throw new NotAnImageError();
 
   const context = ImageManipulator.manipulate(asset.uri);
-  const size = fitWithin(asset.width, asset.height);
+  const size = fitWithin(asset.width, asset.height, maxSide);
   if (size.width || size.height) context.resize(size);
   const rendered = await context.renderAsync();
 
   for (const compress of [0.8, 0.6, 0.4]) {
     const saved = await rendered.saveAsync({ format: SaveFormat.JPEG, compress });
-    if ((new File(saved.uri).size ?? 0) <= MAX_BYTES) {
+    if ((new File(saved.uri).size ?? 0) <= maxBytes) {
       return { uri: saved.uri, name: `foto-${Date.now()}.jpg`, type: "image/jpeg" };
     }
   }

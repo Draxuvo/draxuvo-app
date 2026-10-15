@@ -188,5 +188,25 @@
     "expired": "Subscription expired: you won't be able to see its orders.",
     "noModule": "Its plan doesn't include the orders module.",
     "checking": "Checking…"
+  },
+  "tickets": {
+    "search": "Search by number",
+    "empty": "No tickets.",
+    "filterAll": "All"
+  },
+  "profileScreen": {
+    "firstName": "First name",
+    "lastName": "Last name",
+    "phone": "Phone",
+    "email": "Email",
+    "role": "Role",
+    "save": "Save changes",
+    "saved": "Changes saved.",
+    "photo": "Profile photo",
+    "camera": "Camera",
+    "gallery": "Gallery",
+    "removePhoto": "Remove photo",
+    "biometricUnavailable": "This phone has no fingerprint or face set up.",
+    "nameRequired": "Enter your name."
   }
 }

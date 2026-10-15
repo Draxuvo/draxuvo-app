@@ -188,5 +188,25 @@
     "expired": "Suscripción vencida: no podrás ver sus órdenes.",
     "noModule": "Su plan no incluye el módulo de órdenes.",
     "checking": "Revisando…"
+  },
+  "tickets": {
+    "search": "Buscar por folio",
+    "empty": "No hay tickets.",
+    "filterAll": "Todos"
+  },
+  "profileScreen": {
+    "firstName": "Nombre",
+    "lastName": "Apellido",
+    "phone": "Teléfono",
+    "email": "Correo",
+    "role": "Rol",
+    "save": "Guardar cambios",
+    "saved": "Cambios guardados.",
+    "photo": "Foto de perfil",
+    "camera": "Cámara",
+    "gallery": "Galería",
+    "removePhoto": "Quitar foto",
+    "biometricUnavailable": "Este teléfono no tiene huella o rostro configurados.",
+    "nameRequired": "Escribe tu nombre."
   }
 }

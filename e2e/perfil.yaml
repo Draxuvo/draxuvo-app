@@ -1,0 +1,25 @@
+# Recorrido: filtrar tickets, buscar por folio y cambiar el idioma desde el perfil.
+appId: com.draxuvo.app
+---
+- launchApp:
+    clearState: true
+- tapOn:
+    id: login-email
+- inputText: "staff@volta.demo"
+- tapOn:
+    id: login-password
+- inputText: "Demo12345*"
+- tapOn: "Entrar"
+- tapOn: "Tickets"
+- tapOn: "Cobrado"
+- tapOn:
+    id: tickets-search
+- inputText: "T-"
+- hideKeyboard
+
+- tapOn: "Perfil"
+- assertVisible: "Cerrar sesión"
+- tapOn: "English"
+- assertVisible: "Sign out"
+- tapOn: "Español"
+- assertVisible: "Cerrar sesión"
