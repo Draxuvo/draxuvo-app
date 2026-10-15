@@ -1,6 +1,7 @@
 import { useRouter, useSegments } from "expo-router";
 import { useEffect, useState, type PropsWithChildren } from "react";
-import { ActivityIndicator, SafeAreaView } from "react-native";
+import { ActivityIndicator } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { AppText, Button } from "@/components/ui";
 import { t, useLocale } from "@/i18n";
 import { useSession } from "@/session";

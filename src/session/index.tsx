@@ -6,6 +6,14 @@ import { getLocale } from "@/i18n";
 import { authenticateBiometric, biometricAvailable } from "./biometric";
 import { clearSession, readSession, roleIn, writeSession } from "./store";
 
+/** La cuenta es válida pero no pertenece a ninguna empresa: no hay nada que abrir. */
+export class NoCompanyError extends Error {
+  constructor() {
+    super("no_company");
+    this.name = "NoCompanyError";
+  }
+}
+
 export type SessionStatus = "loading" | "signedOut" | "locked" | "signedIn";
 
 interface SessionValue {
@@ -98,6 +106,7 @@ export function SessionProvider({ children, onSignedOut }: PropsWithChildren<{ o
         skipUnauthorized: true,
       });
       const companyId = pickCompany(user, null);
+      if (companyId == null) throw new NoCompanyError();
       await persist({ token, user, companyId, biometricEnabled: false });
       setStatus("signedIn");
     },

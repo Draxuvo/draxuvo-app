@@ -26,3 +26,6 @@ jest.mock("@react-native-community/netinfo", () => ({
     fetch: jest.fn(async () => ({ isConnected: true })),
   },
 }));
+
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+jest.mock("react-native-safe-area-context", () => require("react-native-safe-area-context/jest/mock").default);

@@ -1,4 +1,5 @@
-import { Linking, Platform, SafeAreaView } from "react-native";
+import { Linking, Platform } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { Button, AppText } from "@/components/ui";
 import { t } from "@/i18n";
 import { colors, spacing } from "@/theme";

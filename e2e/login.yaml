@@ -1,0 +1,31 @@
+# Recorrido: entrar como staff, ver las órdenes y reabrir la app sin escribir la contraseña.
+# Requiere el stack local con datos de demo (scripts/dev) y EXPO_PUBLIC_API_URL apuntando a él.
+appId: com.draxuvo.app
+---
+- launchApp:
+    clearState: true
+- assertVisible: "Entra a tu cuenta"
+
+# Credenciales malas
+- tapOn:
+    id: login-email
+- inputText: "staff@volta.demo"
+- tapOn:
+    id: login-password
+- inputText: "mal"
+- tapOn: "Entrar"
+- assertVisible: "Contraseña incorrecta"
+
+# Credenciales buenas
+- tapOn:
+    id: login-password
+- eraseText: 10
+- inputText: "Demo12345*"
+- tapOn: "Entrar"
+- assertVisible: "Por hacer"
+- assertVisible: "Terminadas"
+
+# Reabrir sin volver a escribir
+- stopApp
+- launchApp
+- assertVisible: "Por hacer"

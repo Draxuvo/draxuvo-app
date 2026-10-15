@@ -24,7 +24,7 @@ export function useKeys() {
   };
 }
 
-export function useOrders(filters: Omit<OrderListParams, "page"> = {}) {
+export function useOrders(filters: Omit<OrderListParams, "page"> = {}, enabled = true) {
   const keys = useKeys();
   return useInfiniteQuery({
     queryKey: keys.orders(filters),
@@ -32,6 +32,7 @@ export function useOrders(filters: Omit<OrderListParams, "page"> = {}) {
     initialPageParam: 1,
     getNextPageParam: (last) => (last.info.page_end < last.info.total ? last.info.page_index + 1 : undefined),
     placeholderData: keepPreviousData,
+    enabled,
   });
 }
 
