@@ -137,5 +137,43 @@
     "biometric": "Sign in with fingerprint or face",
     "biometricReason": "Confirm it's you to open Draxuvo.",
     "biometricRetry": "Use password"
+  },
+  "charge": {
+    "title": "Charge",
+    "total": "Total",
+    "method": "Payment method",
+    "received": "Amount received",
+    "change": "Change",
+    "missing": "Missing",
+    "submit": "Charge {total}",
+    "methods": {
+      "cash": "Cash",
+      "card": "Card",
+      "transfer": "Transfer"
+    },
+    "noItems": "This order has no priced items, it can't be charged.",
+    "invalidAmount": "Enter a valid amount.",
+    "insufficient": "The cash received is less than the total.",
+    "done": "Charged"
+  },
+  "ticket": {
+    "title": "Ticket",
+    "folio": "Number",
+    "status": {
+      "pending": "Pending",
+      "paid": "Paid",
+      "voided": "Voided"
+    },
+    "method": "Paid with",
+    "received": "Received",
+    "change": "Change",
+    "total": "Total",
+    "share": "Download and share PDF",
+    "whatsapp": "Send by WhatsApp",
+    "whatsappSent": "Sent by WhatsApp.",
+    "whatsappPhone": "The customer's phone is missing on the order.",
+    "shareUnavailable": "This phone can't share files.",
+    "downloadFailed": "The PDF could not be downloaded.",
+    "backToOrders": "Go to my orders"
   }
 }

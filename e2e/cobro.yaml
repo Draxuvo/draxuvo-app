@@ -1,0 +1,38 @@
+# Recorrido: cobrar en efectivo una orden terminada y compartir el ticket (manager de Volta).
+# Requiere una orden terminada con conceptos con precio en los datos de demo.
+appId: com.draxuvo.app
+---
+- launchApp:
+    clearState: true
+- tapOn:
+    id: login-email
+- inputText: "manager@volta.demo"
+- tapOn:
+    id: login-password
+- inputText: "Demo12345*"
+- tapOn: "Entrar"
+- tapOn: "Terminadas"
+- tapOn:
+    index: 0
+    text: ".*Terminada.*"
+- tapOn: "Cobrar"
+
+# Efectivo insuficiente
+- tapOn:
+    id: charge-received
+- inputText: "1"
+- tapOn:
+    text: "Cobrar \\$.*"
+- assertVisible: "El efectivo recibido es menor al total."
+
+# Efectivo suficiente; el doble toque cobra una sola vez
+- tapOn:
+    id: charge-received
+- eraseText: 5
+- inputText: "99999"
+- tapOn:
+    text: "Cobrar \\$.*"
+- assertVisible:
+    id: ticket-folio
+- assertVisible: "Descargar y compartir PDF"
+- tapOn: "Descargar y compartir PDF"

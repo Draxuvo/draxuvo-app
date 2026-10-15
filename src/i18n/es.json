@@ -137,5 +137,43 @@
     "biometric": "Entrar con huella o rostro",
     "biometricReason": "Confirma que eres tú para abrir Draxuvo.",
     "biometricRetry": "Usar contraseña"
+  },
+  "charge": {
+    "title": "Cobrar",
+    "total": "Total",
+    "method": "Método de pago",
+    "received": "Monto recibido",
+    "change": "Cambio",
+    "missing": "Faltan",
+    "submit": "Cobrar {total}",
+    "methods": {
+      "cash": "Efectivo",
+      "card": "Tarjeta",
+      "transfer": "Transferencia"
+    },
+    "noItems": "Esta orden no tiene conceptos con precio, no se puede cobrar.",
+    "invalidAmount": "Escribe un monto válido.",
+    "insufficient": "El efectivo recibido es menor al total.",
+    "done": "Cobrado"
+  },
+  "ticket": {
+    "title": "Ticket",
+    "folio": "Folio",
+    "status": {
+      "pending": "Pendiente",
+      "paid": "Cobrado",
+      "voided": "Anulado"
+    },
+    "method": "Pagó con",
+    "received": "Recibido",
+    "change": "Cambio",
+    "total": "Total",
+    "share": "Descargar y compartir PDF",
+    "whatsapp": "Enviar por WhatsApp",
+    "whatsappSent": "Enviado por WhatsApp.",
+    "whatsappPhone": "Falta el teléfono del cliente en la orden.",
+    "shareUnavailable": "Este teléfono no puede compartir archivos.",
+    "downloadFailed": "No se pudo descargar el PDF.",
+    "backToOrders": "Ir a mis órdenes"
   }
 }
