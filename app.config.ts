@@ -42,7 +42,6 @@ const config: ExpoConfig = {
       { backgroundColor: "#FFFFFF", image: "./assets/images/splash-icon.png", imageWidth: 76 },
     ],
   ],
-  experiments: { typedRoutes: true },
   extra: {
     apiUrl: process.env.EXPO_PUBLIC_API_URL ?? "http://localhost:3000",
   },
