@@ -1,0 +1,78 @@
+{
+  "common": {
+    "retry": "Retry",
+    "cancel": "Cancel",
+    "save": "Save",
+    "close": "Close",
+    "loading": "Loading…",
+    "yes": "Yes",
+    "no": "No",
+    "optional": "Optional"
+  },
+  "login": {
+    "title": "Sign in",
+    "email": "Email",
+    "password": "Password",
+    "submit": "Sign in",
+    "emailRequired": "Enter your email.",
+    "emailInvalid": "Check the email format.",
+    "passwordRequired": "Enter your password.",
+    "noCompany": "Your account has no company. Ask your manager to add you."
+  },
+  "tabs": {
+    "orders": "Orders",
+    "tickets": "Tickets",
+    "profile": "Profile"
+  },
+  "orders": {
+    "title": "Orders",
+    "mine": "My orders",
+    "toDo": "To do",
+    "finished": "Finished",
+    "emptyToDo": "You have no orders to do.",
+    "emptyFinished": "No finished orders yet.",
+    "unassigned": "Unassigned",
+    "new": "New order",
+    "progress": "{done} of {total} steps",
+    "filters": {
+      "status": "Status",
+      "all": "All",
+      "employee": "Assignee"
+    },
+    "status": {
+      "open": "Open",
+      "in_progress": "In progress",
+      "done": "Done",
+      "paid": "Paid",
+      "cancelled": "Cancelled"
+    },
+    "priority": {
+      "low": "Low",
+      "medium": "Medium",
+      "high": "High",
+      "urgent": "Urgent"
+    }
+  },
+  "errors": {
+    "generic": "Something went wrong. Try again.",
+    "network": "No connection. Check your network and try again.",
+    "sessionExpired": "Your session expired. Sign in again.",
+    "subscriptionInactive": "The company's subscription is not active. Tell the owner.",
+    "moduleNotInPlan": "This feature is not included in the company's plan.",
+    "forbidden": "You don't have permission to do this.",
+    "notFound": "This is no longer available."
+  },
+  "update": {
+    "title": "Update the app",
+    "body": "This version of Draxuvo is no longer supported. Install the latest version to continue.",
+    "action": "Open the store"
+  },
+  "profile": {
+    "title": "Profile",
+    "logout": "Sign out",
+    "language": "Language",
+    "biometric": "Sign in with fingerprint or face",
+    "biometricReason": "Confirm it's you to open Draxuvo.",
+    "biometricRetry": "Use password"
+  }
+}

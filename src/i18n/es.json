@@ -1,0 +1,78 @@
+{
+  "common": {
+    "retry": "Reintentar",
+    "cancel": "Cancelar",
+    "save": "Guardar",
+    "close": "Cerrar",
+    "loading": "Cargando…",
+    "yes": "Sí",
+    "no": "No",
+    "optional": "Opcional"
+  },
+  "login": {
+    "title": "Entra a tu cuenta",
+    "email": "Correo",
+    "password": "Contraseña",
+    "submit": "Entrar",
+    "emailRequired": "Escribe tu correo.",
+    "emailInvalid": "Revisa el formato del correo.",
+    "passwordRequired": "Escribe tu contraseña.",
+    "noCompany": "Tu cuenta no tiene ninguna empresa. Pide a tu encargado que te agregue."
+  },
+  "tabs": {
+    "orders": "Órdenes",
+    "tickets": "Tickets",
+    "profile": "Perfil"
+  },
+  "orders": {
+    "title": "Órdenes",
+    "mine": "Mis órdenes",
+    "toDo": "Por hacer",
+    "finished": "Terminadas",
+    "emptyToDo": "No tienes órdenes por hacer.",
+    "emptyFinished": "Aún no hay órdenes terminadas.",
+    "unassigned": "Sin responsable",
+    "new": "Nueva orden",
+    "progress": "{done} de {total} pasos",
+    "filters": {
+      "status": "Estado",
+      "all": "Todas",
+      "employee": "Responsable"
+    },
+    "status": {
+      "open": "Abierta",
+      "in_progress": "En proceso",
+      "done": "Terminada",
+      "paid": "Cobrada",
+      "cancelled": "Cancelada"
+    },
+    "priority": {
+      "low": "Baja",
+      "medium": "Media",
+      "high": "Alta",
+      "urgent": "Urgente"
+    }
+  },
+  "errors": {
+    "generic": "Algo salió mal. Intenta de nuevo.",
+    "network": "Sin conexión. Revisa tu red e intenta de nuevo.",
+    "sessionExpired": "Tu sesión venció. Entra de nuevo.",
+    "subscriptionInactive": "La suscripción de la empresa no está activa. Avisa al dueño.",
+    "moduleNotInPlan": "Esta función no está incluida en el plan de la empresa.",
+    "forbidden": "No tienes permiso para hacer esto.",
+    "notFound": "Esto ya no está disponible."
+  },
+  "update": {
+    "title": "Actualiza la app",
+    "body": "Esta versión de Draxuvo ya no es compatible. Instala la versión más reciente para seguir.",
+    "action": "Abrir la tienda"
+  },
+  "profile": {
+    "title": "Perfil",
+    "logout": "Cerrar sesión",
+    "language": "Idioma",
+    "biometric": "Entrar con huella o rostro",
+    "biometricReason": "Confirma que eres tú para abrir Draxuvo.",
+    "biometricRetry": "Usar contraseña"
+  }
+}
