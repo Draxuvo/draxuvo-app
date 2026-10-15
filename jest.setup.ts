@@ -29,3 +29,16 @@ jest.mock("@react-native-community/netinfo", () => ({
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 jest.mock("react-native-safe-area-context", () => require("react-native-safe-area-context/jest/mock").default);
+
+// Animaciones: en pruebas se resuelven al instante.
+/* eslint-disable @typescript-eslint/no-require-imports */
+jest.mock("react-native-worklets", () => require("react-native-worklets/src/mock"));
+jest.mock("react-native-reanimated", () => ({ ...require("react-native-reanimated/mock"), useReducedMotion: () => false }));
+/* eslint-enable @typescript-eslint/no-require-imports */
+jest.mock("expo-haptics", () => ({
+  impactAsync: jest.fn(async () => {}),
+  selectionAsync: jest.fn(async () => {}),
+  notificationAsync: jest.fn(async () => {}),
+  ImpactFeedbackStyle: { Light: "light" },
+  NotificationFeedbackType: { Success: "success", Warning: "warning" },
+}));

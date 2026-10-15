@@ -1,7 +1,7 @@
-import { Pressable, View } from "react-native";
+import { View } from "react-native";
 import { getLocale, setLocale, t, useLocale, type Locale } from "@/i18n";
-import { colors, MIN_TOUCH, radii, spacing } from "@/theme";
-import { AppText } from "./ui";
+import { space } from "@/theme";
+import { AppText, Chip } from "./ui";
 
 const OPTIONS: { value: Locale; label: string }[] = [
   { value: "es", label: "Español" },
@@ -12,37 +12,14 @@ const OPTIONS: { value: Locale; label: string }[] = [
 export function LanguageSwitch() {
   useLocale();
   return (
-    <View style={{ gap: spacing[2] }}>
-      <AppText variant="label" muted>
+    <View style={{ gap: space[2] }}>
+      <AppText variant="label" tone="muted">
         {t("profile.language").toUpperCase()}
       </AppText>
-      <View style={{ flexDirection: "row", gap: spacing[2] }}>
-        {OPTIONS.map((option) => {
-          const selected = getLocale() === option.value;
-          return (
-            <Pressable
-              key={option.value}
-              accessibilityRole="radio"
-              accessibilityLabel={option.label}
-              accessibilityState={{ selected }}
-              onPress={() => void setLocale(option.value)}
-              style={{
-                flex: 1,
-                minHeight: MIN_TOUCH,
-                alignItems: "center",
-                justifyContent: "center",
-                borderRadius: radii.etiqueta,
-                borderWidth: 1.5,
-                borderColor: colors.tinta,
-                backgroundColor: selected ? colors.tinta : colors.etiqueta,
-              }}
-            >
-              <AppText variant="bodyStrong" style={{ color: selected ? colors.etiqueta : colors.tinta }}>
-                {option.label}
-              </AppText>
-            </Pressable>
-          );
-        })}
+      <View style={{ flexDirection: "row", gap: space[2] }}>
+        {OPTIONS.map((option) => (
+          <Chip key={option.value} role="radio" icon="globe" label={option.label} selected={getLocale() === option.value} onPress={() => void setLocale(option.value)} />
+        ))}
       </View>
     </View>
   );

@@ -1,7 +1,17 @@
 import * as SecureStore from "expo-secure-store";
+import { Platform } from "react-native";
 import type { CompanyRole, User } from "@/api/types";
 
 const KEY = "draxuvo.session";
+
+// En web no hay almacén seguro: se usa localStorage, solo para probar la app en el navegador.
+const storage = {
+  get: async (key: string) => (Platform.OS === "web" ? localStorage.getItem(key) : SecureStore.getItemAsync(key)),
+  set: async (key: string, value: string) =>
+    Platform.OS === "web" ? void localStorage.setItem(key, value) : SecureStore.setItemAsync(key, value),
+  remove: async (key: string) =>
+    Platform.OS === "web" ? void localStorage.removeItem(key) : SecureStore.deleteItemAsync(key),
+};
 
 export interface StoredSession {
   token: string;
@@ -12,7 +22,7 @@ export interface StoredSession {
 
 export async function readSession(): Promise<StoredSession | null> {
   try {
-    const raw = await SecureStore.getItemAsync(KEY);
+    const raw = await storage.get(KEY);
     if (!raw) return null;
     const parsed = JSON.parse(raw) as StoredSession;
     return parsed.token && parsed.user ? parsed : null;
@@ -22,12 +32,12 @@ export async function readSession(): Promise<StoredSession | null> {
 }
 
 export async function writeSession(session: StoredSession): Promise<void> {
-  await SecureStore.setItemAsync(KEY, JSON.stringify(session));
+  await storage.set(KEY, JSON.stringify(session));
 }
 
 export async function clearSession(): Promise<void> {
   try {
-    await SecureStore.deleteItemAsync(KEY);
+    await storage.remove(KEY);
   } catch {
     // Nada que borrar.
   }

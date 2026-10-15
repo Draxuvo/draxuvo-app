@@ -5,7 +5,7 @@ import { removeAvatar, uploadAvatar } from "@/api/profile";
 import type { User } from "@/api/types";
 import { t } from "@/i18n";
 import { ImageTooLargeError, NotAnImageError, PermissionDeniedError, pickImage, prepareImage } from "@/lib/image";
-import { colors, spacing } from "@/theme";
+import { space, useTheme } from "@/theme";
 import { describeError } from "./error-view";
 import { AppText, Button } from "./ui";
 
@@ -21,6 +21,7 @@ function failureText(error: unknown): string {
 
 /** Foto de perfil con cámara o galería, o quitarla. Rechaza lo que no es imagen (FR-015, FR-018). */
 export function AvatarPicker({ user, onChange }: { user: User; onChange: (user: User) => void }) {
+  const { c } = useTheme();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -45,28 +46,33 @@ export function AvatarPicker({ user, onChange }: { user: User; onChange: (user: 
     });
 
   return (
-    <View style={{ gap: spacing[3] }}>
-      <View style={{ flexDirection: "row", alignItems: "center", gap: spacing[4] }}>
+    <View style={{ gap: space[4] }}>
+      <View style={{ flexDirection: "row", alignItems: "center", gap: space[4] }}>
         {user.avatar_url ? (
-          <Image source={{ uri: user.avatar_url }} accessibilityLabel={t("profileScreen.photo")} style={{ width: 72, height: 72, borderRadius: 36 }} />
+          <Image source={{ uri: user.avatar_url }} accessibilityLabel={t("profileScreen.photo")} style={{ width: 88, height: 88, borderRadius: 44 }} contentFit="cover" transition={200} />
         ) : (
-          <View style={{ width: 72, height: 72, borderRadius: 36, backgroundColor: colors.anaquelBorde, alignItems: "center", justifyContent: "center" }}>
-            <AppText variant="title">{user.first_name.slice(0, 1).toUpperCase()}</AppText>
+          <View style={{ width: 88, height: 88, borderRadius: 44, backgroundColor: c.primarySoft, alignItems: "center", justifyContent: "center" }}>
+            <AppText variant="display" style={{ color: c.onPrimarySoft }}>
+              {user.first_name.slice(0, 1).toUpperCase()}
+            </AppText>
           </View>
         )}
-        <AppText variant="bodyStrong">{t("profileScreen.photo")}</AppText>
-      </View>
-      <View style={{ flexDirection: "row", gap: spacing[2] }}>
         <View style={{ flex: 1 }}>
-          <Button label={t("profileScreen.camera")} variant="outline" loading={busy} onPress={() => void pick("camera")} />
-        </View>
-        <View style={{ flex: 1 }}>
-          <Button label={t("profileScreen.gallery")} variant="outline" loading={busy} onPress={() => void pick("library")} />
+          <AppText variant="title">{[user.first_name, user.last_name].filter(Boolean).join(" ")}</AppText>
+          <AppText tone="muted">{user.email}</AppText>
         </View>
       </View>
-      {user.avatar_url ? <Button label={t("profileScreen.removePhoto")} variant="outline" disabled={busy} onPress={() => void run(() => removeAvatar())} /> : null}
+      <View style={{ flexDirection: "row", gap: space[2] }}>
+        <View style={{ flex: 1 }}>
+          <Button label={t("profileScreen.camera")} variant="tonal" icon="camera" loading={busy} onPress={() => void pick("camera")} />
+        </View>
+        <View style={{ flex: 1 }}>
+          <Button label={t("profileScreen.gallery")} variant="tonal" icon="image" loading={busy} onPress={() => void pick("library")} />
+        </View>
+      </View>
+      {user.avatar_url ? <Button label={t("profileScreen.removePhoto")} variant="text" disabled={busy} onPress={() => void run(() => removeAvatar())} /> : null}
       {error ? (
-        <AppText style={{ color: colors.alerta }} accessibilityRole="alert">
+        <AppText tone="stamp" accessibilityRole="alert">
           {error}
         </AppText>
       ) : null}

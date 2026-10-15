@@ -7,7 +7,8 @@
     "loading": "Loading…",
     "yes": "Yes",
     "no": "No",
-    "optional": "Optional"
+    "optional": "Optional",
+    "back": "Back"
   },
   "login": {
     "title": "Sign in",
@@ -17,7 +18,10 @@
     "emailRequired": "Enter your email.",
     "emailInvalid": "Check the email format.",
     "passwordRequired": "Enter your password.",
-    "noCompany": "Your account has no company. Ask your manager to add you."
+    "noCompany": "Your account has no company. Ask your manager to add you.",
+    "subtitle": "Your orders, photos and payments for the day, in one place.",
+    "showPassword": "Show password",
+    "hidePassword": "Hide password"
   },
   "tabs": {
     "orders": "Orders",
@@ -68,7 +72,8 @@
       "conflict": "Someone else changed this order. We refreshed what you see.",
       "gone": "This order is no longer available to you.",
       "back": "Back to the list",
-      "due": "Due {date}"
+      "due": "Due {date}",
+      "order": "Order #{id}"
     },
     "actions": {
       "start": "Start",
@@ -115,7 +120,11 @@
       "reassigned": "{name} changed the assignee",
       "photo": "{name} added a photo",
       "note": "{name} added a note"
-    }
+    },
+    "hello": "Hi, {name}.",
+    "pendingToday": "You have {count} to do.",
+    "emptyToDoBody": "When an order is assigned to you, it will show up here.",
+    "emptyFinishedBody": "Orders you finish or charge stay here."
   },
   "errors": {
     "generic": "Something went wrong. Try again.",
@@ -155,7 +164,8 @@
     "noItems": "This order has no priced items, it can't be charged.",
     "invalidAmount": "Enter a valid amount.",
     "insufficient": "The cash received is less than the total.",
-    "done": "Charged"
+    "done": "Charged",
+    "exact": "Exact"
   },
   "ticket": {
     "title": "Ticket",
@@ -193,7 +203,8 @@
   "tickets": {
     "search": "Search by number",
     "empty": "No tickets.",
-    "filterAll": "All"
+    "filterAll": "All",
+    "emptyBody": "Tickets from charged orders show up here."
   },
   "profileScreen": {
     "firstName": "First name",
@@ -245,5 +256,9 @@
       "priceInvalid": "Price must be a number.",
       "descriptionRequired": "Describe the item."
     }
+  },
+  "menu": {
+    "open": "Open menu",
+    "close": "Close menu"
   }
 }

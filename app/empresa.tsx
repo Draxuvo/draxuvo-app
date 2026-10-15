@@ -1,14 +1,15 @@
 import { useQueries, useQueryClient } from "@tanstack/react-query";
 import { Stack, useRouter } from "expo-router";
-import { FlatList } from "react-native";
+import Animated from "react-native-reanimated";
 import { probeCompanyAccess } from "@/api/orders";
 import { CompanyRow } from "@/components/company-row";
 import { t, useLocale } from "@/i18n";
 import { useSession } from "@/session";
-import { colors, spacing } from "@/theme";
+import { rowEnter, space, useTheme } from "@/theme";
 
 export default function Empresa() {
   useLocale();
+  const { c } = useTheme();
   const router = useRouter();
   const client = useQueryClient();
   const { user, companyId, setCompany } = useSession();
@@ -34,18 +35,15 @@ export default function Empresa() {
   return (
     <>
       <Stack.Screen options={{ title: t("company.title") }} />
-      <FlatList
-        style={{ backgroundColor: colors.anaquel }}
-        contentContainerStyle={{ padding: spacing[4], gap: spacing[3] }}
+      <Animated.FlatList
+        style={{ backgroundColor: c.background }}
+        contentContainerStyle={{ padding: space[4], gap: space[3] }}
         data={companies}
         keyExtractor={(company) => String(company.id)}
         renderItem={({ item, index }) => (
-          <CompanyRow
-            company={item}
-            active={item.id === companyId}
-            access={probes[index]?.data ?? "checking"}
-            onPress={() => void choose(item.id)}
-          />
+          <Animated.View entering={rowEnter(index)}>
+            <CompanyRow company={item} active={item.id === companyId} access={probes[index]?.data ?? "checking"} onPress={() => void choose(item.id)} />
+          </Animated.View>
         )}
       />
     </>

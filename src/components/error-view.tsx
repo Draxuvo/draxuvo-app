@@ -1,8 +1,9 @@
 import { View } from "react-native";
 import { ApiError, NetworkError } from "@/api/client";
 import { t } from "@/i18n";
-import { colors, spacing } from "@/theme";
-import { AppText, Button } from "./ui";
+import { space } from "@/theme";
+import { EmptyState } from "./empty-state";
+import { ProblemArt } from "./illustrations";
 
 /** Mensaje claro para el error de una petición (FR-016). */
 export function describeError(error: unknown): string {
@@ -22,11 +23,8 @@ export function describeError(error: unknown): string {
 
 export function ErrorView({ error, onRetry }: { error: unknown; onRetry?: () => void }) {
   return (
-    <View style={{ padding: spacing[6], gap: spacing[4], alignItems: "stretch" }} accessibilityRole="alert">
-      <AppText variant="title" style={{ color: colors.alerta }}>
-        {describeError(error)}
-      </AppText>
-      {onRetry ? <Button label={t("common.retry")} variant="outline" onPress={onRetry} /> : null}
+    <View accessibilityRole="alert" style={{ paddingVertical: space[4] }}>
+      <EmptyState art={<ProblemArt />} title={describeError(error)} actionLabel={onRetry ? t("common.retry") : undefined} onAction={onRetry} />
     </View>
   );
 }

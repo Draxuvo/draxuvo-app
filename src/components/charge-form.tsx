@@ -1,13 +1,26 @@
 import { useRef, useState } from "react";
 import { Pressable, View } from "react-native";
+import Animated, { useAnimatedStyle, useSharedValue, withSequence, withTiming } from "react-native-reanimated";
 import type { ChargeBody } from "@/api/orders";
 import type { PaymentMethod } from "@/api/types";
+import { haptic } from "@/lib/haptics";
 import { t } from "@/i18n";
 import { changeOrMissing, formatMoney, parseMoney } from "@/lib/money";
-import { colors, MIN_TOUCH, radii, spacing } from "@/theme";
-import { AppText, Button, Field } from "./ui";
+import { radius, space, useTheme } from "@/theme";
+import { AppText, Button, Chip, Field, Icon, type IconName } from "./ui";
 
-const METHODS: PaymentMethod[] = ["cash", "card", "transfer"];
+const METHODS: { value: PaymentMethod; icon: IconName }[] = [
+  { value: "cash", icon: "dollar-sign" },
+  { value: "card", icon: "credit-card" },
+  { value: "transfer", icon: "repeat" },
+];
+
+/** Billetes redondos por encima del total: atajos para no teclear el monto recibido. */
+function quickAmounts(total: number): number[] {
+  const bills = [50, 100, 200, 500, 1000];
+  const next = bills.filter((bill) => bill >= total).slice(0, 3);
+  return next.length ? next : [Math.ceil(total / 100) * 100];
+}
 
 /**
  * Formulario de cobro. El botón se bloquea al pulsar y no vuelve hasta recibir respuesta, así un
@@ -23,6 +36,7 @@ export function ChargeForm({
   blocked: boolean;
   onSubmit: (body: ChargeBody) => Promise<void>;
 }) {
+  const { c } = useTheme();
   const [method, setMethod] = useState<PaymentMethod>("cash");
   const [received, setReceived] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -32,11 +46,19 @@ export function ChargeForm({
   const amount = parseMoney(received);
   const diff = method === "cash" && amount != null ? changeOrMissing(total, amount) : null;
 
+  const shake = useSharedValue(0);
+  const shakeStyle = useAnimatedStyle(() => ({ transform: [{ translateX: shake.value }] }));
+  const fail = (message: string) => {
+    haptic.warning();
+    setError(message);
+    shake.set(withSequence(withTiming(-8, { duration: 50 }), withTiming(8, { duration: 80 }), withTiming(0, { duration: 60 })));
+  };
+
   const submit = async () => {
     if (inFlight.current) return;
     if (method === "cash") {
-      if (amount == null) return setError(t("charge.invalidAmount"));
-      if (amount < total) return setError(t("charge.insufficient"));
+      if (amount == null) return fail(t("charge.invalidAmount"));
+      if (amount < total) return fail(t("charge.insufficient"));
     }
     setError(null);
     inFlight.current = true;
@@ -50,70 +72,85 @@ export function ChargeForm({
   };
 
   return (
-    <View style={{ gap: spacing[4] }}>
-      <View>
-        <AppText variant="label" muted>
+    <View style={{ gap: space[6] }}>
+      <View style={{ gap: space[1] }}>
+        <AppText variant="label" tone="muted">
           {t("charge.total").toUpperCase()}
         </AppText>
-        <AppText variant="cifra" testID="charge-total">
+        <AppText variant="figureLarge" testID="charge-total">
           {formatMoney(total)}
         </AppText>
       </View>
 
       {blocked ? (
-        <AppText style={{ color: colors.alerta }} accessibilityRole="alert">
-          {t("charge.noItems")}
-        </AppText>
+        <View accessibilityRole="alert" style={{ backgroundColor: c.stampSoft, borderRadius: radius.field, padding: space[3], flexDirection: "row", gap: space[2], alignItems: "center" }}>
+          <Icon name="alert-circle" tone="stamp" />
+          <AppText style={{ color: c.onStampSoft, flex: 1 }}>{t("charge.noItems")}</AppText>
+        </View>
       ) : null}
 
-      <View style={{ gap: spacing[2] }}>
-        <AppText variant="label" muted>
+      <View style={{ gap: space[2] }}>
+        <AppText variant="label" tone="muted">
           {t("charge.method").toUpperCase()}
         </AppText>
-        <View style={{ flexDirection: "row", gap: spacing[2] }}>
-          {METHODS.map((value) => (
-            <Pressable
-              key={value}
-              accessibilityRole="radio"
-              accessibilityLabel={t(`charge.methods.${value}`)}
-              accessibilityState={{ selected: method === value }}
-              onPress={() => {
-                setMethod(value);
-                setError(null);
-              }}
-              style={{
-                flex: 1,
-                minHeight: MIN_TOUCH,
-                alignItems: "center",
-                justifyContent: "center",
-                borderRadius: radii.etiqueta,
-                borderWidth: 1.5,
-                borderColor: colors.tinta,
-                backgroundColor: method === value ? colors.tinta : colors.etiqueta,
-              }}
-            >
-              <AppText variant="bodyStrong" style={{ color: method === value ? colors.etiqueta : colors.tinta }}>
-                {t(`charge.methods.${value}`)}
-              </AppText>
-            </Pressable>
-          ))}
+        <View style={{ flexDirection: "row", gap: space[2] }}>
+          {METHODS.map(({ value, icon }) => {
+            const selected = method === value;
+            return (
+              <Pressable
+                key={value}
+                accessibilityRole="radio"
+                accessibilityLabel={t(`charge.methods.${value}`)}
+                accessibilityState={{ selected }}
+                onPress={() => {
+                  haptic.select();
+                  setMethod(value);
+                  setError(null);
+                }}
+                style={{
+                  flex: 1,
+                  minHeight: 84,
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: space[2],
+                  borderRadius: radius.card,
+                  borderWidth: 2,
+                  borderColor: selected ? c.primary : c.line,
+                  backgroundColor: selected ? c.primarySoft : c.surface,
+                }}
+              >
+                <Icon name={icon} tone={selected ? "primary" : "muted"} size={26} />
+                <AppText variant="bodyStrong" style={{ color: selected ? c.onPrimarySoft : c.ink, fontSize: 13 }}>
+                  {t(`charge.methods.${value}`)}
+                </AppText>
+              </Pressable>
+            );
+          })}
         </View>
       </View>
 
       {method === "cash" ? (
-        <View style={{ gap: spacing[2] }}>
-          <Field label={t("charge.received")} value={received} onChangeText={setReceived} keyboardType="decimal-pad" error={error} testID="charge-received" />
+        <Animated.View style={[{ gap: space[3] }, shakeStyle]}>
+          <Field label={t("charge.received")} icon="dollar-sign" value={received} onChangeText={setReceived} keyboardType="decimal-pad" error={error} testID="charge-received" />
+          <View style={{ flexDirection: "row", gap: space[2], flexWrap: "wrap" }}>
+            <Chip label={t("charge.exact")} selected={amount === total} onPress={() => setReceived(String(total))} />
+            {quickAmounts(total).map((bill) => (
+              <Chip key={bill} label={formatMoney(bill).replace(".00", "")} selected={amount === bill} onPress={() => setReceived(String(bill))} />
+            ))}
+          </View>
           {diff ? (
-            <AppText variant="bodyStrong" style={{ color: diff.missing > 0 ? colors.alerta : colors.sello }} testID="charge-diff">
-              {diff.missing > 0 ? `${t("charge.missing")}: ${formatMoney(diff.missing)}` : `${t("charge.change")}: ${formatMoney(diff.change)}`}
-            </AppText>
+            <View style={{ backgroundColor: diff.missing > 0 ? c.stampSoft : c.marker, borderRadius: radius.field, padding: space[4] }}>
+              <AppText variant="figure" testID="charge-diff" style={{ color: diff.missing > 0 ? c.onStampSoft : c.onMarker }}>
+                {diff.missing > 0 ? `${t("charge.missing")}: ${formatMoney(diff.missing)}` : `${t("charge.change")}: ${formatMoney(diff.change)}`}
+              </AppText>
+            </View>
           ) : null}
-        </View>
+        </Animated.View>
       ) : error ? (
-        <AppText style={{ color: colors.alerta }}>{error}</AppText>
+        <AppText tone="stamp">{error}</AppText>
       ) : null}
 
-      <Button label={t("charge.submit", { total: formatMoney(total) })} onPress={() => void submit()} loading={busy} disabled={blocked || busy} />
+      <Button label={t("charge.submit", { total: formatMoney(total) })} icon="check" onPress={() => void submit()} loading={busy} disabled={blocked || busy} />
     </View>
   );
 }
