@@ -1,0 +1,249 @@
+{
+  "common": {
+    "retry": "Reintentar",
+    "cancel": "Cancelar",
+    "save": "Guardar",
+    "close": "Cerrar",
+    "loading": "Cargando…",
+    "yes": "Sí",
+    "no": "No",
+    "optional": "Opcional"
+  },
+  "login": {
+    "title": "Entra a tu cuenta",
+    "email": "Correo",
+    "password": "Contraseña",
+    "submit": "Entrar",
+    "emailRequired": "Escribe tu correo.",
+    "emailInvalid": "Revisa el formato del correo.",
+    "passwordRequired": "Escribe tu contraseña.",
+    "noCompany": "Tu cuenta no tiene ninguna empresa. Pide a tu encargado que te agregue."
+  },
+  "tabs": {
+    "orders": "Órdenes",
+    "tickets": "Tickets",
+    "profile": "Perfil"
+  },
+  "orders": {
+    "title": "Órdenes",
+    "mine": "Mis órdenes",
+    "toDo": "Por hacer",
+    "finished": "Terminadas",
+    "emptyToDo": "No tienes órdenes por hacer.",
+    "emptyFinished": "Aún no hay órdenes terminadas.",
+    "unassigned": "Sin responsable",
+    "new": "Nueva orden",
+    "progress": "{done} de {total} pasos",
+    "filters": {
+      "status": "Estado",
+      "all": "Todas",
+      "employee": "Responsable"
+    },
+    "status": {
+      "open": "Abierta",
+      "in_progress": "En proceso",
+      "done": "Terminada",
+      "paid": "Cobrada",
+      "cancelled": "Cancelada"
+    },
+    "priority": {
+      "low": "Baja",
+      "medium": "Media",
+      "high": "Alta",
+      "urgent": "Urgente"
+    },
+    "detail": {
+      "steps": "Pasos",
+      "stepsEmpty": "Esta orden no tiene pasos.",
+      "doneBy": "Hecho por {name}",
+      "items": "Conceptos",
+      "itemsEmpty": "Sin conceptos.",
+      "notes": "Notas",
+      "notesEmpty": "Aún no hay notas.",
+      "photos": "Fotos",
+      "photosEmpty": "Aún no hay fotos.",
+      "history": "Historia",
+      "customer": "Cliente",
+      "total": "Total",
+      "conflict": "Otra persona cambió esta orden. Actualizamos lo que ves.",
+      "gone": "Esta orden ya no está disponible para ti.",
+      "back": "Volver a la lista",
+      "due": "Para el {date}"
+    },
+    "actions": {
+      "start": "Empezar",
+      "finish": "Terminar",
+      "reopen": "Reabrir",
+      "charge": "Cobrar",
+      "chargeBlocked": "Agrega conceptos con precio para poder cobrar.",
+      "pendingStepsTitle": "Hay pasos pendientes",
+      "pendingStepsBody": "Faltan {count} pasos por marcar. ¿Terminar de todos modos?",
+      "finishAnyway": "Terminar de todos modos",
+      "edit": "Editar"
+    },
+    "note": {
+      "placeholder": "Escribe una nota",
+      "add": "Agregar nota",
+      "emptyText": "Escribe algo antes de agregar."
+    },
+    "photo": {
+      "camera": "Cámara",
+      "gallery": "Galería",
+      "permissionCamera": "Permite el uso de la cámara en los ajustes del teléfono para tomar fotos.",
+      "permissionLibrary": "Permite el acceso a tus fotos en los ajustes del teléfono.",
+      "notImage": "Solo se pueden subir imágenes.",
+      "tooLarge": "La foto pesa demasiado. Prueba con otra.",
+      "alt": "Foto de la orden"
+    },
+    "outbox": {
+      "pending": "Pendiente de enviar",
+      "sending": "Enviando…",
+      "failed": "No se pudo enviar",
+      "discardable": "Esta orden ya no está disponible para ti",
+      "retry": "Reintentar",
+      "discard": "Descartar",
+      "count": "{count} pendientes de enviar"
+    },
+    "history": {
+      "created": "{name} creó la orden",
+      "started": "{name} la empezó",
+      "finished": "{name} la terminó",
+      "reopened": "{name} la reabrió",
+      "charged": "{name} la cobró",
+      "voided": "{name} anuló el cobro",
+      "cancelled": "{name} la canceló",
+      "reassigned": "{name} cambió al responsable",
+      "photo": "{name} agregó una foto",
+      "note": "{name} agregó una nota"
+    }
+  },
+  "errors": {
+    "generic": "Algo salió mal. Intenta de nuevo.",
+    "network": "Sin conexión. Revisa tu red e intenta de nuevo.",
+    "sessionExpired": "Tu sesión venció. Entra de nuevo.",
+    "subscriptionInactive": "La suscripción de la empresa no está activa. Avisa al dueño.",
+    "moduleNotInPlan": "Esta función no está incluida en el plan de la empresa.",
+    "forbidden": "No tienes permiso para hacer esto.",
+    "notFound": "Esto ya no está disponible."
+  },
+  "update": {
+    "title": "Actualiza la app",
+    "body": "Esta versión de Draxuvo ya no es compatible. Instala la versión más reciente para seguir.",
+    "action": "Abrir la tienda"
+  },
+  "profile": {
+    "title": "Perfil",
+    "logout": "Cerrar sesión",
+    "language": "Idioma",
+    "biometric": "Entrar con huella o rostro",
+    "biometricReason": "Confirma que eres tú para abrir Draxuvo.",
+    "biometricRetry": "Usar contraseña"
+  },
+  "charge": {
+    "title": "Cobrar",
+    "total": "Total",
+    "method": "Método de pago",
+    "received": "Monto recibido",
+    "change": "Cambio",
+    "missing": "Faltan",
+    "submit": "Cobrar {total}",
+    "methods": {
+      "cash": "Efectivo",
+      "card": "Tarjeta",
+      "transfer": "Transferencia"
+    },
+    "noItems": "Esta orden no tiene conceptos con precio, no se puede cobrar.",
+    "invalidAmount": "Escribe un monto válido.",
+    "insufficient": "El efectivo recibido es menor al total.",
+    "done": "Cobrado"
+  },
+  "ticket": {
+    "title": "Ticket",
+    "folio": "Folio",
+    "status": {
+      "pending": "Pendiente",
+      "paid": "Cobrado",
+      "voided": "Anulado"
+    },
+    "method": "Pagó con",
+    "received": "Recibido",
+    "change": "Cambio",
+    "total": "Total",
+    "share": "Descargar y compartir PDF",
+    "whatsapp": "Enviar por WhatsApp",
+    "whatsappSent": "Enviado por WhatsApp.",
+    "whatsappPhone": "Falta el teléfono del cliente en la orden.",
+    "shareUnavailable": "Este teléfono no puede compartir archivos.",
+    "downloadFailed": "No se pudo descargar el PDF.",
+    "backToOrders": "Ir a mis órdenes"
+  },
+  "company": {
+    "title": "Cambiar de empresa",
+    "current": "Activa",
+    "roles": {
+      "staff": "Staff",
+      "manager": "Encargado",
+      "admin": "Administrador",
+      "owner": "Dueño"
+    },
+    "expired": "Suscripción vencida: no podrás ver sus órdenes.",
+    "noModule": "Su plan no incluye el módulo de órdenes.",
+    "checking": "Revisando…"
+  },
+  "tickets": {
+    "search": "Buscar por folio",
+    "empty": "No hay tickets.",
+    "filterAll": "Todos"
+  },
+  "profileScreen": {
+    "firstName": "Nombre",
+    "lastName": "Apellido",
+    "phone": "Teléfono",
+    "email": "Correo",
+    "role": "Rol",
+    "save": "Guardar cambios",
+    "saved": "Cambios guardados.",
+    "photo": "Foto de perfil",
+    "camera": "Cámara",
+    "gallery": "Galería",
+    "removePhoto": "Quitar foto",
+    "biometricUnavailable": "Este teléfono no tiene huella o rostro configurados.",
+    "nameRequired": "Escribe tu nombre."
+  },
+  "orderForm": {
+    "titleNew": "Nueva orden",
+    "titleEdit": "Editar orden",
+    "title": "Título",
+    "table": "Mesa o cliente",
+    "assignee": "Responsable",
+    "unassigned": "Sin responsable",
+    "priority": "Prioridad",
+    "dueDate": "Fecha (AAAA-MM-DD)",
+    "customerName": "Nombre del cliente",
+    "customerPhone": "Teléfono del cliente",
+    "customerAddress": "Dirección",
+    "notes": "Notas",
+    "steps": "Pasos",
+    "addStep": "Agregar paso",
+    "stepPlaceholder": "Describe el paso",
+    "items": "Conceptos",
+    "addItem": "Agregar concepto",
+    "itemDescription": "Descripción",
+    "quantity": "Cantidad",
+    "price": "Precio",
+    "menu": "Menú",
+    "remove": "Quitar",
+    "submitCreate": "Crear orden",
+    "submitSave": "Guardar cambios",
+    "forbidden": "Solo un encargado o superior puede crear y editar órdenes.",
+    "errors": {
+      "titleRequired": "Escribe el título de la orden.",
+      "tableRequired": "Escribe la mesa o el cliente.",
+      "phoneInvalid": "Revisa el teléfono: usa solo números, espacios, + - ( ).",
+      "dueInvalid": "Usa el formato AAAA-MM-DD.",
+      "quantityInvalid": "La cantidad debe ser mayor a 0.",
+      "priceInvalid": "El precio debe ser un número.",
+      "descriptionRequired": "Describe el concepto."
+    }
+  }
+}

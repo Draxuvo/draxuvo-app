@@ -1,0 +1,37 @@
+# Recorrido: el encargado crea una orden asignada en Volta; el staff no ve "Nueva orden".
+appId: com.draxuvo.app
+---
+- launchApp:
+    clearState: true
+- tapOn:
+    id: login-email
+- inputText: "manager@volta.demo"
+- tapOn:
+    id: login-password
+- inputText: "Demo12345*"
+- tapOn: "Entrar"
+- assertVisible: "Nueva orden"
+
+# Datos inválidos
+- tapOn: "Nueva orden"
+- tapOn: "Crear orden"
+- assertVisible: "Escribe el título de la orden."
+
+# Crear
+- tapOn:
+    id: form-title
+- inputText: "Orden del recorrido"
+- tapOn: "Crear orden"
+- assertVisible: "Orden del recorrido"
+
+# El staff no ve crear
+- tapOn: "Perfil"
+- tapOn: "Cerrar sesión"
+- tapOn:
+    id: login-email
+- inputText: "staff@volta.demo"
+- tapOn:
+    id: login-password
+- inputText: "Demo12345*"
+- tapOn: "Entrar"
+- assertNotVisible: "Nueva orden"

@@ -1,0 +1,33 @@
+# Recorrido: una nota hecha sin red llega al volver la conexión, una sola vez.
+# El modo avión solo se controla en Android; en iOS el recorrido se hace a mano (ver README).
+appId: com.draxuvo.app
+---
+- launchApp:
+    clearState: true
+- tapOn:
+    id: login-email
+- inputText: "staff@volta.demo"
+- tapOn:
+    id: login-password
+- inputText: "Demo12345*"
+- tapOn: "Entrar"
+- assertVisible: "Por hacer"
+- tapOn:
+    index: 0
+    text: ".*(Abierta|En proceso).*"
+- assertVisible: "Pasos"
+
+- setAirplaneMode: enabled
+- tapOn:
+    id: note-input
+- inputText: "Nota sin red"
+- tapOn: "Agregar nota"
+- assertVisible: "Nota sin red"
+- assertVisible: "PENDIENTE DE ENVIAR"
+
+- setAirplaneMode: disabled
+# Al volver la red la nota se envía y deja de estar pendiente.
+- extendedWaitUntil:
+    notVisible: "PENDIENTE DE ENVIAR"
+    timeout: 30000
+- assertVisible: "Nota sin red"

@@ -1,0 +1,249 @@
+{
+  "common": {
+    "retry": "Retry",
+    "cancel": "Cancel",
+    "save": "Save",
+    "close": "Close",
+    "loading": "Loading…",
+    "yes": "Yes",
+    "no": "No",
+    "optional": "Optional"
+  },
+  "login": {
+    "title": "Sign in",
+    "email": "Email",
+    "password": "Password",
+    "submit": "Sign in",
+    "emailRequired": "Enter your email.",
+    "emailInvalid": "Check the email format.",
+    "passwordRequired": "Enter your password.",
+    "noCompany": "Your account has no company. Ask your manager to add you."
+  },
+  "tabs": {
+    "orders": "Orders",
+    "tickets": "Tickets",
+    "profile": "Profile"
+  },
+  "orders": {
+    "title": "Orders",
+    "mine": "My orders",
+    "toDo": "To do",
+    "finished": "Finished",
+    "emptyToDo": "You have no orders to do.",
+    "emptyFinished": "No finished orders yet.",
+    "unassigned": "Unassigned",
+    "new": "New order",
+    "progress": "{done} of {total} steps",
+    "filters": {
+      "status": "Status",
+      "all": "All",
+      "employee": "Assignee"
+    },
+    "status": {
+      "open": "Open",
+      "in_progress": "In progress",
+      "done": "Done",
+      "paid": "Paid",
+      "cancelled": "Cancelled"
+    },
+    "priority": {
+      "low": "Low",
+      "medium": "Medium",
+      "high": "High",
+      "urgent": "Urgent"
+    },
+    "detail": {
+      "steps": "Steps",
+      "stepsEmpty": "This order has no steps.",
+      "doneBy": "Done by {name}",
+      "items": "Items",
+      "itemsEmpty": "No items.",
+      "notes": "Notes",
+      "notesEmpty": "No notes yet.",
+      "photos": "Photos",
+      "photosEmpty": "No photos yet.",
+      "history": "History",
+      "customer": "Customer",
+      "total": "Total",
+      "conflict": "Someone else changed this order. We refreshed what you see.",
+      "gone": "This order is no longer available to you.",
+      "back": "Back to the list",
+      "due": "Due {date}"
+    },
+    "actions": {
+      "start": "Start",
+      "finish": "Finish",
+      "reopen": "Reopen",
+      "charge": "Charge",
+      "chargeBlocked": "Add items with a price to be able to charge.",
+      "pendingStepsTitle": "There are pending steps",
+      "pendingStepsBody": "{count} steps are not checked. Finish anyway?",
+      "finishAnyway": "Finish anyway",
+      "edit": "Edit"
+    },
+    "note": {
+      "placeholder": "Write a note",
+      "add": "Add note",
+      "emptyText": "Write something before adding."
+    },
+    "photo": {
+      "camera": "Camera",
+      "gallery": "Gallery",
+      "permissionCamera": "Allow camera access in the phone settings to take photos.",
+      "permissionLibrary": "Allow access to your photos in the phone settings.",
+      "notImage": "Only images can be uploaded.",
+      "tooLarge": "The photo is too large. Try another one.",
+      "alt": "Order photo"
+    },
+    "outbox": {
+      "pending": "Waiting to send",
+      "sending": "Sending…",
+      "failed": "Could not send",
+      "discardable": "This order is no longer available to you",
+      "retry": "Retry",
+      "discard": "Discard",
+      "count": "{count} waiting to send"
+    },
+    "history": {
+      "created": "{name} created the order",
+      "started": "{name} started it",
+      "finished": "{name} finished it",
+      "reopened": "{name} reopened it",
+      "charged": "{name} charged it",
+      "voided": "{name} voided the charge",
+      "cancelled": "{name} cancelled it",
+      "reassigned": "{name} changed the assignee",
+      "photo": "{name} added a photo",
+      "note": "{name} added a note"
+    }
+  },
+  "errors": {
+    "generic": "Something went wrong. Try again.",
+    "network": "No connection. Check your network and try again.",
+    "sessionExpired": "Your session expired. Sign in again.",
+    "subscriptionInactive": "The company's subscription is not active. Tell the owner.",
+    "moduleNotInPlan": "This feature is not included in the company's plan.",
+    "forbidden": "You don't have permission to do this.",
+    "notFound": "This is no longer available."
+  },
+  "update": {
+    "title": "Update the app",
+    "body": "This version of Draxuvo is no longer supported. Install the latest version to continue.",
+    "action": "Open the store"
+  },
+  "profile": {
+    "title": "Profile",
+    "logout": "Sign out",
+    "language": "Language",
+    "biometric": "Sign in with fingerprint or face",
+    "biometricReason": "Confirm it's you to open Draxuvo.",
+    "biometricRetry": "Use password"
+  },
+  "charge": {
+    "title": "Charge",
+    "total": "Total",
+    "method": "Payment method",
+    "received": "Amount received",
+    "change": "Change",
+    "missing": "Missing",
+    "submit": "Charge {total}",
+    "methods": {
+      "cash": "Cash",
+      "card": "Card",
+      "transfer": "Transfer"
+    },
+    "noItems": "This order has no priced items, it can't be charged.",
+    "invalidAmount": "Enter a valid amount.",
+    "insufficient": "The cash received is less than the total.",
+    "done": "Charged"
+  },
+  "ticket": {
+    "title": "Ticket",
+    "folio": "Number",
+    "status": {
+      "pending": "Pending",
+      "paid": "Paid",
+      "voided": "Voided"
+    },
+    "method": "Paid with",
+    "received": "Received",
+    "change": "Change",
+    "total": "Total",
+    "share": "Download and share PDF",
+    "whatsapp": "Send by WhatsApp",
+    "whatsappSent": "Sent by WhatsApp.",
+    "whatsappPhone": "The customer's phone is missing on the order.",
+    "shareUnavailable": "This phone can't share files.",
+    "downloadFailed": "The PDF could not be downloaded.",
+    "backToOrders": "Go to my orders"
+  },
+  "company": {
+    "title": "Switch company",
+    "current": "Active",
+    "roles": {
+      "staff": "Staff",
+      "manager": "Manager",
+      "admin": "Admin",
+      "owner": "Owner"
+    },
+    "expired": "Subscription expired: you won't be able to see its orders.",
+    "noModule": "Its plan doesn't include the orders module.",
+    "checking": "Checking…"
+  },
+  "tickets": {
+    "search": "Search by number",
+    "empty": "No tickets.",
+    "filterAll": "All"
+  },
+  "profileScreen": {
+    "firstName": "First name",
+    "lastName": "Last name",
+    "phone": "Phone",
+    "email": "Email",
+    "role": "Role",
+    "save": "Save changes",
+    "saved": "Changes saved.",
+    "photo": "Profile photo",
+    "camera": "Camera",
+    "gallery": "Gallery",
+    "removePhoto": "Remove photo",
+    "biometricUnavailable": "This phone has no fingerprint or face set up.",
+    "nameRequired": "Enter your name."
+  },
+  "orderForm": {
+    "titleNew": "New order",
+    "titleEdit": "Edit order",
+    "title": "Title",
+    "table": "Table or customer",
+    "assignee": "Assignee",
+    "unassigned": "Unassigned",
+    "priority": "Priority",
+    "dueDate": "Date (YYYY-MM-DD)",
+    "customerName": "Customer name",
+    "customerPhone": "Customer phone",
+    "customerAddress": "Address",
+    "notes": "Notes",
+    "steps": "Steps",
+    "addStep": "Add step",
+    "stepPlaceholder": "Describe the step",
+    "items": "Items",
+    "addItem": "Add item",
+    "itemDescription": "Description",
+    "quantity": "Quantity",
+    "price": "Price",
+    "menu": "Menu",
+    "remove": "Remove",
+    "submitCreate": "Create order",
+    "submitSave": "Save changes",
+    "forbidden": "Only a manager or above can create and edit orders.",
+    "errors": {
+      "titleRequired": "Enter the order title.",
+      "tableRequired": "Enter the table or customer.",
+      "phoneInvalid": "Check the phone: use only digits, spaces, + - ( ).",
+      "dueInvalid": "Use the YYYY-MM-DD format.",
+      "quantityInvalid": "Quantity must be greater than 0.",
+      "priceInvalid": "Price must be a number.",
+      "descriptionRequired": "Describe the item."
+    }
+  }
+}
