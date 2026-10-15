@@ -1,10 +1,13 @@
 import { useState } from "react";
 import { View } from "react-native";
+import Animated from "react-native-reanimated";
 import type { WorkOrderEvent } from "@/api/types";
 import { useOutboxActions } from "@/hooks/use-outbox";
+import { haptic } from "@/lib/haptics";
 import { t } from "@/i18n";
 import type { OutboxItem } from "@/outbox/db";
-import { colors, spacing } from "@/theme";
+import { fadeIn, radius, space, useTheme } from "@/theme";
+import { Monogram } from "./order-card";
 import { OutboxBadge } from "./outbox-badge";
 import { AppText, Button, Field } from "./ui";
 
@@ -20,47 +23,58 @@ export function NoteBox({
   events: WorkOrderEvent[];
   pending: OutboxItem[];
 }) {
+  const { c } = useTheme();
   const { addNote, retry, discard } = useOutboxActions();
   const [text, setText] = useState("");
   const [error, setError] = useState<string | null>(null);
   const notes = events.filter((event) => event.kind === "note");
 
   const submit = async () => {
-    if (!text.trim()) return setError(t("orders.note.emptyText"));
+    if (!text.trim()) {
+      haptic.warning();
+      return setError(t("orders.note.emptyText"));
+    }
     setError(null);
     await addNote(orderId, text);
     setText("");
   };
 
+  const bubble = { backgroundColor: c.surfaceAlt, borderRadius: radius.field, padding: space[3], gap: 2 } as const;
+
   return (
-    <View style={{ gap: spacing[3] }}>
-      {notes.length === 0 && pending.length === 0 ? <AppText muted>{t("orders.detail.notesEmpty")}</AppText> : null}
+    <View style={{ gap: space[3] }}>
+      {notes.length === 0 && pending.length === 0 ? <AppText tone="muted">{t("orders.detail.notesEmpty")}</AppText> : null}
       {notes.map((note) => (
-        <View key={note.id} style={{ gap: 2 }}>
-          <AppText>{String(note.data.text ?? "")}</AppText>
-          <AppText variant="label" muted>
-            {note.actor?.name ?? ""}
-          </AppText>
+        <View key={note.id} style={{ flexDirection: "row", gap: space[2], alignItems: "flex-start" }}>
+          <Monogram name={note.actor?.name ?? "?"} />
+          <View style={[bubble, { flex: 1 }]}>
+            <AppText variant="label" tone="muted" style={{ letterSpacing: 0.2 }}>
+              {note.actor?.name ?? ""}
+            </AppText>
+            <AppText>{String(note.data.text ?? "")}</AppText>
+          </View>
         </View>
       ))}
       {pending.map((item) => (
-        <View key={item.id} style={{ gap: 2, opacity: 0.8 }} testID={`pending-note-${item.id}`}>
-          <AppText>{item.text}</AppText>
+        <Animated.View entering={fadeIn} key={item.id} style={{ gap: space[2] }} testID={`pending-note-${item.id}`}>
+          <View style={[bubble, { backgroundColor: c.primarySoft }]}>
+            <AppText>{item.text}</AppText>
+          </View>
           <OutboxBadge item={item} onRetry={() => void retry(item.id)} onDiscard={() => void discard(item.id)} />
-        </View>
+        </Animated.View>
       ))}
       {canAdd ? (
-        <View style={{ gap: spacing[2] }}>
+        <View style={{ gap: space[2] }}>
           <Field
             label={t("orders.note.placeholder")}
             value={text}
             onChangeText={setText}
             error={error}
             multiline
-            style={{ minHeight: 80, textAlignVertical: "top", paddingTop: spacing[3], borderColor: colors.anaquelBorde }}
+            style={{ minHeight: 72, textAlignVertical: "top" }}
             testID="note-input"
           />
-          <Button label={t("orders.note.add")} onPress={() => void submit()} />
+          <Button label={t("orders.note.add")} variant="tonal" icon="send" onPress={() => void submit()} />
         </View>
       ) : null}
     </View>

@@ -1,8 +1,9 @@
 import { useState } from "react";
-import { Pressable, View } from "react-native";
+import { View } from "react-native";
 import type { Employee, MenuGroup, OrderMode, WorkOrderPriority } from "@/api/types";
+import { haptic } from "@/lib/haptics";
 import { t } from "@/i18n";
-import { colors, MIN_TOUCH, radii, spacing } from "@/theme";
+import { radius, space, useTheme } from "@/theme";
 import {
   hasErrors,
   validateOrderForm,
@@ -10,35 +11,22 @@ import {
   type OrderFormErrors,
   type OrderFormValues,
 } from "./order-form-schema";
-import { AppText, Button, Card, Field } from "./ui";
+import { AppText, Button, Card, Chip, Field } from "./ui";
 
 const PRIORITIES: WorkOrderPriority[] = ["low", "medium", "high", "urgent"];
 
-function Chip({ label, selected, onPress }: { label: string; selected: boolean; onPress: () => void }) {
+const err = (key?: string) => (key ? t(`orderForm.errors.${key}`) : null);
+
+function Group({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <Pressable
-      accessibilityRole="button"
-      accessibilityLabel={label}
-      accessibilityState={{ selected }}
-      onPress={onPress}
-      style={{
-        minHeight: MIN_TOUCH,
-        justifyContent: "center",
-        paddingHorizontal: spacing[3],
-        borderRadius: radii.pastilla,
-        borderWidth: 1.5,
-        borderColor: selected ? colors.tinta : colors.anaquelBorde,
-        backgroundColor: selected ? colors.tinta : colors.etiqueta,
-      }}
-    >
-      <AppText variant="bodyStrong" style={{ color: selected ? colors.etiqueta : colors.tinta }}>
-        {label}
+    <View style={{ gap: space[2] }}>
+      <AppText variant="label" tone="muted">
+        {title.toUpperCase()}
       </AppText>
-    </Pressable>
+      {children}
+    </View>
   );
 }
-
-const err = (key?: string) => (key ? t(`orderForm.errors.${key}`) : null);
 
 /**
  * Formulario de orden. En modo pedido: mesa y productos del menú. En modo servicio: cliente,
@@ -64,6 +52,7 @@ export function OrderForm({
   apiErrors: string[];
   onSubmit: (values: OrderFormValues) => void;
 }) {
+  const { c } = useTheme();
   const [values, setValues] = useState<OrderFormValues>(initial);
   const [errors, setErrors] = useState<OrderFormErrors>({ items: {} });
   const patch = (changes: Partial<OrderFormValues>) => setValues((current) => ({ ...current, ...changes }));
@@ -74,7 +63,8 @@ export function OrderForm({
   const submit = () => {
     const found = validateOrderForm(values, mode);
     setErrors(found);
-    if (!hasErrors(found)) onSubmit(values);
+    if (hasErrors(found)) return haptic.warning();
+    onSubmit(values);
   };
 
   const addMenuProduct = (product: MenuGroup["items"][number]) => {
@@ -89,15 +79,15 @@ export function OrderForm({
   };
 
   return (
-    <View style={{ gap: spacing[4] }}>
+    <View style={{ gap: space[5] }}>
       {apiErrors.length ? (
-        <Card>
+        <View style={{ backgroundColor: c.stampSoft, borderRadius: radius.field, padding: space[3], gap: space[1] }}>
           {apiErrors.map((message) => (
-            <AppText key={message} style={{ color: colors.alerta }} accessibilityRole="alert">
+            <AppText key={message} style={{ color: c.onStampSoft }} accessibilityRole="alert">
               {message}
             </AppText>
           ))}
-        </Card>
+        </View>
       ) : null}
 
       <Field
@@ -109,41 +99,34 @@ export function OrderForm({
       />
 
       {employees.length > 0 ? (
-        <View style={{ gap: spacing[2] }}>
-          <AppText variant="label" muted>
-            {t("orderForm.assignee").toUpperCase()}
-          </AppText>
-          <View style={{ flexDirection: "row", flexWrap: "wrap", gap: spacing[2] }}>
+        <Group title={t("orderForm.assignee")}>
+          <View style={{ flexDirection: "row", flexWrap: "wrap", gap: space[2] }}>
             <Chip label={t("orderForm.unassigned")} selected={values.employeeId == null} onPress={() => patch({ employeeId: null })} />
             {employees.map((employee) => (
               <Chip key={employee.id} label={employee.name} selected={values.employeeId === employee.id} onPress={() => patch({ employeeId: employee.id })} />
             ))}
           </View>
-        </View>
+        </Group>
       ) : null}
 
       {!isOrder ? (
         <>
-          <View style={{ gap: spacing[2] }}>
-            <AppText variant="label" muted>
-              {t("orderForm.priority").toUpperCase()}
-            </AppText>
-            <View style={{ flexDirection: "row", flexWrap: "wrap", gap: spacing[2] }}>
+          <Group title={t("orderForm.priority")}>
+            <View style={{ flexDirection: "row", flexWrap: "wrap", gap: space[2] }}>
               {PRIORITIES.map((priority) => (
                 <Chip key={priority} label={t(`orders.priority.${priority}`)} selected={values.priority === priority} onPress={() => patch({ priority })} />
               ))}
             </View>
-          </View>
-          <Field label={t("orderForm.dueDate")} value={values.dueDate} onChangeText={(dueDate) => patch({ dueDate })} error={err(errors.dueDate)} keyboardType="numbers-and-punctuation" autoCorrect={false} />
-          <Field label={t("orderForm.customerName")} value={values.customerName} onChangeText={(customerName) => patch({ customerName })} />
-          <Field label={t("orderForm.customerPhone")} value={values.customerPhone} onChangeText={(customerPhone) => patch({ customerPhone })} error={err(errors.customerPhone)} keyboardType="phone-pad" testID="form-phone" />
-          <Field label={t("orderForm.customerAddress")} value={values.customerAddress} onChangeText={(customerAddress) => patch({ customerAddress })} />
-          <Field label={t("orderForm.notes")} value={values.notes} onChangeText={(notes) => patch({ notes })} multiline />
+          </Group>
+          <Field label={t("orderForm.dueDate")} icon="calendar" value={values.dueDate} onChangeText={(dueDate) => patch({ dueDate })} error={err(errors.dueDate)} keyboardType="numbers-and-punctuation" autoCorrect={false} />
+          <Field label={t("orderForm.customerName")} icon="user" value={values.customerName} onChangeText={(customerName) => patch({ customerName })} />
+          <Field label={t("orderForm.customerPhone")} icon="phone" value={values.customerPhone} onChangeText={(customerPhone) => patch({ customerPhone })} error={err(errors.customerPhone)} keyboardType="phone-pad" testID="form-phone" />
+          <Field label={t("orderForm.customerAddress")} icon="map-pin" value={values.customerAddress} onChangeText={(customerAddress) => patch({ customerAddress })} />
+          <Field label={t("orderForm.notes")} value={values.notes} onChangeText={(notes) => patch({ notes })} multiline style={{ minHeight: 64, textAlignVertical: "top" }} />
 
-          <View style={{ gap: spacing[2] }}>
-            <AppText variant="title">{t("orderForm.steps")}</AppText>
+          <Group title={t("orderForm.steps")}>
             {values.steps.map((step, index) => (
-              <View key={index} style={{ flexDirection: "row", gap: spacing[2], alignItems: "flex-end" }}>
+              <View key={index} style={{ flexDirection: "row", gap: space[2], alignItems: "flex-end" }}>
                 <View style={{ flex: 1 }}>
                   <Field
                     label={`${t("orderForm.steps")} ${index + 1}`}
@@ -152,41 +135,37 @@ export function OrderForm({
                     onChangeText={(description) => patch({ steps: values.steps.map((s, i) => (i === index ? { ...s, description } : s)) })}
                   />
                 </View>
-                <Button label={t("orderForm.remove")} variant="outline" onPress={() => patch({ steps: values.steps.filter((_, i) => i !== index) })} />
+                <Button label={t("orderForm.remove")} variant="danger" icon="trash-2" onPress={() => patch({ steps: values.steps.filter((_, i) => i !== index) })} />
               </View>
             ))}
-            <Button label={t("orderForm.addStep")} variant="outline" onPress={() => patch({ steps: [...values.steps, { description: "" }] })} />
-          </View>
+            <Button label={t("orderForm.addStep")} variant="tonal" icon="plus" onPress={() => patch({ steps: [...values.steps, { description: "" }] })} />
+          </Group>
         </>
       ) : (
-        <View style={{ gap: spacing[2] }}>
-          <AppText variant="title">{t("orderForm.menu")}</AppText>
+        <Group title={t("orderForm.menu")}>
           {menu.map((group) => (
-            <View key={group.category} style={{ gap: spacing[2] }}>
-              <AppText variant="label" muted>
-                {group.category.toUpperCase()}
-              </AppText>
-              <View style={{ flexDirection: "row", flexWrap: "wrap", gap: spacing[2] }}>
+            <View key={group.category} style={{ gap: space[2] }}>
+              <AppText variant="bodyStrong">{group.category}</AppText>
+              <View style={{ flexDirection: "row", flexWrap: "wrap", gap: space[2] }}>
                 {group.items.map((product) => (
-                  <Chip key={product.id} label={product.name} selected={false} onPress={() => addMenuProduct(product)} />
+                  <Chip key={product.id} icon="plus" label={product.name} selected={false} onPress={() => addMenuProduct(product)} />
                 ))}
               </View>
             </View>
           ))}
-        </View>
+        </Group>
       )}
 
-      <View style={{ gap: spacing[3] }}>
-        <AppText variant="title">{t("orderForm.items")}</AppText>
+      <Group title={t("orderForm.items")}>
         {values.items.map((row, index) => (
-          <Card key={`${row.productId ?? "x"}-${index}`}>
+          <Card key={`${row.productId ?? "x"}-${index}`} style={{ gap: space[3] }}>
             <Field
               label={t("orderForm.itemDescription")}
               value={row.description}
               onChangeText={(description) => patchItem(index, { description })}
               error={err(errors.items[index]?.description)}
             />
-            <View style={{ flexDirection: "row", gap: spacing[2] }}>
+            <View style={{ flexDirection: "row", gap: space[2] }}>
               <View style={{ flex: 1 }}>
                 <Field label={t("orderForm.quantity")} value={row.quantity} onChangeText={(quantity) => patchItem(index, { quantity })} keyboardType="decimal-pad" error={err(errors.items[index]?.quantity)} testID={`form-qty-${index}`} />
               </View>
@@ -194,19 +173,20 @@ export function OrderForm({
                 <Field label={t("orderForm.price")} value={row.unitPrice} onChangeText={(unitPrice) => patchItem(index, { unitPrice })} keyboardType="decimal-pad" error={err(errors.items[index]?.unitPrice)} />
               </View>
             </View>
-            <Button label={t("orderForm.remove")} variant="outline" onPress={() => patch({ items: values.items.filter((_, i) => i !== index) })} />
+            <Button label={t("orderForm.remove")} variant="danger" icon="trash-2" onPress={() => patch({ items: values.items.filter((_, i) => i !== index) })} />
           </Card>
         ))}
         {!isOrder ? (
           <Button
             label={t("orderForm.addItem")}
-            variant="outline"
+            variant="tonal"
+            icon="plus"
             onPress={() => patch({ items: [...values.items, { description: "", quantity: "1", unitPrice: "" }] })}
           />
         ) : null}
-      </View>
+      </Group>
 
-      <Button label={editing ? t("orderForm.submitSave") : t("orderForm.submitCreate")} onPress={submit} loading={submitting} />
+      <Button label={editing ? t("orderForm.submitSave") : t("orderForm.submitCreate")} icon="check" onPress={submit} loading={submitting} />
     </View>
   );
 }

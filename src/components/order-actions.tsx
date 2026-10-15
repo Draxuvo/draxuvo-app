@@ -3,7 +3,7 @@ import { Alert, View } from "react-native";
 import type { WorkOrder } from "@/api/types";
 import { useOrderTransition } from "@/hooks/use-orders";
 import { t } from "@/i18n";
-import { colors, spacing } from "@/theme";
+import { space } from "@/theme";
 import { AppText, Button } from "./ui";
 
 /**
@@ -27,28 +27,30 @@ export function OrderActions({ order, onError }: { order: WorkOrder; onError: (e
   };
 
   const buttons = [
-    allowed.includes("start") && <Button key="start" label={t("orders.actions.start")} loading={transition.isPending} onPress={() => run("start")} />,
-    allowed.includes("finish") && <Button key="finish" label={t("orders.actions.finish")} loading={transition.isPending} onPress={finish} />,
-    allowed.includes("reopen") && <Button key="reopen" label={t("orders.actions.reopen")} variant="outline" loading={transition.isPending} onPress={() => run("reopen")} />,
+    allowed.includes("start") && <Button key="start" label={t("orders.actions.start")} icon="play" loading={transition.isPending} onPress={() => run("start")} style={{ flex: 1 }} />,
+    allowed.includes("finish") && <Button key="finish" label={t("orders.actions.finish")} icon="check-circle" loading={transition.isPending} onPress={finish} style={{ flex: 1 }} />,
+    allowed.includes("reopen") && <Button key="reopen" label={t("orders.actions.reopen")} variant="tonal" icon="rotate-ccw" loading={transition.isPending} onPress={() => run("reopen")} style={{ flex: 1 }} />,
     allowed.includes("charge") && (
       <Button
         key="charge"
         label={t("orders.actions.charge")}
+        icon="dollar-sign"
         disabled={order.charge_blocked_reason === "no_items"}
         onPress={() => router.push(`/cobro/${order.id}` as never)}
+        style={{ flex: 1 }}
       />
     ),
   ].filter(Boolean);
 
   if (buttons.length === 0) return null;
   return (
-    <View style={{ gap: spacing[2] }}>
+    <View style={{ gap: space[2] }}>
       {allowed.includes("charge") && order.charge_blocked_reason === "no_items" ? (
-        <AppText variant="label" style={{ color: colors.alerta }}>
+        <AppText variant="label" tone="stamp" style={{ letterSpacing: 0.2 }}>
           {t("orders.actions.chargeBlocked")}
         </AppText>
       ) : null}
-      {buttons}
+      <View style={{ flexDirection: "row", gap: space[2] }}>{buttons}</View>
     </View>
   );
 }

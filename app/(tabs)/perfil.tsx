@@ -1,17 +1,20 @@
 import { useState } from "react";
-import { ScrollView, Switch, View } from "react-native";
+import { Switch, View } from "react-native";
+import Animated from "react-native-reanimated";
 import { updateProfile } from "@/api/profile";
 import { AvatarPicker } from "@/components/avatar-picker";
 import { describeError } from "@/components/error-view";
 import { LanguageSwitch } from "@/components/language-switch";
-import { AppText, Button, Card, Field } from "@/components/ui";
+import { AppText, Button, Card, Field, Icon } from "@/components/ui";
+import { haptic } from "@/lib/haptics";
 import { t, useLocale } from "@/i18n";
 import { biometricAvailable } from "@/session/biometric";
 import { useSession } from "@/session";
-import { colors, spacing } from "@/theme";
+import { rowEnter, space, TAB_BAR_HEIGHT, useTheme } from "@/theme";
 
 export default function Perfil() {
   useLocale();
+  const { c } = useTheme();
   const { user, role, setUser, signOut, biometricEnabled, setBiometricEnabled } = useSession();
   const [firstName, setFirstName] = useState(user?.first_name ?? "");
   const [lastName, setLastName] = useState(user?.last_name ?? "");
@@ -23,15 +26,20 @@ export default function Perfil() {
   if (!user) return null;
 
   const save = async () => {
-    if (!firstName.trim()) return setNameError(t("profileScreen.nameRequired"));
+    if (!firstName.trim()) {
+      haptic.warning();
+      return setNameError(t("profileScreen.nameRequired"));
+    }
     setNameError(null);
     setSaving(true);
     setMessage(null);
     try {
       const updated = await updateProfile({ first_name: firstName.trim(), last_name: lastName.trim(), phone: phone.trim() });
       await setUser({ ...user, ...updated, companies: updated.companies ?? user.companies });
+      haptic.success();
       setMessage({ text: t("profileScreen.saved"), error: false });
     } catch (error) {
+      haptic.warning();
       setMessage({ text: describeError(error), error: true });
     } finally {
       setSaving(false);
@@ -46,34 +54,55 @@ export default function Perfil() {
   };
 
   return (
-    <ScrollView style={{ backgroundColor: colors.anaquel }} contentContainerStyle={{ padding: spacing[4], gap: spacing[4] }} keyboardShouldPersistTaps="handled">
-      <Card>
-        <AvatarPicker user={user} onChange={(updated) => void setUser({ ...user, ...updated, companies: updated.companies ?? user.companies })} />
-      </Card>
+    <Animated.ScrollView style={{ backgroundColor: c.background }} contentContainerStyle={{ padding: space[4], gap: space[4], paddingBottom: TAB_BAR_HEIGHT + space[8] }} keyboardShouldPersistTaps="handled">
+      <Animated.View entering={rowEnter(0)}>
+        <Card>
+          <AvatarPicker user={user} onChange={(updated) => void setUser({ ...user, ...updated, companies: updated.companies ?? user.companies })} />
+        </Card>
+      </Animated.View>
 
-      <Card>
-        <Field label={t("profileScreen.firstName")} value={firstName} onChangeText={setFirstName} error={nameError} testID="profile-first-name" />
-        <Field label={t("profileScreen.lastName")} value={lastName} onChangeText={setLastName} />
-        <Field label={t("profileScreen.phone")} value={phone} onChangeText={setPhone} keyboardType="phone-pad" />
-        <Field label={t("profileScreen.email")} value={user.email} editable={false} />
-        <Field label={t("profileScreen.role")} value={role ? t(`company.roles.${role}`) : ""} editable={false} />
-        <Button label={t("profileScreen.save")} onPress={() => void save()} loading={saving} />
-        {message ? (
-          <AppText style={{ color: message.error ? colors.alerta : colors.sello }} accessibilityLiveRegion="polite" testID="profile-message">
-            {message.text}
-          </AppText>
-        ) : null}
-      </Card>
+      <Animated.View entering={rowEnter(1)}>
+        <Card style={{ gap: space[4] }}>
+          <Field label={t("profileScreen.firstName")} value={firstName} onChangeText={setFirstName} error={nameError} testID="profile-first-name" />
+          <Field label={t("profileScreen.lastName")} value={lastName} onChangeText={setLastName} />
+          <Field label={t("profileScreen.phone")} icon="phone" value={phone} onChangeText={setPhone} keyboardType="phone-pad" />
+          <Field label={t("profileScreen.email")} icon="mail" value={user.email} editable={false} />
+          <Field label={t("profileScreen.role")} icon="shield" value={role ? t(`company.roles.${role}`) : ""} editable={false} />
+          <Button label={t("profileScreen.save")} icon="check" onPress={() => void save()} loading={saving} />
+          {message ? (
+            <View style={{ flexDirection: "row", alignItems: "center", gap: space[2] }}>
+              <Icon name={message.error ? "alert-circle" : "check-circle"} tone={message.error ? "stamp" : "ok"} />
+              <AppText tone={message.error ? "stamp" : "ok"} accessibilityLiveRegion="polite" testID="profile-message" style={{ flex: 1 }}>
+                {message.text}
+              </AppText>
+            </View>
+          ) : null}
+        </Card>
+      </Animated.View>
 
-      <Card>
-        <LanguageSwitch />
-        <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", gap: spacing[3], minHeight: 44 }}>
-          <AppText style={{ flexShrink: 1 }}>{t("profile.biometric")}</AppText>
-          <Switch accessibilityLabel={t("profile.biometric")} value={biometricEnabled} onValueChange={(value) => void toggleBiometric(value)} />
-        </View>
-      </Card>
+      <Animated.View entering={rowEnter(2)}>
+        <Card style={{ gap: space[4] }}>
+          <LanguageSwitch />
+          <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", gap: space[3], minHeight: 48 }}>
+            <View style={{ flexDirection: "row", alignItems: "center", gap: space[3], flex: 1 }}>
+              <Icon name="smartphone" tone="muted" />
+              <AppText style={{ flexShrink: 1 }}>{t("profile.biometric")}</AppText>
+            </View>
+            <Switch
+              accessibilityLabel={t("profile.biometric")}
+              value={biometricEnabled}
+              onValueChange={(value) => {
+                haptic.select();
+                void toggleBiometric(value);
+              }}
+              trackColor={{ true: c.primary, false: c.line }}
+              thumbColor={c.surface}
+            />
+          </View>
+        </Card>
+      </Animated.View>
 
-      <Button label={t("profile.logout")} variant="outline" onPress={() => void signOut()} />
-    </ScrollView>
+      <Button label={t("profile.logout")} variant="outline" icon="log-out" onPress={() => void signOut()} />
+    </Animated.ScrollView>
   );
 }

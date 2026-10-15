@@ -5,8 +5,9 @@ import { View } from "react-native";
 import { ApiError, apiUrl, authHeaders } from "@/api/client";
 import { sendTicketWhatsapp } from "@/api/tickets";
 import type { Ticket } from "@/api/types";
+import { haptic } from "@/lib/haptics";
 import { t } from "@/i18n";
-import { colors, spacing } from "@/theme";
+import { space } from "@/theme";
 import { describeError } from "./error-view";
 import { AppText, Button } from "./ui";
 
@@ -29,6 +30,7 @@ export function TicketActions({ ticket, canWhatsapp }: { ticket: Ticket; canWhat
     try {
       await shareTicketPdf(ticket);
     } catch (error) {
+      haptic.warning();
       const text = error instanceof Error && error.message === "share_unavailable" ? t("ticket.shareUnavailable") : t("ticket.downloadFailed");
       setMessage({ text, error: true });
     } finally {
@@ -41,8 +43,10 @@ export function TicketActions({ ticket, canWhatsapp }: { ticket: Ticket; canWhat
     setMessage(null);
     try {
       await sendTicketWhatsapp(ticket.id);
+      haptic.success();
       setMessage({ text: t("ticket.whatsappSent"), error: false });
     } catch (error) {
+      haptic.warning();
       const phoneMissing = error instanceof ApiError && error.status === 400;
       setMessage({ text: phoneMissing ? t("ticket.whatsappPhone") : describeError(error), error: true });
     } finally {
@@ -51,13 +55,13 @@ export function TicketActions({ ticket, canWhatsapp }: { ticket: Ticket; canWhat
   };
 
   return (
-    <View style={{ gap: spacing[2] }}>
-      <Button label={t("ticket.share")} onPress={() => void share()} loading={busy === "pdf"} disabled={busy !== null} />
+    <View style={{ gap: space[2] }}>
+      <Button label={t("ticket.share")} icon="share-2" onPress={() => void share()} loading={busy === "pdf"} disabled={busy !== null} />
       {canWhatsapp ? (
-        <Button label={t("ticket.whatsapp")} variant="outline" onPress={() => void whatsapp()} loading={busy === "whatsapp"} disabled={busy !== null} />
+        <Button label={t("ticket.whatsapp")} variant="tonal" icon="message-circle" onPress={() => void whatsapp()} loading={busy === "whatsapp"} disabled={busy !== null} />
       ) : null}
       {message ? (
-        <AppText style={{ color: message.error ? colors.alerta : colors.sello }} accessibilityLiveRegion="polite" testID="ticket-message">
+        <AppText tone={message.error ? "stamp" : "ok"} accessibilityLiveRegion="polite" testID="ticket-message">
           {message.text}
         </AppText>
       ) : null}

@@ -1,12 +1,24 @@
 import { useRouter, useSegments } from "expo-router";
 import { useEffect, useState, type PropsWithChildren } from "react";
-import { ActivityIndicator } from "react-native";
+import { ActivityIndicator, View } from "react-native";
+import Animated from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { BrandMark } from "@/components/brand";
 import { AppText, Button } from "@/components/ui";
 import { t, useLocale } from "@/i18n";
 import { useSession } from "@/session";
-import { colors, spacing } from "@/theme";
+import { fadeIn, space, useTheme } from "@/theme";
 import { mustUpdate } from "./version";
+
+function Splash() {
+  const { c } = useTheme();
+  return (
+    <View style={{ flex: 1, backgroundColor: c.background, alignItems: "center", justifyContent: "center", gap: space[6] }}>
+      <BrandMark size={72} />
+      <ActivityIndicator color={c.primary} />
+    </View>
+  );
+}
 
 /**
  * Decide qué se ve al abrir: versión no compatible, entrada, bloqueo biométrico o la app.
@@ -14,6 +26,7 @@ import { mustUpdate } from "./version";
  */
 export function AppGate({ children }: PropsWithChildren) {
   useLocale();
+  const { c } = useTheme();
   const { status, unlock, signOut } = useSession();
   const router = useRouter();
   const segments = useSegments();
@@ -40,20 +53,17 @@ export function AppGate({ children }: PropsWithChildren) {
     }
   }, [outdated, status, first, router]);
 
-  if (outdated === null || status === "loading") {
-    return (
-      <SafeAreaView style={{ flex: 1, justifyContent: "center", backgroundColor: colors.anaquel }}>
-        <ActivityIndicator color={colors.tinta} />
-      </SafeAreaView>
-    );
-  }
+  if (outdated === null || status === "loading") return <Splash />;
 
   if (!outdated && status === "locked") {
     return (
-      <SafeAreaView style={{ flex: 1, justifyContent: "center", padding: spacing[6], gap: spacing[4], backgroundColor: colors.anaquel }}>
-        <AppText variant="headline">Draxuvo</AppText>
-        <Button label={t("profile.biometric")} onPress={() => void unlock()} />
-        <Button label={t("profile.biometricRetry")} variant="outline" onPress={() => void signOut()} />
+      <SafeAreaView style={{ flex: 1, backgroundColor: c.background }}>
+        <Animated.View entering={fadeIn} style={{ flex: 1, justifyContent: "center", padding: space[6], gap: space[4] }}>
+          <BrandMark size={64} />
+          <AppText variant="display">Draxuvo</AppText>
+          <Button label={t("profile.biometric")} icon="unlock" onPress={() => void unlock()} />
+          <Button label={t("profile.biometricRetry")} variant="outline" onPress={() => void signOut()} />
+        </Animated.View>
       </SafeAreaView>
     );
   }

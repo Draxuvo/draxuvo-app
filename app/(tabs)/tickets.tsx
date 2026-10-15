@@ -1,20 +1,25 @@
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
-import { ActivityIndicator, FlatList, Pressable, RefreshControl, ScrollView, View } from "react-native";
+import { RefreshControl, ScrollView, View } from "react-native";
+import Animated from "react-native-reanimated";
 import { listTickets } from "@/api/tickets";
 import type { Ticket, TicketStatus } from "@/api/types";
+import { EmptyState } from "@/components/empty-state";
 import { ErrorView } from "@/components/error-view";
-import { AppText, Card, Field } from "@/components/ui";
+import { EmptyTicketsArt } from "@/components/illustrations";
+import { SkeletonBlock } from "@/components/skeleton";
+import { AppText, Card, Chip, Field } from "@/components/ui";
 import { useKeys } from "@/hooks/use-orders";
-import { t, useLocale } from "@/i18n";
 import { formatMoney } from "@/lib/money";
-import { colors, MIN_TOUCH, radii, spacing } from "@/theme";
+import { t, useLocale } from "@/i18n";
+import { rowEnter, space, TAB_BAR_HEIGHT, useTheme } from "@/theme";
 
 const STATUSES: TicketStatus[] = ["pending", "paid", "voided"];
 
 export default function TicketsList() {
   useLocale();
+  const { c } = useTheme();
   const router = useRouter();
   const keys = useKeys();
   const [status, setStatus] = useState<TicketStatus | undefined>();
@@ -35,61 +40,44 @@ export default function TicketsList() {
   const tickets: Ticket[] = query.data?.pages.flatMap((page) => page.results) ?? [];
 
   return (
-    <View style={{ flex: 1, backgroundColor: colors.anaquel }}>
-      <View style={{ padding: spacing[4], gap: spacing[3] }}>
-        <Field label={t("tickets.search")} value={search} onChangeText={setSearch} autoCapitalize="characters" autoCorrect={false} testID="tickets-search" />
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: spacing[2] }}>
-          {[undefined, ...STATUSES].map((value) => {
-            const selected = status === value;
-            const label = value ? t(`ticket.status.${value}`) : t("tickets.filterAll");
-            return (
-              <Pressable
-                key={value ?? "all"}
-                accessibilityRole="button"
-                accessibilityLabel={label}
-                accessibilityState={{ selected }}
-                onPress={() => setStatus(value)}
-                style={{
-                  minHeight: MIN_TOUCH,
-                  justifyContent: "center",
-                  paddingHorizontal: spacing[4],
-                  borderRadius: radii.pastilla,
-                  borderWidth: 1.5,
-                  borderColor: selected ? colors.tinta : colors.anaquelBorde,
-                  backgroundColor: selected ? colors.tinta : colors.etiqueta,
-                }}
-              >
-                <AppText variant="bodyStrong" style={{ color: selected ? colors.etiqueta : colors.tinta }}>
-                  {label}
-                </AppText>
-              </Pressable>
-            );
-          })}
+    <View style={{ flex: 1, backgroundColor: c.background }}>
+      <View style={{ paddingHorizontal: space[4], gap: space[3], paddingBottom: space[3] }}>
+        <Field label={t("tickets.search")} icon="search" value={search} onChangeText={setSearch} autoCapitalize="characters" autoCorrect={false} testID="tickets-search" />
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: space[2] }}>
+          {[undefined, ...STATUSES].map((value) => (
+            <Chip key={value ?? "all"} label={value ? t(`ticket.status.${value}`) : t("tickets.filterAll")} selected={status === value} onPress={() => setStatus(value)} />
+          ))}
         </ScrollView>
       </View>
 
       {query.isError && tickets.length === 0 ? (
         <ErrorView error={query.error} onRetry={() => void query.refetch()} />
       ) : query.isLoading ? (
-        <ActivityIndicator color={colors.tinta} />
+        <View style={{ padding: space[4], gap: space[3] }}>
+          {[0, 1, 2, 3].map((i) => (
+            <SkeletonBlock key={i} height={84} style={{ borderRadius: 16 }} />
+          ))}
+        </View>
       ) : (
-        <FlatList
+        <Animated.FlatList
           data={tickets}
           keyExtractor={(ticket) => String(ticket.id)}
-          contentContainerStyle={{ padding: spacing[4], gap: spacing[3], flexGrow: 1 }}
-          refreshControl={<RefreshControl refreshing={query.isRefetching && !query.isFetchingNextPage} onRefresh={() => void query.refetch()} />}
+          contentContainerStyle={{ padding: space[4], gap: space[3], flexGrow: 1, paddingBottom: TAB_BAR_HEIGHT + space[8] }}
+          refreshControl={<RefreshControl refreshing={query.isRefetching && !query.isFetchingNextPage} onRefresh={() => void query.refetch()} tintColor={c.primary} colors={[c.primary]} />}
           onEndReached={() => query.hasNextPage && !query.isFetchingNextPage && void query.fetchNextPage()}
-          ListEmptyComponent={<AppText muted>{t("tickets.empty")}</AppText>}
-          renderItem={({ item }) => (
-            <Card onPress={() => router.push(`/ticket/${item.id}` as never)} accessibilityLabel={`${item.folio}, ${t(`ticket.status.${item.status}`)}, ${formatMoney(item.total)}`}>
-              <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
-                <AppText variant="title">{item.folio}</AppText>
-                <AppText variant="bodyStrong">{formatMoney(item.total)}</AppText>
-              </View>
-              <AppText muted>
-                {item.work_order?.title ?? ""} · {t(`ticket.status.${item.status}`)}
-              </AppText>
-            </Card>
+          ListEmptyComponent={<EmptyState art={<EmptyTicketsArt />} title={t("tickets.empty")} body={t("tickets.emptyBody")} />}
+          renderItem={({ item, index }) => (
+            <Animated.View entering={rowEnter(index)}>
+              <Card onPress={() => router.push(`/ticket/${item.id}` as never)} accessibilityLabel={`${item.folio}, ${t(`ticket.status.${item.status}`)}, ${formatMoney(item.total)}`}>
+                <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "baseline" }}>
+                  <AppText variant="title">{item.folio}</AppText>
+                  <AppText variant="figure">{formatMoney(item.total)}</AppText>
+                </View>
+                <AppText tone="muted">
+                  {item.work_order?.title ?? ""} · {t(`ticket.status.${item.status}`)}
+                </AppText>
+              </Card>
+            </Animated.View>
           )}
         />
       )}
