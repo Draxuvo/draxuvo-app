@@ -1,4 +1,4 @@
-import { api } from "./client";
+import { api, ApiError } from "./client";
 import type {
   Employee,
   MenuGroup,
@@ -90,3 +90,19 @@ export const postPhoto = (orderId: number, file: PhotoFile, description: string 
     headers: { "Idempotency-Key": idempotencyKey },
   });
 };
+
+export type CompanyAccess = "ok" | "expired" | "noModule";
+
+/**
+ * Pregunta a la API si la persona puede usar órdenes en esa empresa, sin cambiar la activa.
+ * `summary` pasa por la suscripción y por el módulo, así que su 403 distingue los dos casos.
+ */
+export async function probeCompanyAccess(companyId: number): Promise<CompanyAccess> {
+  try {
+    await api.get("/api/v1/work_orders/summary", { headers: { "X-Company-Id": String(companyId) }, skipUnauthorized: true });
+    return "ok";
+  } catch (error) {
+    if (error instanceof ApiError && error.status === 403) return error.code === "module_not_in_plan" ? "noModule" : "expired";
+    return "ok";
+  }
+}

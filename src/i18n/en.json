@@ -175,5 +175,18 @@
     "shareUnavailable": "This phone can't share files.",
     "downloadFailed": "The PDF could not be downloaded.",
     "backToOrders": "Go to my orders"
+  },
+  "company": {
+    "title": "Switch company",
+    "current": "Active",
+    "roles": {
+      "staff": "Staff",
+      "manager": "Manager",
+      "admin": "Admin",
+      "owner": "Owner"
+    },
+    "expired": "Subscription expired: you won't be able to see its orders.",
+    "noModule": "Its plan doesn't include the orders module.",
+    "checking": "Checking…"
   }
 }
