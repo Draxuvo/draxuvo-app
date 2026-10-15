@@ -78,7 +78,8 @@
       "chargeBlocked": "Add items with a price to be able to charge.",
       "pendingStepsTitle": "There are pending steps",
       "pendingStepsBody": "{count} steps are not checked. Finish anyway?",
-      "finishAnyway": "Finish anyway"
+      "finishAnyway": "Finish anyway",
+      "edit": "Edit"
     },
     "note": {
       "placeholder": "Write a note",
@@ -208,5 +209,41 @@
     "removePhoto": "Remove photo",
     "biometricUnavailable": "This phone has no fingerprint or face set up.",
     "nameRequired": "Enter your name."
+  },
+  "orderForm": {
+    "titleNew": "New order",
+    "titleEdit": "Edit order",
+    "title": "Title",
+    "table": "Table or customer",
+    "assignee": "Assignee",
+    "unassigned": "Unassigned",
+    "priority": "Priority",
+    "dueDate": "Date (YYYY-MM-DD)",
+    "customerName": "Customer name",
+    "customerPhone": "Customer phone",
+    "customerAddress": "Address",
+    "notes": "Notes",
+    "steps": "Steps",
+    "addStep": "Add step",
+    "stepPlaceholder": "Describe the step",
+    "items": "Items",
+    "addItem": "Add item",
+    "itemDescription": "Description",
+    "quantity": "Quantity",
+    "price": "Price",
+    "menu": "Menu",
+    "remove": "Remove",
+    "submitCreate": "Create order",
+    "submitSave": "Save changes",
+    "forbidden": "Only a manager or above can create and edit orders.",
+    "errors": {
+      "titleRequired": "Enter the order title.",
+      "tableRequired": "Enter the table or customer.",
+      "phoneInvalid": "Check the phone: use only digits, spaces, + - ( ).",
+      "dueInvalid": "Use the YYYY-MM-DD format.",
+      "quantityInvalid": "Quantity must be greater than 0.",
+      "priceInvalid": "Price must be a number.",
+      "descriptionRequired": "Describe the item."
+    }
   }
 }

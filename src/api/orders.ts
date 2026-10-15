@@ -61,7 +61,7 @@ export const updateOrder = (id: number, payload: OrderPayload) =>
 export const listEmployees = () =>
   api.get<PaginatedResponse<Employee>>("/api/v1/employees", { query: { page_size: 100, status: "active" } });
 
-export const getMenu = () => api.get<MenuGroup[]>("/api/v1/products/menu");
+export const getMenu = () => api.get<{ menu: MenuGroup[] }>("/api/v1/products/menu");
 
 /** Notas y fotos salen por la cola con `Idempotency-Key` (contrato: reenviar no duplica). */
 export const postNote = (orderId: number, text: string, idempotencyKey: string) =>

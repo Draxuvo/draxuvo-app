@@ -78,7 +78,8 @@
       "chargeBlocked": "Agrega conceptos con precio para poder cobrar.",
       "pendingStepsTitle": "Hay pasos pendientes",
       "pendingStepsBody": "Faltan {count} pasos por marcar. ¿Terminar de todos modos?",
-      "finishAnyway": "Terminar de todos modos"
+      "finishAnyway": "Terminar de todos modos",
+      "edit": "Editar"
     },
     "note": {
       "placeholder": "Escribe una nota",
@@ -208,5 +209,41 @@
     "removePhoto": "Quitar foto",
     "biometricUnavailable": "Este teléfono no tiene huella o rostro configurados.",
     "nameRequired": "Escribe tu nombre."
+  },
+  "orderForm": {
+    "titleNew": "Nueva orden",
+    "titleEdit": "Editar orden",
+    "title": "Título",
+    "table": "Mesa o cliente",
+    "assignee": "Responsable",
+    "unassigned": "Sin responsable",
+    "priority": "Prioridad",
+    "dueDate": "Fecha (AAAA-MM-DD)",
+    "customerName": "Nombre del cliente",
+    "customerPhone": "Teléfono del cliente",
+    "customerAddress": "Dirección",
+    "notes": "Notas",
+    "steps": "Pasos",
+    "addStep": "Agregar paso",
+    "stepPlaceholder": "Describe el paso",
+    "items": "Conceptos",
+    "addItem": "Agregar concepto",
+    "itemDescription": "Descripción",
+    "quantity": "Cantidad",
+    "price": "Precio",
+    "menu": "Menú",
+    "remove": "Quitar",
+    "submitCreate": "Crear orden",
+    "submitSave": "Guardar cambios",
+    "forbidden": "Solo un encargado o superior puede crear y editar órdenes.",
+    "errors": {
+      "titleRequired": "Escribe el título de la orden.",
+      "tableRequired": "Escribe la mesa o el cliente.",
+      "phoneInvalid": "Revisa el teléfono: usa solo números, espacios, + - ( ).",
+      "dueInvalid": "Usa el formato AAAA-MM-DD.",
+      "quantityInvalid": "La cantidad debe ser mayor a 0.",
+      "priceInvalid": "El precio debe ser un número.",
+      "descriptionRequired": "Describe el concepto."
+    }
   }
 }

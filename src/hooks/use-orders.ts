@@ -36,9 +36,9 @@ export function useOrders(filters: Omit<OrderListParams, "page"> = {}, enabled =
   });
 }
 
-export function useOrder(id: number) {
+export function useOrder(id: number, enabled = true) {
   const keys = useKeys();
-  return useQuery({ queryKey: keys.order(id), queryFn: () => getOrder(id) });
+  return useQuery({ queryKey: keys.order(id), queryFn: () => getOrder(id), enabled });
 }
 
 export function useEmployees(enabled = true) {

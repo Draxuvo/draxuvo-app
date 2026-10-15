@@ -107,6 +107,9 @@ export default function OrderDetail() {
       </Card>
 
       <OrderActions order={order} onError={onActionError} />
+      {allowed.includes("edit") ? (
+        <Button label={t("orders.actions.edit")} variant="outline" onPress={() => router.push(`/orden-form/${order.id}` as never)} />
+      ) : null}
 
       {order.steps_count > 0 || (order.steps ?? []).length > 0 ? (
         <Section title={`${t("orders.detail.steps")} · ${t("orders.progress", { done: order.steps_done, total: order.steps_count })}`}>
