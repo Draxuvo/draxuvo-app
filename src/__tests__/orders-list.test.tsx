@@ -75,7 +75,7 @@ describe("lista de órdenes", () => {
     const staff = await renderScreen(<OrdersList />);
     await screen.findByText("No tienes órdenes por hacer.");
     expect(screen.queryByRole("button", { name: "Abierta" })).toBeNull();
-    staff.unmount();
+    await staff.unmount();
 
     await seedSession(multiUser, 10);
     await renderScreen(<OrdersList />);

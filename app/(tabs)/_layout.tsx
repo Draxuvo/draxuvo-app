@@ -1,5 +1,6 @@
 import { Link, Tabs } from "expo-router";
 import { Text, View } from "react-native";
+import { useOutboxSync } from "@/hooks/use-outbox";
 import { t, useLocale } from "@/i18n";
 import { isBossRole, useSession } from "@/session";
 import { colors, MIN_TOUCH, spacing } from "@/theme";
@@ -14,6 +15,7 @@ function HeaderLink({ href, label }: { href: string; label: string }) {
 
 export default function TabsLayout() {
   useLocale();
+  useOutboxSync();
   const { user, role, companyId } = useSession();
   const multipleCompanies = (user?.companies.length ?? 0) > 1;
   const canCreate = isBossRole(role);

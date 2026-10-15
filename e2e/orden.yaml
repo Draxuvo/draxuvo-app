@@ -1,0 +1,46 @@
+# Recorrido: ejecutar una orden asignada (staff de Volta): empezar, marcar pasos, nota y terminar.
+# Requiere datos de demo con una orden abierta asignada a staff@volta.demo.
+appId: com.draxuvo.app
+---
+- launchApp:
+    clearState: true
+- tapOn:
+    id: login-email
+- inputText: "staff@volta.demo"
+- tapOn:
+    id: login-password
+- inputText: "Demo12345*"
+- tapOn: "Entrar"
+- assertVisible: "Por hacer"
+
+# Abrir la primera orden
+- tapOn:
+    index: 0
+    text: ".*(Abierta|En proceso).*"
+- assertVisible: "Pasos"
+
+# Solo se ven las acciones que la API permite al staff
+- assertNotVisible: "Cobrar"
+
+# Empezar si hace falta
+- runFlow:
+    when:
+      visible: "Empezar"
+    commands:
+      - tapOn: "Empezar"
+
+# Nota
+- tapOn:
+    id: note-input
+- inputText: "Nota desde el recorrido"
+- tapOn: "Agregar nota"
+- assertVisible: "Nota desde el recorrido"
+
+# Terminar con pasos pendientes pide confirmar
+- tapOn: "Terminar"
+- runFlow:
+    when:
+      visible: "Hay pasos pendientes"
+    commands:
+      - tapOn: "Terminar de todos modos"
+- assertVisible: "Reabrir"

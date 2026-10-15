@@ -51,6 +51,69 @@
       "medium": "Media",
       "high": "Alta",
       "urgent": "Urgente"
+    },
+    "detail": {
+      "steps": "Pasos",
+      "stepsEmpty": "Esta orden no tiene pasos.",
+      "doneBy": "Hecho por {name}",
+      "items": "Conceptos",
+      "itemsEmpty": "Sin conceptos.",
+      "notes": "Notas",
+      "notesEmpty": "Aún no hay notas.",
+      "photos": "Fotos",
+      "photosEmpty": "Aún no hay fotos.",
+      "history": "Historia",
+      "customer": "Cliente",
+      "total": "Total",
+      "conflict": "Otra persona cambió esta orden. Actualizamos lo que ves.",
+      "gone": "Esta orden ya no está disponible para ti.",
+      "back": "Volver a la lista",
+      "due": "Para el {date}"
+    },
+    "actions": {
+      "start": "Empezar",
+      "finish": "Terminar",
+      "reopen": "Reabrir",
+      "charge": "Cobrar",
+      "chargeBlocked": "Agrega conceptos con precio para poder cobrar.",
+      "pendingStepsTitle": "Hay pasos pendientes",
+      "pendingStepsBody": "Faltan {count} pasos por marcar. ¿Terminar de todos modos?",
+      "finishAnyway": "Terminar de todos modos"
+    },
+    "note": {
+      "placeholder": "Escribe una nota",
+      "add": "Agregar nota",
+      "emptyText": "Escribe algo antes de agregar."
+    },
+    "photo": {
+      "camera": "Cámara",
+      "gallery": "Galería",
+      "permissionCamera": "Permite el uso de la cámara en los ajustes del teléfono para tomar fotos.",
+      "permissionLibrary": "Permite el acceso a tus fotos en los ajustes del teléfono.",
+      "notImage": "Solo se pueden subir imágenes.",
+      "tooLarge": "La foto pesa demasiado. Prueba con otra.",
+      "alt": "Foto de la orden"
+    },
+    "outbox": {
+      "pending": "Pendiente de enviar",
+      "sending": "Enviando…",
+      "failed": "No se pudo enviar",
+      "discardable": "Esta orden ya no está disponible para ti",
+      "retry": "Reintentar",
+      "discard": "Descartar",
+      "count": "{count} pendientes de enviar"
+    },
+    "history": {
+      "created": "{name} creó la orden",
+      "started": "{name} la empezó",
+      "finished": "{name} la terminó",
+      "reopened": "{name} la reabrió",
+      "charged": "{name} la cobró",
+      "voided": "{name} anuló el cobro",
+      "cancelled": "{name} la canceló",
+      "reassigned": "{name} cambió al responsable",
+      "photo": "{name} agregó una foto",
+      "note": "{name} agregó una nota"
     }
   },
   "errors": {
