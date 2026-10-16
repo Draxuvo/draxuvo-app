@@ -1,5 +1,7 @@
 // Genera los PNG de marca a partir de assets/brand/*.svg.
 // Uso: npm i --no-save sharp && node scripts/render-brand.mjs
+// sharp no es dependencia de la app: se instala solo para generar los íconos.
+// eslint-disable-next-line import/no-unresolved
 import sharp from "sharp";
 
 const out = "assets/images";
