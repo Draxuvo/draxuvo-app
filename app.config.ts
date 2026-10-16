@@ -16,7 +16,7 @@ const config: ExpoConfig = {
   android: {
     package: "com.draxuvo.app",
     adaptiveIcon: {
-      backgroundColor: "#FFFFFF",
+      backgroundColor: "#2340C8",
       foregroundImage: "./assets/images/android-icon-foreground.png",
       backgroundImage: "./assets/images/android-icon-background.png",
       monochromeImage: "./assets/images/android-icon-monochrome.png",
@@ -39,7 +39,12 @@ const config: ExpoConfig = {
     ],
     [
       "expo-splash-screen",
-      { backgroundColor: "#FFFFFF", image: "./assets/images/splash-icon.png", imageWidth: 76 },
+      {
+        backgroundColor: "#F1EFE9",
+        image: "./assets/images/splash-icon.png",
+        imageWidth: 288,
+        dark: { backgroundColor: "#0E1120", image: "./assets/images/splash-icon.png" },
+      },
     ],
   ],
   extra: {
