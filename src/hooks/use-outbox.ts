@@ -7,6 +7,8 @@ import { discardItem, enqueueNote, enqueuePhoto, listOutbox, retryItem, subscrib
 import { flushOutbox } from "@/outbox/sender";
 import { useSession } from "@/session";
 
+const RETRY_MS = 30_000;
+
 /** Pendientes de la persona en la empresa activa (opcionalmente de una sola orden). */
 export function useOutbox(orderId?: number): OutboxItem[] {
   const { companyId, user } = useSession();
@@ -66,7 +68,7 @@ export function useOutboxActions() {
   };
 }
 
-/** Se monta una vez: reintenta al abrir, al volver la red y al regresar a la app. */
+/** Se monta una vez: reintenta al abrir, al volver la red, al regresar a la app y cada 30 s por si el servidor tardó en volver. */
 export function useOutboxSync() {
   const { flush } = useOutboxActions();
   const flushRef = useRef(flush);
@@ -82,9 +84,11 @@ export function useOutboxSync() {
     const app = AppState.addEventListener("change", (state) => {
       if (state === "active") void flushRef.current();
     });
+    const timer = setInterval(() => void flushRef.current(), RETRY_MS);
     return () => {
       net();
       app.remove();
+      clearInterval(timer);
     };
   }, []);
 }

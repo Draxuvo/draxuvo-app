@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { KeyboardFrame } from "@/components/ui";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import { useState } from "react";
 import { View } from "react-native";
@@ -84,7 +85,8 @@ export default function OrdenForm() {
   };
 
   return (
-    <Animated.ScrollView style={{ backgroundColor: c.background }} contentContainerStyle={{ padding: space[4], paddingBottom: space[10] }} keyboardShouldPersistTaps="handled">
+    <KeyboardFrame>
+<Animated.ScrollView style={{ backgroundColor: c.background }} contentContainerStyle={{ padding: space[4], paddingBottom: space[10] }} keyboardShouldPersistTaps="handled">
       {title}
       <Animated.View entering={rowEnter(0)}>
         <OrderForm
@@ -99,5 +101,6 @@ export default function OrdenForm() {
         />
       </Animated.View>
     </Animated.ScrollView>
+</KeyboardFrame>
   );
 }

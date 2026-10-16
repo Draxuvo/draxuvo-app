@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import { KeyboardAvoidingView, Platform, Pressable, ScrollView, TextInput, View } from "react-native";
+import { KeyboardAvoidingView, Pressable, ScrollView, TextInput, View } from "react-native";
 import Animated, { useAnimatedStyle, useSharedValue, withSequence, withTiming } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { ApiError } from "@/api/client";
@@ -67,7 +67,7 @@ export default function Login() {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: c.background }}>
-      <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined} style={{ flex: 1 }}>
+      <KeyboardAvoidingView behavior="padding" style={{ flex: 1 }}>
         <ScrollView contentContainerStyle={{ flexGrow: 1, padding: space[6], gap: space[8], justifyContent: "center" }} keyboardShouldPersistTaps="handled">
           <Animated.View entering={rowEnter(0)} style={{ gap: space[8] }}>
             <BrandLockup />
@@ -81,7 +81,8 @@ export default function Login() {
             </View>
           </Animated.View>
 
-          <Animated.View entering={rowEnter(2)} style={[{ gap: space[4] }, shakeStyle]}>
+          <Animated.View entering={rowEnter(2)}>
+          <Animated.View style={[{ gap: space[4] }, shakeStyle]}>
             <Field
               label={t("login.email")}
               icon="mail"
@@ -130,6 +131,7 @@ export default function Login() {
               </View>
             ) : null}
             <Button label={t("login.submit")} icon="arrow-right" onPress={() => void submit()} loading={busy} />
+          </Animated.View>
           </Animated.View>
         </ScrollView>
       </KeyboardAvoidingView>

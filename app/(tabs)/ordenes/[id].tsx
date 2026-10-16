@@ -16,7 +16,7 @@ import { SkeletonBlock } from "@/components/skeleton";
 import { StatusBadge } from "@/components/status-badge";
 import { StepList } from "@/components/step-list";
 import { StepsBar } from "@/components/steps-bar";
-import { AppText, Button, Icon, IconButton } from "@/components/ui";
+import { AppText, Button, Icon, IconButton, KeyboardFrame } from "@/components/ui";
 import { useOutbox } from "@/hooks/use-outbox";
 import { useOrder, useToggleStep } from "@/hooks/use-orders";
 import { t, useLocale } from "@/i18n";
@@ -118,7 +118,8 @@ export default function OrderDetail() {
   return (
     <View style={{ flex: 1, backgroundColor: c.background }}>
       {topBar}
-      <Animated.ScrollView
+      <KeyboardFrame>
+<Animated.ScrollView
         contentContainerStyle={{ padding: space[4], gap: space[5], paddingBottom: hasActions ? 150 + insets.bottom : space[10] + insets.bottom }}
         refreshControl={<RefreshControl refreshing={query.isRefetching} onRefresh={() => void query.refetch()} tintColor={c.primary} colors={[c.primary]} />}
       >
@@ -215,6 +216,7 @@ export default function OrderDetail() {
             ))}
         </Section>
       </Animated.ScrollView>
+</KeyboardFrame>
 
       {hasActions ? (
         <Animated.View

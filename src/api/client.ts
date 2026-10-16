@@ -68,6 +68,9 @@ export function authHeaders(): Record<string, string> {
   return headers;
 }
 
+const TIMEOUT_MS = 30_000;
+const UPLOAD_TIMEOUT_MS = 90_000;
+
 type Query = Record<string, string | number | boolean | undefined | null>;
 
 export interface RequestOptions {
@@ -102,14 +105,22 @@ export async function request<T>(method: string, path: string, options: RequestO
     body = JSON.stringify(options.body);
   }
 
+  // Una petición colgada (señal débil) no debe bloquear para siempre la cola de pendientes.
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), options.form ? UPLOAD_TIMEOUT_MS : TIMEOUT_MS);
+  if (options.signal?.aborted) controller.abort();
+  else options.signal?.addEventListener("abort", () => controller.abort());
+
   let response: Response;
+  let text: string;
   try {
-    response = await fetch(buildUrl(path, options.query), { method, headers, body, signal: options.signal });
+    response = await fetch(buildUrl(path, options.query), { method, headers, body, signal: controller.signal });
+    text = await response.text();
   } catch {
     throw new NetworkError();
+  } finally {
+    clearTimeout(timer);
   }
-
-  const text = await response.text();
   let payload: unknown = null;
   if (text) {
     try {

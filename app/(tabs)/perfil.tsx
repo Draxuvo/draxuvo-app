@@ -5,7 +5,7 @@ import { updateProfile } from "@/api/profile";
 import { AvatarPicker } from "@/components/avatar-picker";
 import { describeError } from "@/components/error-view";
 import { LanguageSwitch } from "@/components/language-switch";
-import { AppText, Button, Card, Field, Icon } from "@/components/ui";
+import { AppText, Button, Card, Field, Icon, KeyboardFrame } from "@/components/ui";
 import { haptic } from "@/lib/haptics";
 import { t, useLocale } from "@/i18n";
 import { biometricAvailable } from "@/session/biometric";
@@ -54,7 +54,8 @@ export default function Perfil() {
   };
 
   return (
-    <Animated.ScrollView style={{ backgroundColor: c.background }} contentContainerStyle={{ padding: space[4], gap: space[4], paddingBottom: TAB_BAR_HEIGHT + space[8] }} keyboardShouldPersistTaps="handled">
+    <KeyboardFrame>
+<Animated.ScrollView style={{ backgroundColor: c.background }} contentContainerStyle={{ padding: space[4], gap: space[4], paddingBottom: TAB_BAR_HEIGHT + space[8] }} keyboardShouldPersistTaps="handled">
       <Animated.View entering={rowEnter(0)}>
         <Card>
           <AvatarPicker user={user} onChange={(updated) => void setUser({ ...user, ...updated, companies: updated.companies ?? user.companies })} />
@@ -104,5 +105,6 @@ export default function Perfil() {
 
       <Button label={t("profile.logout")} variant="outline" icon="log-out" onPress={() => void signOut()} />
     </Animated.ScrollView>
+</KeyboardFrame>
   );
 }
