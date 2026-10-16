@@ -7,7 +7,7 @@ import { chargeOrder, type ChargeBody } from "@/api/orders";
 import { ChargeForm } from "@/components/charge-form";
 import { describeError, ErrorView } from "@/components/error-view";
 import { SkeletonBlock } from "@/components/skeleton";
-import { AppText } from "@/components/ui";
+import { AppText, KeyboardFrame } from "@/components/ui";
 import { useApplyOrder, useOrder } from "@/hooks/use-orders";
 import { haptic } from "@/lib/haptics";
 import { t, useLocale } from "@/i18n";
@@ -55,7 +55,8 @@ export default function Cobro() {
   };
 
   return (
-    <Animated.ScrollView style={{ backgroundColor: c.background }} contentContainerStyle={{ padding: space[4], gap: space[4] }} keyboardShouldPersistTaps="handled">
+    <KeyboardFrame>
+<Animated.ScrollView style={{ backgroundColor: c.background }} contentContainerStyle={{ padding: space[4], gap: space[4] }} keyboardShouldPersistTaps="handled">
       <Stack.Screen options={{ title: t("charge.title") }} />
       <Animated.View entering={rowEnter(0)}>
         <AppText variant="headline">{order.title}</AppText>
@@ -69,5 +70,6 @@ export default function Cobro() {
         </AppText>
       ) : null}
     </Animated.ScrollView>
+</KeyboardFrame>
   );
 }

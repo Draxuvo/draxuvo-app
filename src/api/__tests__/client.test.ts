@@ -50,4 +50,16 @@ describe("cliente HTTP", () => {
     fetchMock.mockRejectedValue(new TypeError("Network request failed"));
     await expect(api.get("/x")).rejects.toBeInstanceOf(NetworkError);
   });
+
+  it("una petición colgada se corta a los 30 s como NetworkError", async () => {
+    jest.useFakeTimers();
+    try {
+      fetchMock.mockImplementation((_url: string, init: { signal: AbortSignal }) => new Promise((_resolve, reject) => init.signal.addEventListener("abort", () => reject(new Error("aborted")))));
+      const pending = api.get("/x").catch((e: unknown) => e);
+      jest.advanceTimersByTime(30_000);
+      expect(await pending).toBeInstanceOf(NetworkError);
+    } finally {
+      jest.useRealTimers();
+    }
+  });
 });

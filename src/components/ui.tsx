@@ -1,6 +1,6 @@
 import { Feather } from "@expo/vector-icons";
 import { useEffect, type ComponentProps, type ReactNode, type Ref } from "react";
-import { ActivityIndicator, Pressable, Text, TextInput, View, type StyleProp, type TextInputProps, type ViewStyle } from "react-native";
+import { ActivityIndicator, KeyboardAvoidingView, Platform, Pressable, Text, TextInput, View, type StyleProp, type TextInputProps, type ViewStyle } from "react-native";
 import Animated, { interpolateColor, useAnimatedStyle, useSharedValue, withSpring, withTiming } from "react-native-reanimated";
 import { haptic } from "@/lib/haptics";
 import { duration, ease, MIN_TOUCH, radius, space, typeScale, useTheme, type TypeRole } from "@/theme";
@@ -20,6 +20,15 @@ export function AppText({
     <Text {...rest} style={[typeScale[variant] as object, { color }, rest.style]}>
       {children}
     </Text>
+  );
+}
+
+/** Levanta el contenido sobre el teclado; en Android de borde a borde el sistema ya no redimensiona la ventana. */
+export function KeyboardFrame({ children }: { children: ReactNode }) {
+  return (
+    <KeyboardAvoidingView behavior="padding" style={{ flex: 1 }}>
+      {children}
+    </KeyboardAvoidingView>
   );
 }
 
@@ -268,7 +277,8 @@ export function Field({
           }}
           style={[
             typeScale.bodyLarge as object,
-            { flex: 1, color: input.editable === false ? c.inkMuted : c.ink, paddingVertical: space[3], outlineStyle: "none" } as object,
+            { flex: 1, color: input.editable === false ? c.inkMuted : c.ink, paddingVertical: space[3] } as object,
+            Platform.OS === "web" ? ({ outlineStyle: "none" } as object) : null,
             input.style,
           ]}
         />
