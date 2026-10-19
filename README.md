@@ -1,6 +1,6 @@
 # draxuvo-app
 
-App móvil de **Draxuvo** para el personal: ver las órdenes asignadas, marcar pasos, agregar notas y fotos (también sin red), cobrar y compartir el ticket. Encargados y dueños además crean y asignan órdenes, y quien trabaja en varias empresas cambia entre ellas. Parte del [workspace Draxuvo](https://github.com/bothi3119/bothi).
+App móvil de **Draxuvo** para el personal: ver las órdenes asignadas, marcar pasos, agregar notas y fotos (también sin red), cobrar y compartir el ticket. En un restaurante o bar, el mesero abre mesas, manda comandas a cocina y barra, recibe el aviso de "listo" y cobra con uno o varios métodos (módulo de restaurante, sin red no se manda ni se cobra). Encargados y dueños además crean y asignan órdenes, y quien trabaja en varias empresas cambia entre ellas. Parte del [workspace Draxuvo](https://github.com/bothi3119/bothi).
 
 Hecha con **React Native y Expo** (SDK 57, TypeScript estricto, Expo Router). Habla con la misma API que el panel (`/api/v1`, JWT, `X-Company-Id`, cabecera `locale`).
 
@@ -37,7 +37,7 @@ Las pruebas de pantalla viven en `src/__tests__/` (no en `app/`: Expo Router tom
 ## Estructura
 
 ```text
-app/                  # Expo Router: (auth), (tabs), empresa, cobro, ticket, orden-form, actualizar
+app/                  # Expo Router: (auth), (tabs) con Órdenes, Mesas, Tickets y Perfil, empresa, cobro, cuenta, cuenta-cobro, ticket, orden-form, actualizar
 src/api/              # cliente fetch y una carpeta por dominio; tipos copiados del contrato
 src/session/          # sesión en SecureStore, rol por empresa, biometría opcional
 src/outbox/           # cola SQLite de notas y fotos con Idempotency-Key

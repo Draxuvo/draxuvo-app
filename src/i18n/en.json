@@ -8,7 +8,8 @@
     "yes": "Yes",
     "no": "No",
     "optional": "Optional",
-    "back": "Back"
+    "back": "Back",
+    "all": "All"
   },
   "login": {
     "title": "Sign in",
@@ -26,7 +27,8 @@
   "tabs": {
     "orders": "Orders",
     "tickets": "Tickets",
-    "profile": "Profile"
+    "profile": "Profile",
+    "tables": "Tables"
   },
   "orders": {
     "title": "Orders",
@@ -159,7 +161,8 @@
     "methods": {
       "cash": "Cash",
       "card": "Card",
-      "transfer": "Transfer"
+      "transfer": "Transfer",
+      "mixed": "Mixed"
     },
     "noItems": "This order has no priced items, it can't be charged.",
     "invalidAmount": "Enter a valid amount.",
@@ -185,7 +188,12 @@
     "whatsappPhone": "The customer's phone is missing on the order.",
     "shareUnavailable": "This phone can't share files.",
     "downloadFailed": "The PDF could not be downloaded.",
-    "backToOrders": "Go to my orders"
+    "backToOrders": "Go to my orders",
+    "table": "Table {name}",
+    "takeout": "Takeout: {name}",
+    "payments": "Payments",
+    "reference": "Ref. {reference}",
+    "backToTables": "Go to tables"
   },
   "company": {
     "title": "Switch company",
@@ -260,5 +268,120 @@
   "menu": {
     "open": "Open menu",
     "close": "Close menu"
+  },
+  "tables": {
+    "title": "Tables",
+    "free": "Free",
+    "busy": "{name}",
+    "takeouts": "Takeout",
+    "newTakeout": "New takeout",
+    "takeoutName": "Customer name",
+    "takeoutNamePlaceholder": "Luis",
+    "open": "Open check",
+    "empty": "No tables yet",
+    "emptyHint": "Ask your manager to create the tables.",
+    "mine": "Yours",
+    "waiter": "Waiter: {name}",
+    "elapsed": "{minutes} min",
+    "counts": "{ready} ready · {preparing} preparing",
+    "stockAlerts": "Products running low: {count}",
+    "occupied": "The table already has an open check",
+    "openError": "Could not open the check"
+  },
+  "check": {
+    "title": "Check",
+    "table": "Table {name}",
+    "takeout": "Takeout: {name}",
+    "draftSection": "Not sent",
+    "round": "Order {number}",
+    "total": "Total",
+    "paid": "Paid",
+    "balance": "Balance",
+    "add": "Add",
+    "send": "Send",
+    "sending": "Sending…",
+    "pay": "Charge",
+    "reassign": "Change waiter",
+    "cancelCheck": "Cancel check",
+    "cancelCheckConfirm": "Cancel this empty check?",
+    "deliver": "Deliver",
+    "cancelItem": "Cancel",
+    "remove": "Remove",
+    "quantity": "Quantity",
+    "note": "Note",
+    "notePlaceholder": "No onions, medium…",
+    "empty": "No items yet",
+    "emptyHint": "Add dishes and drinks from the menu.",
+    "notSent": "Not sent. Check your connection and try again.",
+    "notSaved": "Could not save. Check your connection.",
+    "rejectedTitle": "Not sent",
+    "rejectedItem": "{name}: sold out",
+    "sentCount": "Items sent: {count}",
+    "nothingToSend": "There is nothing to send",
+    "status": {
+      "draft": "Not sent",
+      "new": "New",
+      "preparing": "Preparing",
+      "ready": "Ready",
+      "delivered": "Delivered",
+      "cancelled": "Cancelled"
+    },
+    "station": "Station: {name}",
+    "loadError": "Could not load the check",
+    "closed": "Check closed",
+    "viewTicket": "View ticket"
+  },
+  "menuPicker": {
+    "title": "Menu",
+    "search": "Search",
+    "soldOut": "Sold out",
+    "low": "Running low",
+    "add": "Add",
+    "empty": "There are no products on the menu",
+    "addError": "Could not add"
+  },
+  "reason": {
+    "title": "Reason",
+    "placeholder": "Write the reason",
+    "confirm": "Confirm",
+    "cancel": "Back",
+    "required": "Write the reason"
+  },
+  "ready": {
+    "banner": "Table {table}: {name} ready",
+    "bannerTakeout": "{takeout}: {name} ready",
+    "dismiss": "Dismiss",
+    "open": "View check",
+    "deliver": "Deliver"
+  },
+  "checkout": {
+    "title": "Charge check",
+    "total": "Total",
+    "paid": "Paid",
+    "balance": "Balance due",
+    "method": "Method",
+    "methods": {
+      "cash": "Cash",
+      "card": "Card",
+      "transfer": "Transfer"
+    },
+    "amount": "Amount",
+    "amountReceived": "Received",
+    "change": "Change",
+    "reference": "Reference",
+    "referencePlaceholder": "Terminal receipt number",
+    "referenceRequired": "Enter the reference",
+    "addPayment": "Record payment",
+    "paying": "Recording…",
+    "payments": "Recorded payments",
+    "fillBalance": "Charge balance",
+    "exceeds": "The payment cannot exceed the balance",
+    "invalidAmount": "Enter a valid amount",
+    "incompleteTitle": "Some items are not completed",
+    "incompleteBody": "Items not delivered: {count}. Charge anyway?",
+    "chargeAnyway": "Charge anyway",
+    "closedTitle": "Check paid",
+    "change_given": "Change: {amount}",
+    "payError": "Could not record the payment"
   }
 }

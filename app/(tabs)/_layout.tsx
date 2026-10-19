@@ -5,21 +5,24 @@ import { DrawerMenu } from "@/components/drawer-menu";
 import { DrawerProvider } from "@/components/drawer-context";
 import { TabBar, type TabBarProps } from "@/components/tab-bar";
 import { useOutboxSync } from "@/hooks/use-outbox";
+import { useRestaurantEnabled } from "@/hooks/use-restaurant";
 import { t, useLocale } from "@/i18n";
 
 export default function TabsLayout() {
   useLocale();
   useOutboxSync();
+  const restaurant = useRestaurantEnabled();
 
   return (
     <DrawerProvider>
       <View style={{ flex: 1 }}>
         <Tabs
-          tabBar={(props) => <TabBar {...(props as unknown as TabBarProps)} />}
+          tabBar={(props) => <TabBar {...(props as unknown as TabBarProps)} restaurant={restaurant} />}
           screenOptions={{ header: ({ options }) => <AppHeader title={String(options.title ?? "")} /> }}
         >
           <Tabs.Screen name="ordenes/index" options={{ title: t("tabs.orders") }} />
           <Tabs.Screen name="ordenes/[id]" options={{ href: null, headerShown: false }} />
+          <Tabs.Screen name="mesas" options={{ title: t("tabs.tables"), href: restaurant ? undefined : null }} />
           <Tabs.Screen name="tickets" options={{ title: t("tabs.tickets") }} />
           <Tabs.Screen name="perfil" options={{ title: t("tabs.profile") }} />
         </Tabs>
