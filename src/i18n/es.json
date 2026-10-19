@@ -8,7 +8,8 @@
     "yes": "Sí",
     "no": "No",
     "optional": "Opcional",
-    "back": "Volver"
+    "back": "Volver",
+    "all": "Todo"
   },
   "login": {
     "title": "Entra a tu cuenta",
@@ -26,7 +27,8 @@
   "tabs": {
     "orders": "Órdenes",
     "tickets": "Tickets",
-    "profile": "Perfil"
+    "profile": "Perfil",
+    "tables": "Mesas"
   },
   "orders": {
     "title": "Órdenes",
@@ -159,7 +161,8 @@
     "methods": {
       "cash": "Efectivo",
       "card": "Tarjeta",
-      "transfer": "Transferencia"
+      "transfer": "Transferencia",
+      "mixed": "Mixto"
     },
     "noItems": "Esta orden no tiene conceptos con precio, no se puede cobrar.",
     "invalidAmount": "Escribe un monto válido.",
@@ -185,7 +188,12 @@
     "whatsappPhone": "Falta el teléfono del cliente en la orden.",
     "shareUnavailable": "Este teléfono no puede compartir archivos.",
     "downloadFailed": "No se pudo descargar el PDF.",
-    "backToOrders": "Ir a mis órdenes"
+    "backToOrders": "Ir a mis órdenes",
+    "table": "Mesa {name}",
+    "takeout": "Para llevar: {name}",
+    "payments": "Pagos",
+    "reference": "Ref. {reference}",
+    "backToTables": "Ir a mesas"
   },
   "company": {
     "title": "Cambiar de empresa",
@@ -260,5 +268,120 @@
   "menu": {
     "open": "Abrir menú",
     "close": "Cerrar menú"
+  },
+  "tables": {
+    "title": "Mesas",
+    "free": "Libre",
+    "busy": "{name}",
+    "takeouts": "Para llevar",
+    "newTakeout": "Nuevo para llevar",
+    "takeoutName": "Nombre del cliente",
+    "takeoutNamePlaceholder": "Luis",
+    "open": "Abrir cuenta",
+    "empty": "Aún no hay mesas",
+    "emptyHint": "Pide a tu encargado que cree las mesas.",
+    "mine": "Tuya",
+    "waiter": "Mesero: {name}",
+    "elapsed": "{minutes} min",
+    "counts": "{ready} listos · {preparing} en preparación",
+    "stockAlerts": "Productos con pocas existencias: {count}",
+    "occupied": "La mesa ya tiene una cuenta abierta",
+    "openError": "No se pudo abrir la cuenta"
+  },
+  "check": {
+    "title": "Cuenta",
+    "table": "Mesa {name}",
+    "takeout": "Para llevar: {name}",
+    "draftSection": "Sin mandar",
+    "round": "Comanda {number}",
+    "total": "Total",
+    "paid": "Pagado",
+    "balance": "Saldo",
+    "add": "Agregar",
+    "send": "Mandar",
+    "sending": "Mandando…",
+    "pay": "Cobrar",
+    "reassign": "Cambiar mesero",
+    "cancelCheck": "Cancelar cuenta",
+    "cancelCheckConfirm": "¿Cancelar esta cuenta vacía?",
+    "deliver": "Entregar",
+    "cancelItem": "Cancelar",
+    "remove": "Quitar",
+    "quantity": "Cantidad",
+    "note": "Nota",
+    "notePlaceholder": "Sin cebolla, término medio…",
+    "empty": "Aún no hay artículos",
+    "emptyHint": "Agrega platillos y bebidas del menú.",
+    "notSent": "No se envió. Revisa tu conexión y vuelve a intentar.",
+    "notSaved": "No se pudo guardar. Revisa tu conexión.",
+    "rejectedTitle": "No se mandó",
+    "rejectedItem": "{name}: agotado",
+    "sentCount": "Artículos mandados: {count}",
+    "nothingToSend": "No hay artículos por mandar",
+    "status": {
+      "draft": "Sin mandar",
+      "new": "Nuevo",
+      "preparing": "En preparación",
+      "ready": "Listo",
+      "delivered": "Entregado",
+      "cancelled": "Cancelado"
+    },
+    "station": "Estación: {name}",
+    "loadError": "No se pudo cargar la cuenta",
+    "closed": "Cuenta cerrada",
+    "viewTicket": "Ver ticket"
+  },
+  "menuPicker": {
+    "title": "Menú",
+    "search": "Buscar",
+    "soldOut": "Agotado",
+    "low": "Quedan pocas",
+    "add": "Agregar",
+    "empty": "No hay productos en el menú",
+    "addError": "No se pudo agregar"
+  },
+  "reason": {
+    "title": "Motivo",
+    "placeholder": "Escribe el motivo",
+    "confirm": "Confirmar",
+    "cancel": "Volver",
+    "required": "Escribe el motivo"
+  },
+  "ready": {
+    "banner": "Mesa {table}: {name} listo",
+    "bannerTakeout": "{takeout}: {name} listo",
+    "dismiss": "Cerrar",
+    "open": "Ver cuenta",
+    "deliver": "Entregar"
+  },
+  "checkout": {
+    "title": "Cobrar cuenta",
+    "total": "Total",
+    "paid": "Pagado",
+    "balance": "Saldo por cobrar",
+    "method": "Método",
+    "methods": {
+      "cash": "Efectivo",
+      "card": "Tarjeta",
+      "transfer": "Transferencia"
+    },
+    "amount": "Monto",
+    "amountReceived": "Recibido",
+    "change": "Cambio",
+    "reference": "Referencia",
+    "referencePlaceholder": "Folio de la terminal",
+    "referenceRequired": "Escribe la referencia",
+    "addPayment": "Registrar pago",
+    "paying": "Registrando…",
+    "payments": "Pagos registrados",
+    "fillBalance": "Cobrar saldo",
+    "exceeds": "El pago no puede exceder el saldo",
+    "invalidAmount": "Escribe un monto válido",
+    "incompleteTitle": "Hay artículos sin completar",
+    "incompleteBody": "Artículos sin entregar: {count}. ¿Cobrar igual?",
+    "chargeAnyway": "Cobrar igual",
+    "closedTitle": "Cuenta cobrada",
+    "change_given": "Cambio: {amount}",
+    "payError": "No se pudo registrar el pago"
   }
 }

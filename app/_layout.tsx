@@ -5,6 +5,7 @@ import { StatusBar } from "expo-status-bar";
 import { useEffect, useState } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaProvider } from "react-native-safe-area-context";
+import { ReadyAlertsHost } from "@/components/ready-alerts-host";
 import { AppGate } from "@/gates/app-gate";
 import { loadLocale } from "@/i18n";
 import { createQueryClient } from "@/query/client";
@@ -25,15 +26,20 @@ function Screens() {
     animation: "slide_from_right",
   } as const;
   return (
-    <Stack screenOptions={{ headerShown: false, animation: "fade", contentStyle: { backgroundColor: c.background } }}>
-      <Stack.Screen name="(auth)" />
-      <Stack.Screen name="(tabs)" />
-      <Stack.Screen name="actualizar" />
-      <Stack.Screen name="empresa" options={{ ...pushed, presentation: "modal", animation: "slide_from_bottom" }} />
-      <Stack.Screen name="cobro/[id]" options={pushed} />
-      <Stack.Screen name="ticket/[id]" options={pushed} />
-      <Stack.Screen name="orden-form/[id]" options={pushed} />
-    </Stack>
+    <>
+      <Stack screenOptions={{ headerShown: false, animation: "fade", contentStyle: { backgroundColor: c.background } }}>
+        <Stack.Screen name="(auth)" />
+        <Stack.Screen name="(tabs)" />
+        <Stack.Screen name="actualizar" />
+        <Stack.Screen name="empresa" options={{ ...pushed, presentation: "modal", animation: "slide_from_bottom" }} />
+        <Stack.Screen name="cobro/[id]" options={pushed} />
+        <Stack.Screen name="cuenta/[id]" options={pushed} />
+        <Stack.Screen name="cuenta-cobro/[id]" options={pushed} />
+        <Stack.Screen name="ticket/[id]" options={pushed} />
+        <Stack.Screen name="orden-form/[id]" options={pushed} />
+      </Stack>
+      <ReadyAlertsHost />
+    </>
   );
 }
 

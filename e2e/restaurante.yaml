@@ -1,0 +1,36 @@
+# Recorrido: el mesero abre una mesa, agrega un platillo, lo manda y cobra en efectivo.
+# Requiere el stack local con datos de demo (scripts/dev) y la empresa Sazón, y que la mesa 6 esté libre.
+# La estación se atiende aparte (/es/estacion/<id> en el panel); aquí se cubre solo el lado del mesero.
+appId: com.draxuvo.app
+---
+- launchApp:
+    clearState: true
+- tapOn:
+    id: login-email
+- inputText: "staff@sazon.demo"
+- tapOn:
+    id: login-password
+- inputText: "Demo12345*"
+- tapOn: "Entrar"
+
+# Abrir la mesa 6
+- tapOn: "Mesas"
+- tapOn: "6, Libre"
+
+# Agregar un platillo con nota y mandarlo
+- tapOn: "Agregar"
+- tapOn: "Tacos al pastor.*"
+- tapOn:
+    text: "Nota"
+- inputText: "sin cebolla"
+- tapOn: "Agregar"
+- assertVisible: "1 × Tacos al pastor"
+- tapOn: "Mandar"
+- assertVisible: "COMANDA 1"
+- assertVisible: "NUEVO"
+
+# Cobrar en efectivo
+- tapOn: "Cobrar"
+- inputText: "100"
+- tapOn: "Registrar pago"
+- assertVisible: "Folio"

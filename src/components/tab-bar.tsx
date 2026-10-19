@@ -19,6 +19,7 @@ export interface TabBarProps {
 
 const TABS: { route: string; icon: IconName; label: string }[] = [
   { route: "ordenes/index", icon: "clipboard", label: "tabs.orders" },
+  { route: "mesas", icon: "grid", label: "tabs.tables" },
   { route: "tickets", icon: "file-text", label: "tabs.tickets" },
   { route: "perfil", icon: "user", label: "tabs.profile" },
 ];
@@ -63,12 +64,14 @@ function TabItem({ icon, label, focused, badge, onPress }: { icon: IconName; lab
 }
 
 /** Barra inferior de tres destinos. En el detalle de una orden se esconde: ahí manda la barra de acciones. */
-export function TabBar({ state, navigation }: TabBarProps) {
+export function TabBar({ state, navigation, restaurant = false }: TabBarProps & { restaurant?: boolean }) {
   const { c } = useTheme();
   const insets = useSafeAreaInsets();
   const pending = useOutbox().filter((item) => item.state === "pending" || item.state === "sending").length;
   const current = state.routes[state.index]?.name;
-  if (!TABS.some((tab) => tab.route === current)) return null;
+  // La pestaña Mesas solo existe si la empresa tiene el módulo de restaurante.
+  const tabs = TABS.filter((tab) => tab.route !== "mesas" || restaurant);
+  if (!tabs.some((tab) => tab.route === current)) return null;
 
   return (
     <View
@@ -82,7 +85,7 @@ export function TabBar({ state, navigation }: TabBarProps) {
         paddingHorizontal: space[2],
       }}
     >
-      {TABS.map((tab) => {
+      {tabs.map((tab) => {
         const route = state.routes.find((item) => item.name === tab.route);
         if (!route) return null;
         const focused = current === tab.route;

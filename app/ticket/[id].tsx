@@ -103,6 +103,11 @@ export default function TicketScreen() {
               {data.folio}
             </AppText>
             <AppText tone="muted">{t(`ticket.status.${data.status}`)}</AppText>
+            {data.check ? (
+              <AppText variant="bodyStrong" testID="ticket-check">
+                {data.check.table ? t("ticket.table", { name: data.check.table }) : t("ticket.takeout", { name: data.check.takeout_name ?? "" })}
+              </AppText>
+            ) : null}
           </View>
           <View style={{ borderTopWidth: 1.5, borderTopColor: c.line, borderStyle: "dashed", paddingTop: space[4], gap: space[1] }}>
             <AppText variant="label" tone="muted">
@@ -110,7 +115,21 @@ export default function TicketScreen() {
             </AppText>
             <AppText variant="figureLarge">{formatMoney(data.total)}</AppText>
           </View>
-          {data.payment_method || data.amount_received != null || data.change_given ? (
+          {data.payments && data.payments.length > 0 ? (
+            <View style={{ borderTopWidth: 1.5, borderTopColor: c.line, borderStyle: "dashed", paddingTop: space[4], gap: space[2] }}>
+              <AppText variant="label" tone="muted">
+                {t("ticket.payments").toUpperCase()}
+              </AppText>
+              {data.payments.map((payment, index) => (
+                <Row
+                  key={payment.id ?? index}
+                  label={`${t(`charge.methods.${payment.method}`)}${payment.reference ? ` · ${t("ticket.reference", { reference: payment.reference })}` : ""}`}
+                  value={formatMoney(payment.amount)}
+                />
+              ))}
+              {data.change_given && Number(data.change_given) > 0 ? <AppText>{`${t("ticket.change")}: ${formatMoney(data.change_given)}`}</AppText> : null}
+            </View>
+          ) : data.payment_method || data.amount_received != null || data.change_given ? (
             <View style={{ borderTopWidth: 1.5, borderTopColor: c.line, borderStyle: "dashed", paddingTop: space[4], gap: space[2] }}>
               {data.payment_method ? <Row label={t("ticket.method")} value={t(`charge.methods.${data.payment_method}`)} /> : null}
               {data.amount_received != null ? <AppText>{`${t("ticket.received")}: ${formatMoney(data.amount_received)}`}</AppText> : null}
@@ -122,8 +141,12 @@ export default function TicketScreen() {
         <Zigzag color={c.surface} />
       </Animated.View>
       <Animated.View entering={rowEnter(2)} style={{ gap: space[3] }}>
-        <TicketActions ticket={data} canWhatsapp={canWhatsapp} />
-        <Button label={t("ticket.backToOrders")} variant="text" onPress={() => router.replace("/(tabs)/ordenes")} />
+        <TicketActions ticket={data} canWhatsapp={canWhatsapp && !data.check} />
+        <Button
+          label={data.check ? t("ticket.backToTables") : t("ticket.backToOrders")}
+          variant="text"
+          onPress={() => router.replace(data.check ? "/(tabs)/mesas" : "/(tabs)/ordenes")}
+        />
       </Animated.View>
     </Animated.ScrollView>
   );

@@ -120,13 +120,17 @@ export type TicketStatus = "pending" | "paid" | "voided";
 export interface Ticket {
   id: number;
   folio: string;
-  work_order_id: number;
-  work_order?: { id: number; title: string; customer_phone?: string };
+  work_order_id?: number | null;
+  work_order?: { id: number; title: string; customer_phone?: string } | null;
+  /** Ticket de una cuenta de restaurante (sin orden de trabajo). */
+  check?: { id: number; table: string | null; takeout_name: string | null; waiter: PersonName | null } | null;
+  payments?: CheckPayment[];
+  items?: { description: string; quantity: number; unit_price: string | number; subtotal: string | number }[];
   status: TicketStatus;
   total: number;
   created_at: string;
   paid_at?: string;
-  payment_method?: PaymentMethod;
+  payment_method?: PaymentMethod | "mixed";
   payment_method_label?: string;
   amount_received?: number;
   change_given?: number;
@@ -156,6 +160,12 @@ export interface MenuProduct {
   name: string;
   price: number;
   unit?: string;
+  /** Restaurante: agotado o con pocas existencias según lo comprometido en cuentas abiertas. */
+  tracks_stock?: boolean;
+  station_id?: number | null;
+  available_qty?: number | null;
+  sold_out?: boolean;
+  low?: boolean;
 }
 
 export interface MenuGroup {
@@ -171,4 +181,113 @@ export interface Subscription {
 
 export interface AppConfig {
   min_app_version: { ios: string; android: string };
+}
+
+// ── Restaurante (specs/013-restaurante-comandas/contracts/restaurant-api.md) ──
+
+export interface PersonName {
+  id: number;
+  name: string;
+}
+
+export type ItemStatus = "draft" | "new" | "preparing" | "ready" | "delivered" | "cancelled";
+export type CheckStatus = "open" | "closed" | "cancelled";
+
+export interface CheckItem {
+  id: number;
+  name: string;
+  quantity: number;
+  unit_price: string;
+  note: string | null;
+  status: ItemStatus;
+  station: { id: number; name: string } | null;
+  kitchen_order_number: number | null;
+  sent_at: string | null;
+  ready_at: string | null;
+  allowed_actions: ("deliver" | "cancel")[];
+}
+
+export interface CheckPayment {
+  id?: number;
+  method: PaymentMethod;
+  amount: string;
+  reference: string | null;
+  amount_received: string | null;
+  change_given: string | null;
+}
+
+export type CheckAction = "add_item" | "send" | "pay" | "reassign" | "cancel" | "close";
+
+export interface Check {
+  id: number;
+  status: CheckStatus;
+  table: { id: number; name: string } | null;
+  takeout_name: string | null;
+  waiter: PersonName | null;
+  opened_at: string;
+  total: string;
+  paid: string;
+  balance: string;
+  items: CheckItem[];
+  payments: CheckPayment[];
+  ticket_id: number | null;
+  allowed_actions: CheckAction[];
+}
+
+export interface ItemCounts {
+  new: number;
+  preparing: number;
+  ready: number;
+  delivered: number;
+}
+
+export interface CheckSummary {
+  id: number;
+  waiter: PersonName | null;
+  opened_at: string;
+  total: string;
+  counts: ItemCounts;
+  mine: boolean;
+}
+
+export interface TableSummary {
+  id: number;
+  name: string;
+  active: boolean;
+  position: number;
+  check: CheckSummary | null;
+}
+
+export interface TakeoutSummary extends CheckSummary {
+  takeout_name: string;
+}
+
+export interface ReadyItem {
+  id: number;
+  name: string;
+  quantity: number;
+  check_id: number;
+  table: string | null;
+  takeout_name: string | null;
+  ready_at: string;
+}
+
+export interface TablesResponse {
+  results: TableSummary[];
+  takeouts: TakeoutSummary[];
+  ready_items: ReadyItem[];
+  stock_alerts?: number;
+}
+
+export interface RoundResponse {
+  kitchen_order: { id: number; number: number; sent_at: string };
+  sent: { id: number; name: string; quantity: number; station: { id: number; name: string } | null }[];
+  rejected: { id: number; name: string; reason: string; available_qty: number | null }[];
+  check: Check;
+}
+
+export interface PaymentResponse {
+  payment: CheckPayment;
+  check: { status: CheckStatus; total: string; paid: string; balance: string };
+  ticket: Ticket | null;
 }
