@@ -50,6 +50,8 @@ export interface PaymentBody {
   reference?: string;
   amount_received?: string;
   confirm_incomplete?: boolean;
+  /** Terminal del negocio en que se cobró con tarjeta (spec 015). */
+  terminal_id?: number;
 }
 
 export const addPayment = (checkId: number, body: PaymentBody, idempotencyKey: string) =>

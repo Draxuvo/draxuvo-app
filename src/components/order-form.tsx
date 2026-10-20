@@ -30,7 +30,8 @@ function Group({ title, children }: { title: string; children: React.ReactNode }
 
 /**
  * Formulario de orden. En modo pedido: mesa y productos del menú. En modo servicio: cliente,
- * prioridad, fecha, pasos y conceptos (FR-025).
+ * prioridad, fecha, pasos y conceptos (FR-025). Con `staff` (spec 015) el operador crea su propia orden:
+ * título, cliente y productos del catálogo con cantidad; la API la asigna y pone los precios.
  */
 export function OrderForm({
   mode,
@@ -41,6 +42,7 @@ export function OrderForm({
   submitting,
   apiErrors,
   onSubmit,
+  staff = false,
 }: {
   mode: OrderMode;
   initial: OrderFormValues;
@@ -51,6 +53,7 @@ export function OrderForm({
   /** Mensajes que devolvió la API (por ejemplo, un 422). */
   apiErrors: string[];
   onSubmit: (values: OrderFormValues) => void;
+  staff?: boolean;
 }) {
   const { c } = useTheme();
   const [values, setValues] = useState<OrderFormValues>(initial);
@@ -61,7 +64,7 @@ export function OrderForm({
   const isOrder = mode === "order";
 
   const submit = () => {
-    const found = validateOrderForm(values, mode);
+    const found = validateOrderForm(values, mode, staff);
     setErrors(found);
     if (hasErrors(found)) return haptic.warning();
     onSubmit(values);
@@ -109,7 +112,17 @@ export function OrderForm({
         </Group>
       ) : null}
 
-      {!isOrder ? (
+      {staff ? (
+        <>
+          {!isOrder ? (
+            <>
+              <Field label={t("orderForm.customerName")} icon="user" value={values.customerName} onChangeText={(customerName) => patch({ customerName })} />
+              <Field label={t("orderForm.customerPhone")} icon="phone" value={values.customerPhone} onChangeText={(customerPhone) => patch({ customerPhone })} error={err(errors.customerPhone)} keyboardType="phone-pad" testID="form-phone" />
+            </>
+          ) : null}
+          <MenuChips menu={menu} onPick={addMenuProduct} />
+        </>
+      ) : !isOrder ? (
         <>
           <Group title={t("orderForm.priority")}>
             <View style={{ flexDirection: "row", flexWrap: "wrap", gap: space[2] }}>
@@ -142,41 +155,36 @@ export function OrderForm({
           </Group>
         </>
       ) : (
-        <Group title={t("orderForm.menu")}>
-          {menu.map((group) => (
-            <View key={group.category} style={{ gap: space[2] }}>
-              <AppText variant="bodyStrong">{group.category}</AppText>
-              <View style={{ flexDirection: "row", flexWrap: "wrap", gap: space[2] }}>
-                {group.items.map((product) => (
-                  <Chip key={product.id} icon="plus" label={product.name} selected={false} onPress={() => addMenuProduct(product)} />
-                ))}
-              </View>
-            </View>
-          ))}
-        </Group>
+        <MenuChips menu={menu} onPick={addMenuProduct} />
       )}
 
       <Group title={t("orderForm.items")}>
         {values.items.map((row, index) => (
           <Card key={`${row.productId ?? "x"}-${index}`} style={{ gap: space[3] }}>
-            <Field
-              label={t("orderForm.itemDescription")}
-              value={row.description}
-              onChangeText={(description) => patchItem(index, { description })}
-              error={err(errors.items[index]?.description)}
-            />
+            {staff ? (
+              <AppText variant="bodyStrong">{row.description}</AppText>
+            ) : (
+              <Field
+                label={t("orderForm.itemDescription")}
+                value={row.description}
+                onChangeText={(description) => patchItem(index, { description })}
+                error={err(errors.items[index]?.description)}
+              />
+            )}
             <View style={{ flexDirection: "row", gap: space[2] }}>
               <View style={{ flex: 1 }}>
                 <Field label={t("orderForm.quantity")} value={row.quantity} onChangeText={(quantity) => patchItem(index, { quantity })} keyboardType="decimal-pad" error={err(errors.items[index]?.quantity)} testID={`form-qty-${index}`} />
               </View>
-              <View style={{ flex: 1 }}>
-                <Field label={t("orderForm.price")} value={row.unitPrice} onChangeText={(unitPrice) => patchItem(index, { unitPrice })} keyboardType="decimal-pad" error={err(errors.items[index]?.unitPrice)} />
-              </View>
+              {!staff ? (
+                <View style={{ flex: 1 }}>
+                  <Field label={t("orderForm.price")} value={row.unitPrice} onChangeText={(unitPrice) => patchItem(index, { unitPrice })} keyboardType="decimal-pad" error={err(errors.items[index]?.unitPrice)} />
+                </View>
+              ) : null}
             </View>
             <Button label={t("orderForm.remove")} variant="danger" icon="trash-2" onPress={() => patch({ items: values.items.filter((_, i) => i !== index) })} />
           </Card>
         ))}
-        {!isOrder ? (
+        {!isOrder && !staff ? (
           <Button
             label={t("orderForm.addItem")}
             variant="tonal"
@@ -188,5 +196,22 @@ export function OrderForm({
 
       <Button label={editing ? t("orderForm.submitSave") : t("orderForm.submitCreate")} icon="check" onPress={submit} loading={submitting} />
     </View>
+  );
+}
+
+function MenuChips({ menu, onPick }: { menu: MenuGroup[]; onPick: (product: MenuGroup["items"][number]) => void }) {
+  return (
+    <Group title={t("orderForm.menu")}>
+      {menu.map((group) => (
+        <View key={group.category} style={{ gap: space[2] }}>
+          <AppText variant="bodyStrong">{group.category}</AppText>
+          <View style={{ flexDirection: "row", flexWrap: "wrap", gap: space[2] }}>
+            {group.items.map((product) => (
+              <Chip key={product.id} icon="plus" label={product.name} selected={false} onPress={() => onPick(product)} />
+            ))}
+          </View>
+        </View>
+      ))}
+    </Group>
   );
 }

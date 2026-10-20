@@ -7,6 +7,7 @@ import { ApiError, NetworkError } from "@/api/client";
 import { addPayment, type PaymentBody } from "@/api/restaurant";
 import { describeError, ErrorView } from "@/components/error-view";
 import { PaymentForm } from "@/components/payment-form";
+import { useTerminals } from "@/api/terminals";
 import { SkeletonBlock } from "@/components/skeleton";
 import { AppText, Divider, KeyboardFrame } from "@/components/ui";
 import { useCheck } from "@/hooks/use-restaurant";
@@ -26,6 +27,7 @@ function Row({ label, value, strong }: { label: string; value: string; strong?: 
 
 export default function CuentaCobro() {
   useLocale();
+  const terminals = useTerminals();
   const { c } = useTheme();
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -98,7 +100,7 @@ export default function CuentaCobro() {
 
         {balance > 0 && check.status === "open" ? (
           <Animated.View entering={rowEnter(2)}>
-            <PaymentForm key={check.payments.length} balance={balance} onSubmit={submit} />
+            <PaymentForm key={check.payments.length} balance={balance} terminals={terminals.data ?? []} onSubmit={submit} />
           </Animated.View>
         ) : null}
         {message ? (

@@ -10,7 +10,7 @@ import { EmptyState } from "@/components/empty-state";
 import { ErrorView } from "@/components/error-view";
 import { ProblemArt } from "@/components/illustrations";
 import { OrderForm } from "@/components/order-form";
-import { EMPTY_FORM, fromOrder, toPayload, type OrderFormValues } from "@/components/order-form-schema";
+import { EMPTY_FORM, fromOrder, toPayload, toStaffPayload, type OrderFormValues } from "@/components/order-form-schema";
 import { SkeletonBlock } from "@/components/skeleton";
 import { useApplyOrder, useEmployees, useKeys, useOrder } from "@/hooks/use-orders";
 import { haptic } from "@/lib/haptics";
@@ -29,17 +29,20 @@ export default function OrdenForm() {
   const orderId = id === "nueva" ? null : Number(id);
   const mode = user?.companies.find((company) => company.id === companyId)?.order_mode ?? "service";
   const boss = isBossRole(role);
+  // El staff crea sus propias órdenes (spec 015) pero no edita las existentes.
+  const staffNew = !boss && orderId == null;
 
   const order = useOrder(orderId ?? 0, orderId != null);
   const employees = useEmployees(boss);
-  const menu = useQuery({ queryKey: [...keys.all, "menu"], queryFn: getMenu, enabled: boss && mode === "order" });
+  const needsMenu = staffNew || (boss && mode === "order");
+  const menu = useQuery({ queryKey: [...keys.all, "menu"], queryFn: getMenu, enabled: needsMenu });
   const [submitting, setSubmitting] = useState(false);
   const [apiErrors, setApiErrors] = useState<string[]>([]);
 
   const title = <Stack.Screen options={{ title: orderId == null ? t("orderForm.titleNew") : t("orderForm.titleEdit") }} />;
 
-  // El staff no crea ni edita: la API también lo niega, aquí solo se evita mostrar el formulario.
-  if (!boss) {
+  // El staff no edita: la API también lo niega, aquí solo se evita mostrar el formulario.
+  if (!boss && !staffNew) {
     return (
       <View style={{ flex: 1, backgroundColor: c.background }}>
         {title}
@@ -48,7 +51,7 @@ export default function OrdenForm() {
     );
   }
 
-  const loading = (orderId != null && order.isLoading) || (mode === "order" && menu.isLoading);
+  const loading = (orderId != null && order.isLoading) || (needsMenu && menu.isLoading);
   if (loading) {
     return (
       <View style={{ flex: 1, backgroundColor: c.background, padding: space[4], gap: space[4] }}>
@@ -67,7 +70,7 @@ export default function OrdenForm() {
     setSubmitting(true);
     setApiErrors([]);
     try {
-      const payload = toPayload(values, mode);
+      const payload = staffNew ? toStaffPayload(values, mode) : toPayload(values, mode);
       const saved = orderId == null ? await createOrder(payload) : await updateOrder(orderId, payload);
       haptic.success();
       apply(saved);
@@ -98,6 +101,7 @@ export default function OrdenForm() {
           submitting={submitting}
           apiErrors={apiErrors}
           onSubmit={(values) => void submit(values)}
+          staff={staffNew}
         />
       </Animated.View>
     </Animated.ScrollView>
