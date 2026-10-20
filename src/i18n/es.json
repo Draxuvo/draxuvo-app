@@ -168,7 +168,18 @@
     "invalidAmount": "Escribe un monto válido.",
     "insufficient": "El efectivo recibido es menor al total.",
     "done": "Cobrado",
-    "exact": "Exacto"
+    "exact": "Exacto",
+    "paymentN": "Pago {n}",
+    "removePayment": "Quitar",
+    "addPayment": "Agregar otro pago",
+    "amount": "Monto",
+    "authorization": "Autorización",
+    "last4": "Últimos 4",
+    "optionalVoucher": "Autorización y últimos 4 dígitos del voucher son opcionales.",
+    "exceeds": "Los pagos con tarjeta o transferencia pasan del total.",
+    "terminalRequired": "Elige la terminal en que se cobró.",
+    "invalidLast4": "Los últimos 4 dígitos deben ser 4 números.",
+    "referenceRequired": "Escribe la referencia de la transferencia."
   },
   "ticket": {
     "title": "Ticket",
@@ -383,5 +394,8 @@
     "closedTitle": "Cuenta cobrada",
     "change_given": "Cambio: {amount}",
     "payError": "No se pudo registrar el pago"
+  },
+  "terminals": {
+    "label": "Terminal"
   }
 }

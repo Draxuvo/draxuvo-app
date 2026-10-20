@@ -102,6 +102,30 @@ describe("cobro de la cuenta", () => {
     expect(lastBody()).toEqual({ method: "card", amount: "500.00", reference: "A8812" });
   });
 
+  it("tarjeta elige la terminal del negocio y la manda con la referencia (spec 015)", async () => {
+    const terminals = [
+      { id: 5, name: "Point barra", provider: "mercado_pago", provider_label: "Mercado Pago", active: true },
+      { id: 6, name: "BBVA caja", provider: "bbva", provider_label: "BBVA", active: true },
+    ];
+    fetchMock.mockImplementation((url: string, init?: { method?: string }) => {
+      if (init?.method === "POST" && String(url).endsWith("/payments")) return reply(201, { payment: {}, check: { status: "open" }, ticket: null });
+      if (String(url).includes("/payment_terminals")) return reply(200, { results: terminals });
+      return reply(200, current);
+    });
+    await renderScreen(<CuentaCobro />);
+
+    await fireEvent.press(await screen.findByRole("radio", { name: "Tarjeta" }));
+    await fireEvent.changeText(screen.getByLabelText("Referencia"), "A8812");
+    await fireEvent.press(screen.getByRole("button", { name: "Registrar pago" }));
+    expect(await screen.findByText("Elige la terminal en que se cobró.")).toBeTruthy();
+    expect(paymentCalls()).toHaveLength(0);
+
+    await fireEvent.press(await screen.findByRole("button", { name: "Point barra" }));
+    await fireEvent.press(screen.getByRole("button", { name: "Registrar pago" }));
+    await waitFor(() => expect(paymentCalls()).toHaveLength(1));
+    expect(lastBody()).toEqual({ method: "card", amount: "500.00", reference: "A8812", terminal_id: 5 });
+  });
+
   it("tarjeta no deja pagar más que el saldo", async () => {
     route(() => reply(201, {}));
     await renderScreen(<CuentaCobro />);

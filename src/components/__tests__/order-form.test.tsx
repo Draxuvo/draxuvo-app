@@ -1,6 +1,6 @@
 import { fireEvent, render, screen } from "@testing-library/react-native";
 import { OrderForm } from "../order-form";
-import { EMPTY_FORM, toPayload, validateOrderForm, type OrderFormValues } from "../order-form-schema";
+import { EMPTY_FORM, toPayload, toStaffPayload, validateOrderForm, type OrderFormValues } from "../order-form-schema";
 
 const base = (extra: Partial<OrderFormValues> = {}): OrderFormValues => ({ ...EMPTY_FORM, title: "Cambiar balatas", ...extra });
 
@@ -94,5 +94,38 @@ describe("formulario", () => {
     await render(<OrderForm mode="service" initial={base()} employees={[]} menu={[]} editing={false} submitting={false} apiErrors={["El responsable no existe"]} onSubmit={jest.fn()} />);
 
     expect(screen.getByText("El responsable no existe")).toBeTruthy();
+  });
+});
+
+describe("formulario del operador (spec 015)", () => {
+  const menu = [{ category: "Bebidas", items: [{ id: 7, name: "Café", price: 35 }] }];
+
+  it("servicio: solo título, cliente y productos del catálogo, sin precio, prioridad ni pasos", async () => {
+    const onSubmit = jest.fn();
+    await render(
+      <OrderForm mode="service" initial={EMPTY_FORM} employees={[]} menu={menu} editing={false} submitting={false} apiErrors={[]} onSubmit={onSubmit} staff />,
+    );
+
+    expect(screen.queryByRole("button", { name: "Agregar paso" })).toBeNull();
+    expect(screen.queryByText("PRIORIDAD")).toBeNull();
+    expect(screen.queryByRole("button", { name: "Agregar concepto" })).toBeNull();
+    await fireEvent.changeText(screen.getByTestId("form-title"), "Mostrador");
+    await fireEvent.changeText(screen.getByTestId("form-phone"), "5512345678");
+    await fireEvent.press(screen.getByRole("button", { name: "Café" }));
+    await fireEvent.changeText(screen.getByTestId("form-qty-0"), "2");
+    expect(screen.queryByText("Precio")).toBeNull();
+    await fireEvent.press(screen.getByRole("button", { name: "Crear orden" }));
+
+    const values = onSubmit.mock.calls[0][0] as OrderFormValues;
+    expect(toStaffPayload(values, "service")).toEqual({
+      work_order: { title: "Mostrador", customer_name: null, customer_phone: "5512345678" },
+      items: [{ product_id: 7, quantity: 2 }],
+    });
+  });
+
+  it("un renglón sin producto del catálogo es inválido para el operador", () => {
+    const items = [{ description: "Libre", quantity: "1", unitPrice: "10" }];
+    expect(validateOrderForm(base({ items }), "order", true).items).toEqual({ 0: { description: "descriptionRequired" } });
+    expect(validateOrderForm(base({ items }), "order").items).toEqual({});
   });
 });

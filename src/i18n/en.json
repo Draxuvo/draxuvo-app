@@ -168,7 +168,18 @@
     "invalidAmount": "Enter a valid amount.",
     "insufficient": "The cash received is less than the total.",
     "done": "Charged",
-    "exact": "Exact"
+    "exact": "Exact",
+    "paymentN": "Payment {n}",
+    "removePayment": "Remove",
+    "addPayment": "Add another payment",
+    "amount": "Amount",
+    "authorization": "Authorization",
+    "last4": "Last 4",
+    "optionalVoucher": "The voucher authorization and last 4 digits are optional.",
+    "exceeds": "Card or transfer payments exceed the total.",
+    "terminalRequired": "Pick the terminal the card went through.",
+    "invalidLast4": "The last 4 digits must be 4 numbers.",
+    "referenceRequired": "Enter the transfer reference."
   },
   "ticket": {
     "title": "Ticket",
@@ -383,5 +394,8 @@
     "closedTitle": "Check paid",
     "change_given": "Change: {amount}",
     "payError": "Could not record the payment"
+  },
+  "terminals": {
+    "label": "Terminal"
   }
 }

@@ -76,18 +76,18 @@ const PHONE = /^[\d\s()+-]{7,20}$/;
 const DATE = /^\d{4}-\d{2}-\d{2}$/;
 
 /** Los mensajes son claves de `orderForm.errors.*`; la pantalla las traduce. */
-export function validateOrderForm(values: OrderFormValues, mode: OrderMode): OrderFormErrors {
+export function validateOrderForm(values: OrderFormValues, mode: OrderMode, staff = false): OrderFormErrors {
   const errors: OrderFormErrors = { items: {} };
   if (!values.title.trim()) errors.title = mode === "order" ? "tableRequired" : "titleRequired";
 
   if (mode === "service") {
     if (values.customerPhone.trim() && !PHONE.test(values.customerPhone.trim())) errors.customerPhone = "phoneInvalid";
-    if (values.dueDate.trim() && (!DATE.test(values.dueDate.trim()) || Number.isNaN(Date.parse(values.dueDate.trim())))) errors.dueDate = "dueInvalid";
+    if (!staff && values.dueDate.trim() && (!DATE.test(values.dueDate.trim()) || Number.isNaN(Date.parse(values.dueDate.trim())))) errors.dueDate = "dueInvalid";
   }
 
   values.items.forEach((row, index) => {
     const rowErrors: ItemErrors = {};
-    if (!row.description.trim()) rowErrors.description = "descriptionRequired";
+    if (!row.description.trim() || (staff && !row.productId)) rowErrors.description = "descriptionRequired";
     const quantity = Number(row.quantity);
     if (!(quantity > 0)) rowErrors.quantity = "quantityInvalid";
     if (row.unitPrice.trim() !== "" && parseMoney(row.unitPrice) == null) rowErrors.unitPrice = "priceInvalid";
@@ -131,4 +131,21 @@ export function toPayload(values: OrderFormValues, mode: OrderMode): OrderPayloa
       .map((step, position) => ({ ...(step.id ? { id: step.id } : {}), description: step.description.trim(), position })) as OrderPayload["steps"];
   }
   return payload;
+}
+
+/** El operador (spec 015) manda solo qué es, el cliente y productos del catálogo con cantidad. */
+export function toStaffPayload(values: OrderFormValues, mode: OrderMode): OrderPayload {
+  const work_order: OrderPayload["work_order"] = { title: values.title.trim() };
+  if (mode === "service") {
+    Object.assign(work_order, {
+      customer_name: values.customerName.trim() || null,
+      customer_phone: values.customerPhone.trim() || null,
+    });
+  }
+  return {
+    work_order,
+    items: values.items
+      .filter((row) => row.productId)
+      .map((row) => ({ product_id: row.productId, quantity: Number(row.quantity) })) as OrderPayload["items"],
+  };
 }

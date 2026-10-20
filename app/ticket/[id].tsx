@@ -88,6 +88,8 @@ export default function TicketScreen() {
   if (ticket.isError || !ticket.data) return <ErrorView error={ticket.error} onRetry={() => void ticket.refetch()} />;
 
   const data: Ticket = ticket.data;
+  // Los pagos anulados se quedan en la historia de la orden (spec 015).
+  const activePayments = (data.payments ?? []).filter((payment) => !payment.voided_at);
   const canWhatsapp = !!subscription.data?.active_modules.includes("whatsapp");
 
   return (
@@ -115,15 +117,23 @@ export default function TicketScreen() {
             </AppText>
             <AppText variant="figureLarge">{formatMoney(data.total)}</AppText>
           </View>
-          {data.payments && data.payments.length > 0 ? (
+          {activePayments.length > 0 ? (
             <View style={{ borderTopWidth: 1.5, borderTopColor: c.line, borderStyle: "dashed", paddingTop: space[4], gap: space[2] }}>
               <AppText variant="label" tone="muted">
                 {t("ticket.payments").toUpperCase()}
               </AppText>
-              {data.payments.map((payment, index) => (
+              {activePayments.map((payment, index) => (
                 <Row
                   key={payment.id ?? index}
-                  label={`${t(`charge.methods.${payment.method}`)}${payment.reference ? ` · ${t("ticket.reference", { reference: payment.reference })}` : ""}`}
+                  label={[
+                    t(`charge.methods.${payment.method}`),
+                    payment.terminal?.name,
+                    payment.authorization_code ? `${t("charge.authorization")} ${payment.authorization_code}` : null,
+                    payment.card_last4 ? `•••• ${payment.card_last4}` : null,
+                    payment.reference ? t("ticket.reference", { reference: payment.reference }) : null,
+                  ]
+                    .filter(Boolean)
+                    .join(" · ")}
                   value={formatMoney(payment.amount)}
                 />
               ))}

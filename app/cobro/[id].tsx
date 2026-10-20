@@ -1,9 +1,11 @@
+import * as Crypto from "expo-crypto";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { View } from "react-native";
 import Animated from "react-native-reanimated";
 import { ApiError } from "@/api/client";
 import { chargeOrder, type ChargeBody } from "@/api/orders";
+import { useTerminals } from "@/api/terminals";
 import { ChargeForm } from "@/components/charge-form";
 import { describeError, ErrorView } from "@/components/error-view";
 import { SkeletonBlock } from "@/components/skeleton";
@@ -22,6 +24,9 @@ export default function Cobro() {
   const query = useOrder(orderId);
   const apply = useApplyOrder();
   const [error, setError] = useState<string | null>(null);
+  const terminals = useTerminals();
+  // Una llave por intento de cobro: un reintento tras perder la red no cobra dos veces (FR-012).
+  const idempotencyKey = useRef(Crypto.randomUUID());
 
   if (query.isLoading) {
     return (
@@ -42,7 +47,7 @@ export default function Cobro() {
   const submit = async (body: ChargeBody) => {
     setError(null);
     try {
-      const charged = await chargeOrder(orderId, body);
+      const charged = await chargeOrder(orderId, body, idempotencyKey.current);
       haptic.success();
       apply(charged);
       if (charged.ticket) router.replace(`/ticket/${charged.ticket.id}` as never);
@@ -62,7 +67,7 @@ export default function Cobro() {
         <AppText variant="headline">{order.title}</AppText>
       </Animated.View>
       <Animated.View entering={rowEnter(1)}>
-        <ChargeForm total={total} blocked={blocked} onSubmit={submit} />
+        <ChargeForm total={total} blocked={blocked} terminals={terminals.data ?? []} onSubmit={submit} />
       </Animated.View>
       {error ? (
         <AppText tone="stamp" accessibilityRole="alert" testID="charge-error">

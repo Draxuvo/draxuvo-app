@@ -1,9 +1,9 @@
 import { api, ApiError } from "./client";
 import type {
+  ChargePaymentInput,
   Employee,
   MenuGroup,
   PaginatedResponse,
-  PaymentMethod,
   WorkOrder,
   WorkOrderPriority,
   WorkOrderStatus,
@@ -24,15 +24,17 @@ export const getOrder = (id: number) => api.get<WorkOrder>(`/api/v1/work_orders/
 
 export type OrderTransition = "start" | "finish" | "reopen" | "cancel" | "charge" | "void_charge";
 
+/** Cobro con uno o varios pagos (spec 015). */
 export interface ChargeBody {
-  payment_method: PaymentMethod;
-  amount_received?: number;
+  payments: ChargePaymentInput[];
 }
 
 export const transitionOrder = (id: number, action: OrderTransition, body: Record<string, unknown> = {}) =>
   api.post<WorkOrder>(`/api/v1/work_orders/${id}/${action}`, { body });
 
-export const chargeOrder = (id: number, body: ChargeBody) => transitionOrder(id, "charge", { ...body });
+/** La misma `Idempotency-Key` en un reintento no cobra dos veces. */
+export const chargeOrder = (id: number, body: ChargeBody, idempotencyKey: string) =>
+  api.post<WorkOrder>(`/api/v1/work_orders/${id}/charge`, { body, headers: { "Idempotency-Key": idempotencyKey } });
 
 export const setStepDone = (orderId: number, stepId: number, done: boolean) =>
   api.patch<WorkOrder>(`/api/v1/work_orders/${orderId}/steps/${stepId}`, { body: { done } });

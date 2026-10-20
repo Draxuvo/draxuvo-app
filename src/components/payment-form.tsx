@@ -1,11 +1,12 @@
 import { useRef, useState } from "react";
 import { View } from "react-native";
 import type { PaymentBody } from "@/api/restaurant";
-import type { PaymentMethod } from "@/api/types";
+import type { PaymentMethod, PaymentTerminal } from "@/api/types";
 import { haptic } from "@/lib/haptics";
 import { t } from "@/i18n";
 import { changeOrMissing, formatMoney, parseMoney } from "@/lib/money";
 import { space } from "@/theme";
+import { TerminalPicker } from "./terminal-picker";
 import { AppText, Button, Chip, Field, type IconName } from "./ui";
 
 const METHODS: { value: PaymentMethod; icon: IconName }[] = [
@@ -19,13 +20,24 @@ const fixed = (value: number) => value.toFixed(2);
 /**
  * Un pago de la cuenta. El monto empieza en el saldo; en efectivo se captura lo recibido y se calcula
  * el cambio, y con tarjeta o transferencia se captura la referencia (FR-021 a FR-023). El botón se bloquea
- * hasta recibir respuesta: un doble toque no cobra dos veces.
+ * hasta recibir respuesta: un doble toque no cobra dos veces. Con tarjeta se elige además la terminal del
+ * negocio en que se cobró (spec 015); la referencia sigue siendo obligatoria.
  */
-export function PaymentForm({ balance, onSubmit }: { balance: number; onSubmit: (body: PaymentBody) => Promise<void> }) {
+export function PaymentForm({
+  balance,
+  terminals = [],
+  onSubmit,
+}: {
+  balance: number;
+  terminals?: PaymentTerminal[];
+  onSubmit: (body: PaymentBody) => Promise<void>;
+}) {
   const [method, setMethod] = useState<PaymentMethod>("cash");
   const [amount, setAmount] = useState(fixed(balance));
   const [received, setReceived] = useState("");
   const [reference, setReference] = useState("");
+  const [terminalId, setTerminalId] = useState<number | null>(null);
+  const terminal = terminalId ?? (terminals.length === 1 ? terminals[0].id : null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const inFlight = useRef(false);
@@ -41,6 +53,7 @@ export function PaymentForm({ balance, onSubmit }: { balance: number; onSubmit: 
     if (method !== "cash") {
       if (due > balance) return fail(t("checkout.exceeds"));
       if (!reference.trim()) return fail(t("checkout.referenceRequired"));
+      if (method === "card" && terminals.length > 0 && terminal == null) return fail(t("charge.terminalRequired"));
     } else if (got != null && got < covered) {
       return fail(t("charge.insufficient"));
     }
@@ -51,7 +64,12 @@ export function PaymentForm({ balance, onSubmit }: { balance: number; onSubmit: 
       const body: PaymentBody =
         method === "cash"
           ? { method, amount: fixed(due), amount_received: fixed(got ?? due) }
-          : { method, amount: fixed(due), reference: reference.trim() };
+          : {
+              method,
+              amount: fixed(due),
+              reference: reference.trim(),
+              ...(method === "card" && terminal != null ? { terminal_id: terminal } : {}),
+            };
       await onSubmit(body);
       setReceived("");
       setReference("");
@@ -84,7 +102,10 @@ export function PaymentForm({ balance, onSubmit }: { balance: number; onSubmit: 
           ) : null}
         </>
       ) : (
-        <Field label={t("checkout.reference")} value={reference} onChangeText={setReference} placeholder={t("checkout.referencePlaceholder")} autoCapitalize="characters" />
+        <>
+          {method === "card" ? <TerminalPicker terminals={terminals} value={terminal} onChange={setTerminalId} /> : null}
+          <Field label={t("checkout.reference")} value={reference} onChangeText={setReference} placeholder={t("checkout.referencePlaceholder")} autoCapitalize="characters" />
+        </>
       )}
       {error ? (
         <AppText tone="stamp" accessibilityRole="alert" testID="payment-error">

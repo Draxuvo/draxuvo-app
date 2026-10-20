@@ -121,7 +121,7 @@ export default function OrdersList() {
         />
       )}
 
-      {boss ? <Fab icon="plus" label={t("orders.new")} extended={extended} onPress={() => router.push("/orden-form/nueva" as never)} /> : null}
+      <Fab icon="plus" label={t("orders.new")} extended={extended} onPress={() => router.push("/orden-form/nueva" as never)} />
     </View>
   );
 }
