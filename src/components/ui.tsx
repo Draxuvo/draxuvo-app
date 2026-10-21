@@ -179,12 +179,15 @@ export function Chip({
   selected,
   onPress,
   icon,
+  leading,
   role = "button",
 }: {
   label: string;
   selected: boolean;
   onPress: () => void;
   icon?: IconName;
+  /** Adorno propio antes del texto (por ejemplo el icono de un producto), recibe el color del texto. */
+  leading?: (color: string) => ReactNode;
   role?: "button" | "radio";
 }) {
   const { c } = useTheme();
@@ -221,7 +224,7 @@ export function Chip({
           bg,
         ]}
       >
-        {icon ? <Feather name={icon} size={16} color={selected ? c.background : c.ink} /> : null}
+        {leading ? leading(selected ? c.background : c.ink) : icon ? <Feather name={icon} size={16} color={selected ? c.background : c.ink} /> : null}
         <Text style={[typeScale.bodyStrong as object, { color: selected ? c.background : c.ink }]}>{label}</Text>
       </Animated.View>
     </Pressable>

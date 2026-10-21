@@ -69,7 +69,7 @@ export function TakeOrderScreen({ mode, initialCheckId, initialSheet }: { mode: 
 
   const menu: MenuSection[] = (menuQuery.data?.menu ?? []).map((group) => ({
     category: group.category,
-    items: group.items.map((p) => ({ id: p.id, name: p.name, price: Number(p.price), sold_out: p.sold_out, low: p.low, available_qty: p.available_qty })),
+    items: group.items.map((p) => ({ id: p.id, name: p.name, price: Number(p.price), icon: p.icon, product_type: p.product_type, sold_out: p.sold_out, low: p.low, available_qty: p.available_qty })),
   }));
 
   // Ejecuta un cambio; si no se guarda, lo dice y la orden queda como estaba (FR-010).

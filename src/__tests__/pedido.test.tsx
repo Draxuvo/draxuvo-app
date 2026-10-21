@@ -65,6 +65,31 @@ describe("pedido (órdenes sin restaurante)", () => {
     expect(screen.getByLabelText("Total $40.00")).toBeTruthy();
   });
 
+  it("las tarjetas del menú muestran el icono del producto, el de su tipo o la inicial", async () => {
+    const iconMenu = {
+      menu: [{ category: "Bebidas", items: [
+        { id: 7, name: "Café", price: 20, icon: "coffee" },
+        { id: 8, name: "Té", price: 18, product_type: { icon: "cup" } },
+        { id: 9, name: "Atole", price: 15 },
+      ] }],
+    };
+    serve({
+      "GET /api/v1/work_orders": { results: [], info: { page_index: 1, page_end: 1, total: 0 } },
+      "POST /api/v1/work_orders": () => reply(201, order({ id: 9, title: "Luis" })),
+      "GET /api/v1/work_orders/9": order({ id: 9, title: "Luis" }),
+      "GET /api/v1/products/menu": iconMenu,
+    });
+    await renderScreen(<Pedido />);
+    await screen.findByText("No hay órdenes abiertas.");
+    await fireEvent.changeText(screen.getByLabelText("Mesa o cliente"), "Luis");
+    await fireEvent.press(screen.getByRole("button", { name: "Nueva orden" }));
+
+    expect(await screen.findByTestId("product-icon-coffee", { includeHiddenElements: true })).toBeTruthy();
+    expect(screen.getByTestId("product-icon-cup", { includeHiddenElements: true })).toBeTruthy();
+    expect(screen.getByRole("button", { name: /^Atole, \$15.00/ })).toBeTruthy();
+    expect(screen.getByText("A", { includeHiddenElements: true })).toBeTruthy();
+  });
+
   it("abre una orden con el nombre y agrega un producto con la tarjeta", async () => {
     serve({
       "GET /api/v1/work_orders": { results: [], info: { page_index: 1, page_end: 1, total: 0 } },

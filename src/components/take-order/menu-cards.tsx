@@ -3,6 +3,7 @@ import { Pressable, ScrollView, View } from "react-native";
 import { t } from "@/i18n";
 import { formatMoney } from "@/lib/money";
 import { radius, space, useTheme } from "@/theme";
+import { ProductIconBadge } from "../product-icon";
 import { AppText, Chip, Field } from "../ui";
 import { categoryColor, filterMenu, type MenuCard, type MenuSection } from "./lib";
 
@@ -70,11 +71,7 @@ export function MenuCards({
                     }}
                   >
                     <View style={{ flexDirection: "row", gap: space[2], alignItems: "flex-start" }}>
-                      <View style={{ width: 36, height: 36, borderRadius: 10, backgroundColor: categoryColor(section.category), alignItems: "center", justifyContent: "center" }}>
-                        <AppText variant="headline" style={{ color: "#FFFFFF" }}>
-                          {card.name.trim().charAt(0).toUpperCase()}
-                        </AppText>
-                      </View>
+                      <ProductIconBadge product={card} color={categoryColor(section.category)} />
                       <AppText variant="bodyStrong" numberOfLines={2} style={{ flex: 1 }}>
                         {card.name}
                       </AppText>

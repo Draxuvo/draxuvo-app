@@ -5,6 +5,7 @@ import { formatMoney } from "@/lib/money";
 import { radius, space, useTheme } from "@/theme";
 import type { CheckItem } from "@/api/types";
 import { CheckLine } from "../check-line";
+import { ProductGlyph } from "../product-icon";
 import { QtyButton } from "../qty-button";
 import { AppText, Button, Divider, Field } from "../ui";
 import { groupByRound, type Line } from "./lib";
@@ -25,6 +26,7 @@ function LineRow({
   onRemove: (line: Line) => void;
   onNote: (line: Line, note: string) => void;
 }) {
+  const { c } = useTheme();
   const [noting, setNoting] = useState(false);
   const [text, setText] = useState(line.note ?? "");
   const save = () => {
@@ -34,9 +36,12 @@ function LineRow({
   return (
     <View style={{ gap: space[2], paddingVertical: space[2] }} testID={`order-line-${line.id}`}>
       <View style={{ flexDirection: "row", justifyContent: "space-between", gap: space[3] }}>
-        <View style={{ flex: 1 }} accessible accessibilityLabel={`${line.quantity} ${line.name}${line.note ? `, ${line.note}` : ""}`}>
-          <AppText variant="bodyStrong">{line.name}</AppText>
-          {line.note && !noting ? <AppText tone="muted">{line.note}</AppText> : null}
+        <View style={{ flex: 1, flexDirection: "row", alignItems: "center", gap: space[2] }}>
+          <ProductGlyph product={line} color={c.inkMuted} />
+          <View style={{ flex: 1 }} accessible accessibilityLabel={`${line.quantity} ${line.name}${line.note ? `, ${line.note}` : ""}`}>
+            <AppText variant="bodyStrong">{line.name}</AppText>
+            {line.note && !noting ? <AppText tone="muted">{line.note}</AppText> : null}
+          </View>
         </View>
         <AppText variant="bodyStrong">{formatMoney(line.unit_price * line.quantity)}</AppText>
       </View>

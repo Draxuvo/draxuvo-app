@@ -3,6 +3,7 @@ import { View } from "react-native";
 import type { Employee, MenuGroup, OrderMode, WorkOrderPriority } from "@/api/types";
 import { haptic } from "@/lib/haptics";
 import { t } from "@/i18n";
+import { resolveProductIcon } from "@/lib/product-icons/resolve";
 import { radius, space, useTheme } from "@/theme";
 import {
   hasErrors,
@@ -11,6 +12,7 @@ import {
   type OrderFormErrors,
   type OrderFormValues,
 } from "./order-form-schema";
+import { ProductGlyph } from "./product-icon";
 import { AppText, Button, Card, Chip, Field } from "./ui";
 
 const PRIORITIES: WorkOrderPriority[] = ["low", "medium", "high", "urgent"];
@@ -207,7 +209,14 @@ function MenuChips({ menu, onPick }: { menu: MenuGroup[]; onPick: (product: Menu
           <AppText variant="bodyStrong">{group.category}</AppText>
           <View style={{ flexDirection: "row", flexWrap: "wrap", gap: space[2] }}>
             {group.items.map((product) => (
-              <Chip key={product.id} icon="plus" label={product.name} selected={false} onPress={() => onPick(product)} />
+              <Chip
+                key={product.id}
+                icon="plus"
+                leading={resolveProductIcon(product) ? (color) => <ProductGlyph product={product} size={16} color={color} /> : undefined}
+                label={product.name}
+                selected={false}
+                onPress={() => onPick(product)}
+              />
             ))}
           </View>
         </View>
