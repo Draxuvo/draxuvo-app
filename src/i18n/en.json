@@ -311,10 +311,6 @@
       "descriptionRequired": "Describe the item."
     }
   },
-  "menu": {
-    "open": "Open menu",
-    "close": "Close menu"
-  },
   "tables": {
     "title": "Tables",
     "free": "Free",

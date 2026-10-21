@@ -1,5 +1,6 @@
+import { useRouter } from "expo-router";
 import { useState } from "react";
-import { Switch, View } from "react-native";
+import { Pressable, Switch, View } from "react-native";
 import Animated from "react-native-reanimated";
 import { updateProfile } from "@/api/profile";
 import { AttendanceCard } from "@/components/attendance/attendance-card";
@@ -7,6 +8,7 @@ import { useLogoutFlow } from "@/components/attendance/logout-modal";
 import { AvatarPicker } from "@/components/avatar-picker";
 import { describeError } from "@/components/error-view";
 import { LanguageSwitch } from "@/components/language-switch";
+import { Monogram } from "@/components/order-card";
 import { AppText, Button, Card, Field, Icon, KeyboardFrame } from "@/components/ui";
 import { haptic } from "@/lib/haptics";
 import { t, useLocale } from "@/i18n";
@@ -17,7 +19,8 @@ import { rowEnter, space, TAB_BAR_HEIGHT, useTheme } from "@/theme";
 export default function Perfil() {
   useLocale();
   const { c } = useTheme();
-  const { user, role, setUser, biometricEnabled, setBiometricEnabled } = useSession();
+  const { user, companyId, role, setUser, biometricEnabled, setBiometricEnabled } = useSession();
+  const router = useRouter();
   const { requestLogout, modal: logoutModal } = useLogoutFlow();
   const [firstName, setFirstName] = useState(user?.first_name ?? "");
   const [lastName, setLastName] = useState(user?.last_name ?? "");
@@ -27,6 +30,8 @@ export default function Perfil() {
   const [saving, setSaving] = useState(false);
 
   if (!user) return null;
+  const company = user.companies.find((item) => item.id === companyId);
+  const many = user.companies.length > 1;
 
   const save = async () => {
     if (!firstName.trim()) {
@@ -64,6 +69,33 @@ export default function Perfil() {
           <AvatarPicker user={user} onChange={(updated) => void setUser({ ...user, ...updated, companies: updated.companies ?? user.companies })} />
         </Card>
       </Animated.View>
+
+      {company ? (
+        <Animated.View entering={rowEnter(1)}>
+          <Card style={{ gap: space[3] }}>
+            <View style={{ flexDirection: "row", alignItems: "center", gap: space[3] }}>
+              <Monogram name={company.name} size={48} />
+              <AppText variant="headline" numberOfLines={2} style={{ flex: 1 }}>
+                {company.name}
+              </AppText>
+            </View>
+            {many ? (
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={t("company.title")}
+                onPress={() => router.push("/empresa")}
+                style={{ flexDirection: "row", alignItems: "center", gap: space[3], minHeight: 48 }}
+              >
+                <Icon name="repeat" />
+                <AppText variant="bodyStrong" style={{ flex: 1 }}>
+                  {t("company.title")}
+                </AppText>
+                <Icon name="chevron-right" tone="muted" />
+              </Pressable>
+            ) : null}
+          </Card>
+        </Animated.View>
+      ) : null}
 
       <AttendanceCard />
 

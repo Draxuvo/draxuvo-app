@@ -311,10 +311,6 @@
       "descriptionRequired": "Describe el concepto."
     }
   },
-  "menu": {
-    "open": "Abrir menú",
-    "close": "Cerrar menú"
-  },
   "tables": {
     "title": "Mesas",
     "free": "Libre",
