@@ -150,6 +150,6 @@ describe("detalle de la orden", () => {
 
     await fireEvent.press(await screen.findByRole("button", { name: "Empezar" }));
 
-    expect(await screen.findByTestId("order-conflict")).toBeTruthy();
+    expect(await screen.findByTestId("toast-info")).toBeTruthy();
   });
 });

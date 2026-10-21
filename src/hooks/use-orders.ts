@@ -13,6 +13,7 @@ import {
   type OrderTransition,
 } from "@/api/orders";
 import type { WorkOrder } from "@/api/types";
+import { useAppActive } from "@/hooks/use-restaurant";
 import { useSession } from "@/session";
 
 /** Toda clave lleva la empresa activa: cambiar de empresa no mezcla datos (FR-004). */
@@ -28,8 +29,9 @@ export function useKeys() {
   };
 }
 
-export function useOrders(filters: Omit<OrderListParams, "page"> = {}, enabled = true) {
+export function useOrders(filters: Omit<OrderListParams, "page"> = {}, enabled = true, pollMs?: number) {
   const keys = useKeys();
+  const active = useAppActive();
   return useInfiniteQuery({
     queryKey: keys.orders(filters),
     queryFn: ({ pageParam }) => listOrders({ ...filters, page: pageParam }),
@@ -37,12 +39,20 @@ export function useOrders(filters: Omit<OrderListParams, "page"> = {}, enabled =
     getNextPageParam: (last) => (last.info.page_end < last.info.total ? last.info.page_index + 1 : undefined),
     placeholderData: keepPreviousData,
     enabled,
+    // Sondeo solo cuando la lista está a la vista y la app activa (spec 021).
+    refetchInterval: pollMs && active ? pollMs : false,
   });
 }
 
-export function useOrder(id: number, enabled = true) {
+export function useOrder(id: number, enabled = true, pollMs?: number) {
   const keys = useKeys();
-  return useQuery({ queryKey: keys.order(id), queryFn: () => getOrder(id), enabled });
+  const active = useAppActive();
+  return useQuery({
+    queryKey: keys.order(id),
+    queryFn: () => getOrder(id),
+    enabled,
+    refetchInterval: pollMs && active ? pollMs : false,
+  });
 }
 
 export function useEmployees(enabled = true) {

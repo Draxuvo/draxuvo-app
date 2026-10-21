@@ -9,7 +9,8 @@
     "no": "No",
     "optional": "Opcional",
     "back": "Volver",
-    "all": "Todo"
+    "all": "Todo",
+    "dismissNotice": "Cerrar aviso"
   },
   "login": {
     "title": "Entra a tu cuenta",
@@ -419,6 +420,16 @@
     "inc": "Agregar una unidad de {name}",
     "dec": "Quitar una unidad de {name}",
     "stockAlerts": "Productos con pocas existencias: {count}",
-    "noOrders": "No hay órdenes abiertas."
+    "noOrders": "No hay órdenes abiertas.",
+    "closedCheck": "La cuenta ya se cobró o se cerró",
+    "cancelledCheck": "La cuenta se canceló",
+    "paidOrder": "La orden ya se cobró",
+    "cancelledOrder": "La orden se canceló",
+    "release": "Liberar mesa",
+    "released": "Mesa liberada",
+    "releaseTitle": "¿Liberar esta mesa?",
+    "releaseBody": "Se descartarán los productos que aún no se mandan.",
+    "releaseConfirm": "Liberar",
+    "sendDone": "Comanda {number} mandada"
   }
 }

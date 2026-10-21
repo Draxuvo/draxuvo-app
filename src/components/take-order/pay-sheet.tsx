@@ -1,5 +1,5 @@
 import * as Crypto from "expo-crypto";
-import { useRef, useState } from "react";
+import { useRef } from "react";
 import { Alert, Modal, Pressable, ScrollView, View } from "react-native";
 import { ApiError, NetworkError } from "@/api/client";
 import { chargeOrder, type ChargeBody } from "@/api/orders";
@@ -14,6 +14,8 @@ import { useApplyOrder } from "@/hooks/use-orders";
 import { haptic } from "@/lib/haptics";
 import { formatMoney } from "@/lib/money";
 import { t } from "@/i18n";
+import { toast } from "@/toast/store";
+import { ToastHost } from "@/toast/toast-host";
 import { radius, space, useTheme } from "@/theme";
 import type { CurrentOrder } from "./use-order-source";
 
@@ -35,7 +37,6 @@ export function PaySheet({ current, visible, onClose, onPaid }: { current: Curre
   const terminals = useTerminals();
   const applyCheck = useApplyCheck();
   const applyOrder = useApplyOrder();
-  const [message, setMessage] = useState<string | null>(null);
   // La llave de un cobro se conserva hasta el 2xx: reintentar por mala red nunca cobra dos veces.
   const key = useRef<string | null>(null);
 
@@ -44,7 +45,6 @@ export function PaySheet({ current, visible, onClose, onPaid }: { current: Curre
 
   const submitCheck = async (body: PaymentBody) => {
     if (!check) return;
-    setMessage(null);
     key.current ??= Crypto.randomUUID();
     try {
       const result = await addPayment(check.id, body, key.current);
@@ -63,13 +63,12 @@ export function PaySheet({ current, visible, onClose, onPaid }: { current: Curre
         ]);
         return;
       }
-      setMessage(failure instanceof NetworkError ? t("checkout.payError") : describeError(failure));
+      toast.error(failure instanceof NetworkError ? t("checkout.payError") : describeError(failure));
     }
   };
 
   const submitOrder = async (body: ChargeBody) => {
     if (!order) return;
-    setMessage(null);
     key.current ??= Crypto.randomUUID();
     try {
       const charged = await chargeOrder(order.id, body, key.current);
@@ -80,7 +79,7 @@ export function PaySheet({ current, visible, onClose, onPaid }: { current: Curre
     } catch (failure) {
       if (!(failure instanceof NetworkError)) key.current = null;
       haptic.warning();
-      setMessage(describeError(failure));
+      toast.error(describeError(failure));
     }
   };
 
@@ -113,14 +112,10 @@ export function PaySheet({ current, visible, onClose, onPaid }: { current: Curre
             ) : order ? (
               <ChargeForm total={Number(order.total ?? 0)} blocked={order.charge_blocked_reason === "no_items"} terminals={terminals.data ?? []} onSubmit={submitOrder} />
             ) : null}
-            {message ? (
-              <AppText tone="stamp" accessibilityRole="alert" testID="pay-error">
-                {message}
-              </AppText>
-            ) : null}
           </ScrollView>
         </View>
       </KeyboardFrame>
+      <ToastHost announce={false} />
     </Modal>
   );
 }

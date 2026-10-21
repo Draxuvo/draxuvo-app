@@ -89,7 +89,8 @@ describe("cuenta", () => {
 
     await fireEvent.press(await screen.findByRole("button", { name: "Mandar" }));
 
-    expect(await screen.findByText("Refresco de cola: agotado")).toBeTruthy();
+    expect(await screen.findByText(/Refresco de cola: agotado/)).toBeTruthy();
+    expect(screen.getByTestId("toast-error")).toBeTruthy();
     const post = fetchMock.mock.calls.find(([url, init]) => init?.method === "POST" && String(url).endsWith("/rounds"));
     expect(post![1].headers["Idempotency-Key"]).toBe("uuid-1");
   });

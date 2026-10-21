@@ -103,7 +103,8 @@ describe("correcciones durante el servicio", () => {
     await fireEvent.changeText(screen.getByLabelText("Motivo"), "x");
     await fireEvent.press(screen.getByRole("button", { name: "Confirmar" }));
 
-    expect(await screen.findByTestId("check-error")).toBeTruthy();
+    expect(await screen.findByTestId("toast-error")).toBeTruthy();
+    expect(screen.getByText("No tienes permiso para esta acción")).toBeTruthy();
   });
 
   it("una cuenta vacía se cancela y vuelve a las mesas", async () => {

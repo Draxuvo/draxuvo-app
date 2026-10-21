@@ -81,6 +81,35 @@ describe("pedido (órdenes sin restaurante)", () => {
   });
 });
 
+describe("pedido (orden cobrada o cancelada en otro lado)", () => {
+  const listed = (o: WorkOrder) => ({ results: [o], info: { page_index: 1, page_end: 1, total: 1 } });
+
+  it("cierra en pantalla una orden que ya se cobró y avisa", async () => {
+    serve({
+      "GET /api/v1/work_orders": listed(order({ total: 40 })),
+      "GET /api/v1/work_orders/5": order({ total: 40, status: "paid" }),
+    });
+    await renderScreen(<Pedido />);
+
+    await fireEvent.press(await screen.findByRole("button", { name: "Mesa 3, Ocupada, $40.00" }));
+
+    expect(await screen.findByText("La orden ya se cobró")).toBeTruthy();
+    expect(screen.queryByText("Toca un producto del menú para agregarlo.")).toBeNull();
+  });
+
+  it("avisa cuando la orden se canceló", async () => {
+    serve({
+      "GET /api/v1/work_orders": listed(order({ total: 40 })),
+      "GET /api/v1/work_orders/5": order({ total: 40, status: "cancelled" }),
+    });
+    await renderScreen(<Pedido />);
+
+    await fireEvent.press(await screen.findByRole("button", { name: "Mesa 3, Ocupada, $40.00" }));
+
+    expect(await screen.findByText("La orden se canceló")).toBeTruthy();
+  });
+});
+
 describe("cobro desde la pantalla (mesas)", () => {
   const waiter = { id: 1, name: "Sara Staff" };
   const sent = { id: 1, name: "Sope", quantity: 1, unit_price: "25.00", note: null, status: "delivered" as const, station: null, kitchen_order_number: 1, sent_at: null, ready_at: null, allowed_actions: [] };

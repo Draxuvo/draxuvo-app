@@ -5,7 +5,7 @@ import { Modal, Pressable, ScrollView, View } from "react-native";
 import Animated from "react-native-reanimated";
 import { ApiError, NetworkError } from "@/api/client";
 import { sendRound } from "@/api/restaurant";
-import type { Check, CheckItem, MenuProduct, RoundResponse } from "@/api/types";
+import type { Check, CheckItem, MenuProduct } from "@/api/types";
 import { CancelReasonSheet } from "@/components/cancel-reason-sheet";
 import { CheckLine } from "@/components/check-line";
 import { describeError, ErrorView } from "@/components/error-view";
@@ -14,6 +14,7 @@ import { SkeletonBlock } from "@/components/skeleton";
 import { AppText, Button, Divider } from "@/components/ui";
 import { useApplyCheck, useCheck, useCheckActions, useRestaurantMenu, useWaiters } from "@/hooks/use-restaurant";
 import { haptic } from "@/lib/haptics";
+import { toast } from "@/toast/store";
 import { t, useLocale } from "@/i18n";
 import { radius, rowEnter, space, useTheme } from "@/theme";
 
@@ -62,14 +63,12 @@ export default function Cuenta() {
   const [cancelTarget, setCancelTarget] = useState<CheckItem | null>(null);
   const [reassigning, setReassigning] = useState(false);
   const [sending, setSending] = useState(false);
-  const [message, setMessage] = useState<string | null>(null);
-  const [rejected, setRejected] = useState<RoundResponse["rejected"]>([]);
   // La llave de un envío se conserva hasta el 2xx: reintentar por mala red nunca duplica la comanda.
   const sendKey = useRef<string | null>(null);
 
   const fail = (failure: unknown, fallback: "check.notSaved" | "check.notSent") => {
     haptic.warning();
-    setMessage(failure instanceof NetworkError ? t(fallback) : describeError(failure));
+    toast.error(failure instanceof NetworkError ? t(fallback) : describeError(failure));
     if (failure instanceof ApiError) void query.refetch();
   };
 
@@ -94,7 +93,6 @@ export default function Cuenta() {
   const open = check.status === "open";
 
   const run = async (work: () => Promise<unknown>, fallback: "check.notSaved" | "check.notSent" = "check.notSaved") => {
-    setMessage(null);
     try {
       await work();
     } catch (failure) {
@@ -103,15 +101,13 @@ export default function Cuenta() {
   };
 
   const send = async () => {
-    setMessage(null);
-    setRejected([]);
     setSending(true);
     sendKey.current ??= Crypto.randomUUID();
     try {
       const result = await sendRound(checkId, sendKey.current);
       sendKey.current = null;
       apply(result.check);
-      setRejected(result.rejected);
+      if (result.rejected.length) toast.error(`${t("check.rejectedTitle")}: ${result.rejected.map((item) => t("check.rejectedItem", { name: item.name })).join(" · ")}`);
       haptic.success();
     } catch (failure) {
       if (!(failure instanceof NetworkError)) sendKey.current = null;
@@ -142,24 +138,6 @@ export default function Cuenta() {
             </AppText>
           ) : null}
         </Animated.View>
-
-        {message ? (
-          <AppText tone="stamp" accessibilityRole="alert" testID="check-error">
-            {message}
-          </AppText>
-        ) : null}
-        {rejected.length > 0 ? (
-          <View accessibilityRole="alert" style={{ borderRadius: radius.card, backgroundColor: c.stampSoft, padding: space[3], gap: space[1] }}>
-            <AppText variant="bodyStrong" style={{ color: c.onStampSoft }}>
-              {t("check.rejectedTitle")}
-            </AppText>
-            {rejected.map((item) => (
-              <AppText key={item.id} style={{ color: c.onStampSoft }}>
-                {t("check.rejectedItem", { name: item.name })}
-              </AppText>
-            ))}
-          </View>
-        ) : null}
 
         {check.items.length === 0 ? (
           <View style={{ alignItems: "center", gap: space[2], paddingVertical: space[6] }}>

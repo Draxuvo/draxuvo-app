@@ -1,4 +1,4 @@
-import { useRouter } from "expo-router";
+import { useIsFocused, useRouter } from "expo-router";
 import { useMemo, useRef, useState } from "react";
 import { RefreshControl, View, type NativeScrollEvent, type NativeSyntheticEvent } from "react-native";
 import Animated from "react-native-reanimated";
@@ -16,6 +16,9 @@ import { useEmployees, useOrders } from "@/hooks/use-orders";
 import { t, useLocale } from "@/i18n";
 import { isBossRole, useSession } from "@/session";
 import { rowEnter, space, TAB_BAR_HEIGHT, useTheme } from "@/theme";
+
+/** Mientras Órdenes está a la vista se vuelve a consultar cada 10 s. */
+const ORDERS_POLL_MS = 10_000;
 
 type Segment = "toDo" | "finished";
 const SEGMENT_STATUSES: Record<Segment, WorkOrderStatus[]> = {
@@ -40,11 +43,14 @@ export default function OrdersList() {
   // Con un estado elegido en los filtros manda ese; si no, el segmento. La API acepta un estado por llamada.
   const statuses = filters.status ? [filters.status] : SEGMENT_STATUSES[segment];
   const common = { employee_id: boss ? filters.employeeId : undefined };
-  const inProgress = useOrders({ ...common, status: "in_progress" }, statuses.includes("in_progress"));
-  const open = useOrders({ ...common, status: "open" }, statuses.includes("open"));
-  const done = useOrders({ ...common, status: "done" }, statuses.includes("done"));
-  const paid = useOrders({ ...common, status: "paid" }, statuses.includes("paid"));
-  const cancelled = useOrders({ ...common, status: "cancelled" }, statuses.includes("cancelled"));
+  // La lista se actualiza sola mientras está a la vista; fuera de ella no consulta (spec 021).
+  const focused = useIsFocused();
+  const poll = focused ? ORDERS_POLL_MS : undefined;
+  const inProgress = useOrders({ ...common, status: "in_progress" }, statuses.includes("in_progress"), poll);
+  const open = useOrders({ ...common, status: "open" }, statuses.includes("open"), poll);
+  const done = useOrders({ ...common, status: "done" }, statuses.includes("done"), poll);
+  const paid = useOrders({ ...common, status: "paid" }, statuses.includes("paid"), poll);
+  const cancelled = useOrders({ ...common, status: "cancelled" }, statuses.includes("cancelled"), poll);
   const employees = useEmployees(boss);
 
   const byStatus: Record<WorkOrderStatus, typeof open> = { in_progress: inProgress, open, done, paid, cancelled };

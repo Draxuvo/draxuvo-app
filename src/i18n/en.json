@@ -9,7 +9,8 @@
     "no": "No",
     "optional": "Optional",
     "back": "Back",
-    "all": "All"
+    "all": "All",
+    "dismissNotice": "Dismiss notice"
   },
   "login": {
     "title": "Sign in",
@@ -419,6 +420,16 @@
     "inc": "Add one {name}",
     "dec": "Remove one {name}",
     "stockAlerts": "Items running low: {count}",
-    "noOrders": "There are no open orders."
+    "noOrders": "There are no open orders.",
+    "closedCheck": "The check was paid or closed",
+    "cancelledCheck": "The check was cancelled",
+    "paidOrder": "The order was paid",
+    "cancelledOrder": "The order was cancelled",
+    "release": "Free table",
+    "released": "Table freed",
+    "releaseTitle": "Free this table?",
+    "releaseBody": "Items that haven't been sent yet will be discarded.",
+    "releaseConfirm": "Free table",
+    "sendDone": "Order {number} sent"
   }
 }

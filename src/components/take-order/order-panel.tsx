@@ -46,6 +46,7 @@ export function OrderPanel({
   onAddMore,
   onSend,
   onCharge,
+  onRelease,
   onOpenCheck,
 }: {
   current: CurrentOrder | null;
@@ -58,6 +59,7 @@ export function OrderPanel({
   onAddMore?: () => void;
   onSend: () => void;
   onCharge: () => void;
+  onRelease: () => void;
   /** Cuenta completa: entregar, cancelar, cambiar de mesero. */
   onOpenCheck?: () => void;
 }) {
@@ -79,7 +81,10 @@ export function OrderPanel({
         <AppText variant="headline" accessibilityRole="header">
           {current.title}
         </AppText>
-        {onOpenCheck ? <Button label={t("takeOrder.fullCheck")} variant="text" icon="list" onPress={onOpenCheck} /> : null}
+        <View style={{ flexDirection: "row", alignItems: "center", flexShrink: 1 }}>
+          {current.canRelease ? <Button label={t("takeOrder.release")} variant="text" icon="log-out" onPress={onRelease} /> : null}
+          {onOpenCheck ? <Button label={t("takeOrder.fullCheck")} variant="text" icon="list" onPress={onOpenCheck} /> : null}
+        </View>
       </View>
       {!live.length ? <AppText tone="muted">{t("takeOrder.orderEmpty")}</AppText> : null}
       {draft.length ? (

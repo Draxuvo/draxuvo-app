@@ -1,6 +1,6 @@
 import * as Crypto from "expo-crypto";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
-import { useRef, useState } from "react";
+import { useRef } from "react";
 import { Alert, View } from "react-native";
 import Animated from "react-native-reanimated";
 import { ApiError, NetworkError } from "@/api/client";
@@ -12,6 +12,7 @@ import { SkeletonBlock } from "@/components/skeleton";
 import { AppText, Divider, KeyboardFrame } from "@/components/ui";
 import { useCheck } from "@/hooks/use-restaurant";
 import { haptic } from "@/lib/haptics";
+import { toast } from "@/toast/store";
 import { formatMoney } from "@/lib/money";
 import { t, useLocale } from "@/i18n";
 import { rowEnter, space, useTheme } from "@/theme";
@@ -33,7 +34,6 @@ export default function CuentaCobro() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const checkId = Number(id);
   const query = useCheck(checkId);
-  const [message, setMessage] = useState<string | null>(null);
   // La llave de un cobro se conserva hasta el 2xx: reintentar por mala red nunca cobra dos veces.
   const key = useRef<string | null>(null);
 
@@ -52,7 +52,6 @@ export default function CuentaCobro() {
   const balance = Number(check.balance);
 
   const submit = async (body: PaymentBody) => {
-    setMessage(null);
     key.current ??= Crypto.randomUUID();
     try {
       const result = await addPayment(checkId, body, key.current);
@@ -71,7 +70,7 @@ export default function CuentaCobro() {
         ]);
         return;
       }
-      setMessage(failure instanceof NetworkError ? t("checkout.payError") : describeError(failure));
+      toast.error(failure instanceof NetworkError ? t("checkout.payError") : describeError(failure));
       if (failure instanceof ApiError) void query.refetch();
     }
   };
@@ -102,11 +101,6 @@ export default function CuentaCobro() {
           <Animated.View entering={rowEnter(2)}>
             <PaymentForm key={check.payments.length} balance={balance} terminals={terminals.data ?? []} onSubmit={submit} />
           </Animated.View>
-        ) : null}
-        {message ? (
-          <AppText tone="stamp" accessibilityRole="alert" testID="checkout-error">
-            {message}
-          </AppText>
         ) : null}
       </Animated.ScrollView>
     </KeyboardFrame>

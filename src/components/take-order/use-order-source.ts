@@ -35,6 +35,8 @@ export interface CurrentOrder {
   canAdd: boolean;
   canSend: boolean;
   canCharge: boolean;
+  /** Cuenta de mesa que se puede cancelar para liberar la mesa (nada mandado todavía). */
+  canRelease: boolean;
   check?: Check;
   order?: WorkOrder;
 }
@@ -89,7 +91,7 @@ export function useOrderSource(mode: "restaurant" | "orders", selection: Selecti
     refetchInterval: POLL_MS,
   });
   const orderId = selection?.kind === "order" ? selection.id : 0;
-  const order = useOrder(orderId, !restaurant && !!orderId);
+  const order = useOrder(orderId, !restaurant && !!orderId, POLL_MS);
   const orderActions = useOrderItemActions(orderId);
   const openOrder = useOpenOrder();
 
@@ -147,6 +149,7 @@ export function useOrderSource(mode: "restaurant" | "orders", selection: Selecti
       canAdd: open && c.allowed_actions.includes("add_item"),
       canSend: open && c.allowed_actions.includes("send") && drafts.length > 0,
       canCharge: open && c.allowed_actions.includes("pay") && !drafts.length && c.items.length > 0,
+      canRelease: open && c.allowed_actions.includes("cancel"),
       check: c,
     };
   } else if (!restaurant && order.data && selection?.kind === "order") {
@@ -161,6 +164,7 @@ export function useOrderSource(mode: "restaurant" | "orders", selection: Selecti
       canAdd: open,
       canSend: false,
       canCharge: (o.items_count ?? 0) > 0 && (actions.includes("charge") || (open && actions.includes("finish"))),
+      canRelease: false,
       order: o,
     };
   }
@@ -195,6 +199,21 @@ export function useOrderSource(mode: "restaurant" | "orders", selection: Selecti
     return orderActions.add.mutateAsync({ product_id: card.id, quantity: 1 });
   }
 
+  /** Libera la mesa cancelando su cuenta; los productos sin mandar se descartan. */
+  async function release() {
+    return checkActions.cancelCheck.mutateAsync(undefined);
+  }
+
+  /** Por qué la cuenta u orden seleccionada ya no está abierta (cobrada, cerrada o cancelada), o null si sigue abierta. */
+  let closedReason: "closedCheck" | "cancelledCheck" | "paidOrder" | "cancelledOrder" | null = null;
+  if (restaurant && selection?.kind === "check" && check.data) {
+    if (check.data.status === "closed") closedReason = "closedCheck";
+    else if (check.data.status === "cancelled") closedReason = "cancelledCheck";
+  } else if (!restaurant && selection?.kind === "order" && order.data) {
+    if (order.data.status === "paid") closedReason = "paidOrder";
+    else if (order.data.status === "cancelled") closedReason = "cancelledOrder";
+  }
+
   /** La llave del envío se conserva hasta el 2xx: reintentar por mala red nunca duplica la comanda. */
   async function send(): Promise<RoundResponse> {
     sendKey.current ??= Crypto.randomUUID();
@@ -219,6 +238,8 @@ export function useOrderSource(mode: "restaurant" | "orders", selection: Selecti
     setQuantity,
     remove,
     send,
+    release,
+    closedReason,
     inOrder: (card: MenuCard) => (current ? inOrderCount(current.lines, card) : 0),
   };
 }

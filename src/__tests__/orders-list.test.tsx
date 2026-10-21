@@ -5,7 +5,7 @@ import { apiError, clearStore, mockFetch, multiUser, reply, seedSession, staffUs
 import { renderScreen } from "@/test/render";
 
 jest.mock("expo-constants", () => ({ expoConfig: { version: "1.0.0" } }));
-jest.mock("expo-router", () => ({ useRouter: () => ({ push: jest.fn() }) }));
+jest.mock("expo-router", () => ({ useRouter: () => ({ push: jest.fn() }), useIsFocused: () => true }));
 
 const fetchMock = mockFetch();
 

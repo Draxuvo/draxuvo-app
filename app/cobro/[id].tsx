@@ -1,6 +1,6 @@
 import * as Crypto from "expo-crypto";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
-import { useRef, useState } from "react";
+import { useRef } from "react";
 import { View } from "react-native";
 import Animated from "react-native-reanimated";
 import { ApiError } from "@/api/client";
@@ -12,6 +12,7 @@ import { SkeletonBlock } from "@/components/skeleton";
 import { AppText, KeyboardFrame } from "@/components/ui";
 import { useApplyOrder, useOrder } from "@/hooks/use-orders";
 import { haptic } from "@/lib/haptics";
+import { toast } from "@/toast/store";
 import { t, useLocale } from "@/i18n";
 import { rowEnter, space, useTheme } from "@/theme";
 
@@ -23,7 +24,6 @@ export default function Cobro() {
   const orderId = Number(id);
   const query = useOrder(orderId);
   const apply = useApplyOrder();
-  const [error, setError] = useState<string | null>(null);
   const terminals = useTerminals();
   // Una llave por intento de cobro: un reintento tras perder la red no cobra dos veces (FR-012).
   const idempotencyKey = useRef(Crypto.randomUUID());
@@ -45,7 +45,6 @@ export default function Cobro() {
   const blocked = order.charge_blocked_reason === "no_items" || !(order.allowed_actions ?? []).includes("charge");
 
   const submit = async (body: ChargeBody) => {
-    setError(null);
     try {
       const charged = await chargeOrder(orderId, body, idempotencyKey.current);
       haptic.success();
@@ -55,7 +54,7 @@ export default function Cobro() {
     } catch (failure) {
       if (failure instanceof ApiError && failure.status === 422) void query.refetch();
       haptic.warning();
-      setError(describeError(failure));
+      toast.error(describeError(failure));
     }
   };
 
@@ -69,11 +68,6 @@ export default function Cobro() {
       <Animated.View entering={rowEnter(1)}>
         <ChargeForm total={total} blocked={blocked} terminals={terminals.data ?? []} onSubmit={submit} />
       </Animated.View>
-      {error ? (
-        <AppText tone="stamp" accessibilityRole="alert" testID="charge-error">
-          {error}
-        </AppText>
-      ) : null}
     </Animated.ScrollView>
 </KeyboardFrame>
   );
