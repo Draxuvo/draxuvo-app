@@ -60,6 +60,16 @@ export const createOrder = (payload: OrderPayload) =>
 export const updateOrder = (id: number, payload: OrderPayload) =>
   api.patch<WorkOrder>(`/api/v1/work_orders/${id}`, { body: payload });
 
+/** Productos del catálogo en una orden (spec 018): la API pone el precio y la descripción. */
+export const addOrderItem = (orderId: number, body: { product_id: number; quantity: number }) =>
+  api.post<WorkOrder>(`/api/v1/work_orders/${orderId}/items`, { body });
+
+export const updateOrderItem = (orderId: number, itemId: number, body: { quantity: number }) =>
+  api.patch<WorkOrder>(`/api/v1/work_orders/${orderId}/items/${itemId}`, { body });
+
+export const deleteOrderItem = (orderId: number, itemId: number) =>
+  api.delete<WorkOrder>(`/api/v1/work_orders/${orderId}/items/${itemId}`);
+
 export const listEmployees = () =>
   api.get<PaginatedResponse<Employee>>("/api/v1/employees", { query: { page_size: 100, status: "active" } });
 
