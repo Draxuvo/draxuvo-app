@@ -11,7 +11,7 @@ import { space } from "@/theme";
  * Se abre desde el botón de Órdenes y acepta `?cuenta=<id>` para abrir una cuenta concreta (spec 023).
  */
 export default function Pedido() {
-  const { cuenta } = useLocalSearchParams<{ cuenta?: string }>();
+  const { cuenta, hoja } = useLocalSearchParams<{ cuenta?: string; hoja?: string }>();
   const { mode, ready } = useScreenModeState();
   const id = Number(cuenta);
   const initialCheckId = Number.isInteger(id) && id > 0 ? id : undefined;
@@ -28,7 +28,7 @@ export default function Pedido() {
           <SkeletonBlock height={160} />
         </View>
       ) : (
-        <TakeOrderScreen mode={mode} initialCheckId={mode === "restaurant" ? initialCheckId : undefined} />
+        <TakeOrderScreen mode={mode} initialCheckId={mode === "restaurant" ? initialCheckId : undefined} initialSheet={hoja === "1"} />
       )}
     </>
   );

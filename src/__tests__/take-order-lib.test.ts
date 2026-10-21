@@ -1,6 +1,6 @@
 
 import {
-  categoryColor, filterMenu, inOrderCount, normalize, runningTotal, screenMode, tapProduct, type Line,
+  categoryColor, filterMenu, inOrderCount, groupByRound, normalize, orderSummary, runningTotal, screenMode, tapProduct, type Line,
 } from "@/components/take-order/lib";
 
 const line = (over: Partial<Line> = {}): Line => ({
@@ -59,4 +59,19 @@ describe("runningTotal e inOrderCount", () => {
 describe("categoryColor", () => {
   it("es estable", () => expect(categoryColor("Bebidas")).toBe(categoryColor("Bebidas")));
   it("usa un color de la paleta", () => expect(categoryColor("x")).toMatch(/^#[0-9A-F]{6}$/));
+});
+
+describe("orderSummary", () => {
+  it("suma productos y total sin los renglones cancelados", () => {
+    expect(orderSummary([line({ quantity: 2 }), line({ id: 2, quantity: 1, unit_price: 25 }), line({ id: 3, quantity: 5, cancelled: true })])).toEqual({ count: 3, total: 85 });
+  });
+  it("una orden vacía da cero", () => expect(orderSummary([])).toEqual({ count: 0, total: 0 }));
+});
+
+describe("groupByRound", () => {
+  const it_ = (id: number, round: number | null) => ({ id, kitchen_order_number: round }) as never;
+  it("agrupa por comanda en orden y deja fuera lo sin mandar", () => {
+    const groups = groupByRound([it_(1, 2), it_(2, 1), it_(3, null), it_(4, 2)]);
+    expect(groups.map((g) => [g.number, g.items.map((i: { id: number }) => i.id)])).toEqual([[1, [2]], [2, [1, 4]]]);
+  });
 });

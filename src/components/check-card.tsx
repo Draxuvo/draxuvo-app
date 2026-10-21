@@ -2,6 +2,7 @@ import { View } from "react-native";
 import type { CheckSummary } from "@/api/types";
 import { t } from "@/i18n";
 import { formatMoney } from "@/lib/money";
+import { tableLabel } from "@/lib/table-label";
 import { space } from "@/theme";
 import { AppText, Card } from "./ui";
 
@@ -11,7 +12,7 @@ function minutesSince(iso: string): number {
 
 /** Cuenta de mesa abierta dentro de la lista de Órdenes (spec 023): mesa o nombre para llevar, total, mesero y tiempo abierta. */
 export function CheckCard({ name, takeout, check, onPress }: { name: string; takeout: boolean; check: CheckSummary; onPress: () => void }) {
-  const title = takeout ? t("orders.openChecks.takeout", { name }) : t("orders.openChecks.table", { name });
+  const title = takeout ? t("orders.openChecks.takeout", { name }) : tableLabel("orders.openChecks.table", name);
   const elapsed = t("orders.openChecks.elapsed", { time: t("tables.elapsed", { minutes: minutesSince(check.opened_at) }) });
   const waiter = check.waiter ? `${t("orders.openChecks.waiter", { name: check.waiter.name })} · ` : "";
   return (

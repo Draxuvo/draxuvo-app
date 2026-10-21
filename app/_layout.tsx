@@ -36,7 +36,6 @@ function Screens() {
         <Stack.Screen name="cobro/[id]" options={pushed} />
         <Stack.Screen name="pedido" options={pushed} />
         <Stack.Screen name="cuenta/[id]" options={pushed} />
-        <Stack.Screen name="cuenta-cobro/[id]" options={pushed} />
         <Stack.Screen name="ticket/[id]" options={pushed} />
         <Stack.Screen name="orden-form/[id]" options={pushed} />
       </Stack>

@@ -2,7 +2,7 @@ import { Pressable, ScrollView, View } from "react-native";
 import { haptic } from "@/lib/haptics";
 import { t } from "@/i18n";
 import { radius, space, useTheme } from "@/theme";
-import { AppText } from "./ui";
+import { AppText, Icon } from "./ui";
 
 export type StatusTab = "open" | "in_progress" | "done" | "paid";
 
@@ -18,14 +18,19 @@ export function OrderStatusTabs({
   value,
   onChange,
   counts,
+  cancelled,
+  onToggleCancelled,
 }: {
   value: StatusTab | null;
   onChange: (tab: StatusTab) => void;
   counts: Record<StatusTab, number>;
+  /** Canceladas es un filtro aparte, pero va en la misma fila para no gastar otra línea de pantalla. */
+  cancelled: boolean;
+  onToggleCancelled: () => void;
 }) {
   const { c } = useTheme();
   return (
-    <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: space[2], paddingHorizontal: space[4] }} accessibilityRole="tablist">
+    <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ flexGrow: 0 }} contentContainerStyle={{ gap: space[2], paddingHorizontal: space[4], paddingVertical: 3, alignItems: "center" }} accessibilityRole="tablist">
       {STATUS_TABS.map((tab) => {
         const selected = value === tab.value;
         const count = counts[tab.value];
@@ -72,6 +77,32 @@ export function OrderStatusTabs({
           </Pressable>
         );
       })}
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel={t("orders.cancelledFilter")}
+        accessibilityState={{ selected: cancelled }}
+        onPress={() => {
+          haptic.select();
+          onToggleCancelled();
+        }}
+        style={{
+          minHeight: 48,
+          flexDirection: "row",
+          alignItems: "center",
+          gap: space[2],
+          paddingHorizontal: space[4],
+          borderRadius: radius.pill,
+          borderWidth: 1.5,
+          borderStyle: cancelled ? "solid" : "dashed",
+          borderColor: cancelled ? c.stamp : c.line,
+          backgroundColor: cancelled ? c.stampSoft : "transparent",
+        }}
+      >
+        <Icon name="x-circle" tone={cancelled ? "stamp" : "muted"} size={18} />
+        <AppText variant="bodyStrong" tone={cancelled ? "stamp" : "muted"}>
+          {t("orders.cancelledFilter")}
+        </AppText>
+      </Pressable>
     </ScrollView>
   );
 }

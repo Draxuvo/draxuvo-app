@@ -1,22 +1,23 @@
 import { Pressable, Text } from "react-native";
 import Animated, { useAnimatedStyle, withTiming } from "react-native-reanimated";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { haptic } from "@/lib/haptics";
-import { duration, ease, radius, space, TAB_BAR_HEIGHT, typeScale, useTheme } from "@/theme";
+import { duration, ease, radius, space, typeScale, useTheme } from "@/theme";
 import { Icon, usePressScale, type IconName } from "./ui";
 
 const EXTENDED = 176;
 const COLLAPSED = 60;
 
-/** Botón flotante extendido: muestra su texto arriba de la lista y se encoge a solo ícono al bajar. */
+/**
+ * Botón flotante extendido: muestra su texto arriba de la lista y se encoge a solo ícono al bajar. Va pegado al borde
+ * inferior de la pantalla: la barra de pestañas ya ocupa su propio espacio, así que no se le suma su altura.
+ */
 export function Fab({ label, icon, extended, onPress }: { label: string; icon: IconName; extended: boolean; onPress: () => void }) {
   const { c } = useTheme();
-  const insets = useSafeAreaInsets();
   const press = usePressScale(0.94);
   const width = useAnimatedStyle(() => ({ width: withTiming(extended ? EXTENDED : COLLAPSED, { duration: duration.base, easing: ease }) }));
   const text = useAnimatedStyle(() => ({ opacity: withTiming(extended ? 1 : 0, { duration: duration.quick }) }));
   return (
-    <Animated.View style={[{ position: "absolute", right: space[4], bottom: TAB_BAR_HEIGHT + insets.bottom + space[4] }, press.style]}>
+    <Animated.View style={[{ position: "absolute", right: space[4], bottom: space[4] }, press.style]}>
       <Animated.View
         style={[
           {

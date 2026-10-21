@@ -164,6 +164,18 @@ describe("Órdenes con mesas (spec 023)", () => {
     expect(await screen.findByTestId("stock-alerts")).toBeTruthy();
   });
 
+  it("no repite la palabra Mesa cuando la mesa ya se llama así", async () => {
+    await seedSession(staffUser, 10);
+    const named = tables();
+    named.results[0].name = "Mesa 1";
+    serve({}, named);
+    await renderScreen(<OrdersList />);
+
+    await screen.findByRole("button", { name: "Abrir cuenta de Mesa 1" });
+    expect(screen.getByText("Mesa 1")).toBeTruthy();
+    expect(screen.queryByText("Mesa Mesa 1")).toBeNull();
+  });
+
   it("tocar una cuenta abre Tomar pedido con esa cuenta", async () => {
     await seedSession(staffUser, 10);
     serve({}, tables());

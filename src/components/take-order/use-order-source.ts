@@ -4,7 +4,7 @@ import { useRef } from "react";
 import { listOrders } from "@/api/orders";
 import { sendRound } from "@/api/restaurant";
 import type { Check, RoundResponse, WorkOrder } from "@/api/types";
-import { POLL_MS, useApplyCheck, useCheck, useCheckActions, useOpenCheck, useTables } from "@/hooks/use-restaurant";
+import { POLL_MS, useApplyCheck, useCheck, useCheckActions, useOpenCheck, useTables, useWaiters } from "@/hooks/use-restaurant";
 import { useOpenOrder, useOrder, useOrderItemActions } from "@/hooks/use-orders";
 import { useSession } from "@/session";
 import { inOrderCount, tapProduct, type Line, type MenuCard } from "./lib";
@@ -37,6 +37,12 @@ export interface CurrentOrder {
   canCharge: boolean;
   /** Cuenta de mesa que se puede cancelar para liberar la mesa (nada mandado todavía). */
   canRelease: boolean;
+  /** La persona puede pasar la cuenta a otro mesero (encargados). */
+  canReassign: boolean;
+  /** Cuenta cerrada, cobrada o cancelada: se ve sin controles. */
+  readOnly: boolean;
+  /** Ticket de la cuenta cobrada, si existe. */
+  ticketId: number | null;
   check?: Check;
   order?: WorkOrder;
 }
@@ -70,7 +76,7 @@ export function orderLines(order: WorkOrder): Line[] {
   }));
 }
 
-export function useOrderSource(mode: "restaurant" | "orders", selection: Selection) {
+export function useOrderSource(mode: "restaurant" | "orders", selection: Selection, options: { waiters?: boolean } = {}) {
   const { companyId } = useSession();
   const restaurant = mode === "restaurant";
   const apply = useApplyCheck();
@@ -82,6 +88,7 @@ export function useOrderSource(mode: "restaurant" | "orders", selection: Selecti
   const check = useCheck(checkId, restaurant);
   const checkActions = useCheckActions(checkId);
   const openCheck = useOpenCheck();
+  const waiters = useWaiters(restaurant && !!options.waiters);
 
   // ── Órdenes de trabajo
   const orders = useQuery({
@@ -150,6 +157,9 @@ export function useOrderSource(mode: "restaurant" | "orders", selection: Selecti
       canSend: open && c.allowed_actions.includes("send") && drafts.length > 0,
       canCharge: open && c.allowed_actions.includes("pay") && !drafts.length && c.items.length > 0,
       canRelease: open && c.allowed_actions.includes("cancel"),
+      canReassign: open && c.allowed_actions.includes("reassign"),
+      readOnly: !open,
+      ticketId: c.ticket_id ?? null,
       check: c,
     };
   } else if (!restaurant && order.data && selection?.kind === "order") {
@@ -165,6 +175,9 @@ export function useOrderSource(mode: "restaurant" | "orders", selection: Selecti
       canSend: false,
       canCharge: (o.items_count ?? 0) > 0 && (actions.includes("charge") || (open && actions.includes("finish"))),
       canRelease: false,
+      canReassign: false,
+      readOnly: !open,
+      ticketId: null,
       order: o,
     };
   }
@@ -190,6 +203,12 @@ export function useOrderSource(mode: "restaurant" | "orders", selection: Selecti
     return orderActions.remove.mutateAsync(line.id);
   }
 
+  /** Nota de un renglón de la cuenta ("sin cebolla"); las órdenes de trabajo no llevan nota por renglón. */
+  async function setNote(line: Line, note: string) {
+    if (!restaurant) return;
+    return checkActions.update.mutateAsync({ itemId: line.id, note });
+  }
+
   /** Tocar una tarjeta: sube el renglón editable del producto o agrega uno con cantidad 1. */
   async function tap(card: MenuCard) {
     if (!current) return;
@@ -202,6 +221,21 @@ export function useOrderSource(mode: "restaurant" | "orders", selection: Selecti
   /** Libera la mesa cancelando su cuenta; los productos sin mandar se descartan. */
   async function release() {
     return checkActions.cancelCheck.mutateAsync(undefined);
+  }
+
+  /** Marca un producto ya listo como entregado. */
+  async function deliver(line: { id: number }) {
+    return checkActions.deliver.mutateAsync(line.id);
+  }
+
+  /** Cancela un producto ya mandado; la API exige un motivo. */
+  async function cancelItem(line: { id: number }, reason: string) {
+    return checkActions.cancelItem.mutateAsync({ itemId: line.id, reason });
+  }
+
+  /** Pasa la cuenta a otro mesero (encargados). */
+  async function reassign(waiterId: number) {
+    return checkActions.reassign.mutateAsync(waiterId);
   }
 
   /** Por qué la cuenta u orden seleccionada ya no está abierta (cobrada, cerrada o cancelada), o null si sigue abierta. */
@@ -233,12 +267,19 @@ export function useOrderSource(mode: "restaurant" | "orders", selection: Selecti
     refreshing: restaurant ? overview.isRefetching : orders.isRefetching,
     current,
     currentLoading: restaurant ? check.isLoading && !!checkId : order.isLoading && !!orderId,
+    currentMissing: restaurant ? check.isError && !!checkId : order.isError && !!orderId,
     create,
     tap,
     setQuantity,
+    setNote,
     remove,
     send,
     release,
+    deliver,
+    cancelItem,
+    reassign,
+    waiters: waiters.data?.results ?? [],
+    waitersLoading: waiters.isLoading,
     closedReason,
     inOrder: (card: MenuCard) => (current ? inOrderCount(current.lines, card) : 0),
   };

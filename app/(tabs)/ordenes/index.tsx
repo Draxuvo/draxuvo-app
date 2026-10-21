@@ -18,7 +18,7 @@ import { useTables } from "@/hooks/use-restaurant";
 import { todayISO, useEmployees, useOrderCounts, useOrders } from "@/hooks/use-orders";
 import { t, useLocale } from "@/i18n";
 import { isBossRole, useSession } from "@/session";
-import { rowEnter, space, TAB_BAR_HEIGHT, useTheme } from "@/theme";
+import { rowEnter, space, useTheme } from "@/theme";
 
 /** Mientras Órdenes está a la vista se vuelve a consultar cada 10 s. */
 const ORDERS_POLL_MS = 10_000;
@@ -117,8 +117,9 @@ export default function OrdersList() {
           setFilters((current) => ({ ...current, cancelled: false }));
         }}
         counts={tabCounts}
+        cancelled={!!filters.cancelled}
+        onToggleCancelled={() => setFilters((current) => ({ ...current, cancelled: !current.cancelled }))}
       />
-      <View style={{ height: space[2] }} />
       <OrderFilters value={filters} onChange={setFilters} employees={boss ? employees.data?.results : undefined} />
 
       {error && rows.length === 0 ? (
@@ -129,7 +130,7 @@ export default function OrdersList() {
         <Animated.FlatList
           data={rows}
           keyExtractor={(row) => row.key}
-          contentContainerStyle={{ padding: space[4], gap: space[3], flexGrow: 1, paddingBottom: TAB_BAR_HEIGHT + 120 }}
+          contentContainerStyle={{ padding: space[4], gap: space[3], flexGrow: 1, paddingBottom: 96 }}
           renderItem={({ item, index }) => (
             <Animated.View entering={rowEnter(index)}>
               {item.kind === "check" ? (

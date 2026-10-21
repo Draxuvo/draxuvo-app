@@ -1,5 +1,5 @@
 // Reglas puras de la pantalla de tomar pedido (spec 018). No tocan red ni React; misma forma que en draxuvo-ui.
-import type { OrderMode } from "@/api/types";
+import type { CheckItem, OrderMode } from "@/api/types";
 
 export type ScreenMode = "restaurant" | "orders" | "none";
 
@@ -85,4 +85,20 @@ export function categoryColor(category: string): string {
   let hash = 0;
   for (const ch of category) hash = (hash * 31 + ch.charCodeAt(0)) >>> 0;
   return PALETTE[hash % PALETTE.length];
+}
+
+/** Resumen de la orden para la barra: cuántos productos lleva y cuánto suma (sin renglones cancelados). */
+export function orderSummary(lines: Line[]): { count: number; total: number } {
+  const live = lines.filter((l) => !l.cancelled);
+  return { count: live.reduce((sum, l) => sum + l.quantity, 0), total: runningTotal(live) };
+}
+
+/** Productos ya mandados agrupados por comanda, en orden de comanda (spec 025). */
+export function groupByRound(items: CheckItem[]): { number: number; items: CheckItem[] }[] {
+  const rounds = new Map<number, CheckItem[]>();
+  for (const item of items) {
+    if (item.kitchen_order_number == null) continue;
+    rounds.set(item.kitchen_order_number, [...(rounds.get(item.kitchen_order_number) ?? []), item]);
+  }
+  return [...rounds.entries()].sort(([a], [b]) => a - b).map(([number, list]) => ({ number, items: list }));
 }

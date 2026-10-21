@@ -9,7 +9,7 @@ function Alerts() {
   const { alerts, dismiss } = useReadyAlerts();
   const open = (item: ReadyItem) => {
     dismiss(item.id);
-    router.push(`/cuenta/${item.check_id}` as never);
+    router.push(`/pedido?cuenta=${item.check_id}&hoja=1` as never);
   };
   return <ReadyBanner alerts={alerts} onOpen={open} onDismiss={dismiss} />;
 }
