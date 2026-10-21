@@ -1,10 +1,14 @@
 import { keepPreviousData, useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
+  addOrderItem,
+  createOrder,
+  deleteOrderItem,
   getOrder,
   listEmployees,
   listOrders,
   setStepDone,
   transitionOrder,
+  updateOrderItem,
   type OrderListParams,
   type OrderTransition,
 } from "@/api/orders";
@@ -71,4 +75,26 @@ export function useToggleStep(orderId: number) {
     mutationFn: ({ stepId, done }: { stepId: number; done: boolean }) => setStepDone(orderId, stepId, done),
     onSuccess: apply,
   });
+}
+
+/** Renglones de una orden de trabajo para la pantalla de tomar pedido (spec 018). */
+export function useOrderItemActions(orderId: number) {
+  const apply = useApplyOrder();
+  return {
+    add: useMutation({
+      mutationFn: (body: { product_id: number; quantity: number }) => addOrderItem(orderId, body),
+      onSuccess: apply,
+    }),
+    update: useMutation({
+      mutationFn: ({ itemId, quantity }: { itemId: number; quantity: number }) => updateOrderItem(orderId, itemId, { quantity }),
+      onSuccess: apply,
+    }),
+    remove: useMutation({ mutationFn: (itemId: number) => deleteOrderItem(orderId, itemId), onSuccess: apply }),
+  };
+}
+
+/** Abre una orden de trabajo con solo su nombre (mesa o cliente); los productos se agregan después. */
+export function useOpenOrder() {
+  const apply = useApplyOrder();
+  return useMutation({ mutationFn: (title: string) => createOrder({ work_order: { title } }), onSuccess: apply });
 }

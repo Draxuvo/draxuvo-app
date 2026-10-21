@@ -397,5 +397,28 @@
   },
   "terminals": {
     "label": "Terminal"
+  },
+  "takeOrder": {
+    "title": "Take order",
+    "free": "Free",
+    "occupied": "Occupied",
+    "mine": "Yours",
+    "takeoutName": "Customer name (takeout)",
+    "orderName": "Table or customer",
+    "newTakeout": "New takeout",
+    "newOrder": "New order",
+    "pickTable": "Pick a table to see its order.",
+    "orderEmpty": "Tap a menu item to add it.",
+    "sentSection": "Already sent",
+    "fullCheck": "Full check",
+    "finishCharge": "Finish and charge",
+    "tabTables": "Tables",
+    "tabOrder": "Order",
+    "tabMenu": "Menu",
+    "inOrder": "{count} in the order",
+    "inc": "Add one {name}",
+    "dec": "Remove one {name}",
+    "stockAlerts": "Items running low: {count}",
+    "noOrders": "There are no open orders."
   }
 }

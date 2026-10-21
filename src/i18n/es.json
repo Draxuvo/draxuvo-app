@@ -397,5 +397,28 @@
   },
   "terminals": {
     "label": "Terminal"
+  },
+  "takeOrder": {
+    "title": "Tomar pedido",
+    "free": "Libre",
+    "occupied": "Ocupada",
+    "mine": "Tuya",
+    "takeoutName": "Nombre del cliente (para llevar)",
+    "orderName": "Mesa o cliente",
+    "newTakeout": "Nuevo para llevar",
+    "newOrder": "Nueva orden",
+    "pickTable": "Elige una mesa para ver su orden.",
+    "orderEmpty": "Toca un producto del menú para agregarlo.",
+    "sentSection": "Ya mandado",
+    "fullCheck": "Cuenta completa",
+    "finishCharge": "Terminar y cobrar",
+    "tabTables": "Mesas",
+    "tabOrder": "Orden",
+    "tabMenu": "Menú",
+    "inOrder": "{count} en la orden",
+    "inc": "Agregar una unidad de {name}",
+    "dec": "Quitar una unidad de {name}",
+    "stockAlerts": "Productos con pocas existencias: {count}",
+    "noOrders": "No hay órdenes abiertas."
   }
 }

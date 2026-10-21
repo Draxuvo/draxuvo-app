@@ -11,6 +11,7 @@ import { OrderCard } from "@/components/order-card";
 import { OrderFilters, type OrderFilterValue } from "@/components/order-filters";
 import { OrderListSkeleton } from "@/components/skeleton";
 import { AppText, Segmented } from "@/components/ui";
+import { useScreenMode } from "@/components/take-order/use-screen-mode";
 import { useEmployees, useOrders } from "@/hooks/use-orders";
 import { t, useLocale } from "@/i18n";
 import { isBossRole, useSession } from "@/session";
@@ -31,6 +32,10 @@ export default function OrdersList() {
   const [segment, setSegment] = useState<Segment>("toDo");
   const [filters, setFilters] = useState<OrderFilterValue>({});
   const [extended, setExtended] = useState(true);
+  // Con mesas o en modo pedido, "nueva orden" abre la pantalla visual de tomar pedido (spec 018).
+  const screen = useScreenMode();
+  const newOrder = () =>
+    router.push((screen === "restaurant" ? "/mesas" : screen === "orders" ? "/pedido" : "/orden-form/nueva") as never);
 
   // Con un estado elegido en los filtros manda ese; si no, el segmento. La API acepta un estado por llamada.
   const statuses = filters.status ? [filters.status] : SEGMENT_STATUSES[segment];
@@ -121,7 +126,7 @@ export default function OrdersList() {
         />
       )}
 
-      <Fab icon="plus" label={t("orders.new")} extended={extended} onPress={() => router.push("/orden-form/nueva" as never)} />
+      <Fab icon="plus" label={t("orders.new")} extended={extended} onPress={newOrder} />
     </View>
   );
 }
