@@ -13,6 +13,7 @@ import { resetToasts } from "@/toast/store";
 
 jest.mock("expo-constants", () => ({ expoConfig: { version: "1.0.0" } }));
 jest.mock("expo-image", () => ({ Image: "Image" }));
+jest.mock("expo-router", () => ({ useRouter: () => ({ push: jest.fn() }) }));
 
 const fetchMock = mockFetch();
 
