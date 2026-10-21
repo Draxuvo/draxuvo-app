@@ -5,6 +5,7 @@ import Animated from "react-native-reanimated";
 import type { WorkOrderPhoto } from "@/api/types";
 import { useOutboxActions } from "@/hooks/use-outbox";
 import { t } from "@/i18n";
+import { toast } from "@/toast/store";
 import { ImageTooLargeError, NotAnImageError, PermissionDeniedError, pickImage, prepareImage } from "@/lib/image";
 import type { OutboxItem } from "@/outbox/db";
 import { radius, rowEnter, space, useTheme } from "@/theme";
@@ -32,19 +33,17 @@ export function PhotoGrid({
 }) {
   const { c } = useTheme();
   const { addPhoto, retry, discard } = useOutboxActions();
-  const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [width, setWidth] = useState(0);
 
   const add = async (source: "camera" | "library") => {
-    setError(null);
     setBusy(true);
     try {
       const asset = await pickImage(source);
       if (!asset) return;
       await addPhoto(orderId, await prepareImage(asset));
     } catch (failure) {
-      setError(errorText(failure));
+      toast.error(errorText(failure));
     } finally {
       setBusy(false);
     }
@@ -69,11 +68,6 @@ export function PhotoGrid({
           </View>
         ))}
       </View>
-      {error ? (
-        <AppText tone="stamp" accessibilityRole="alert">
-          {error}
-        </AppText>
-      ) : null}
       {canAdd ? (
         <View style={{ flexDirection: "row", gap: space[2] }}>
           <View style={{ flex: 1 }}>

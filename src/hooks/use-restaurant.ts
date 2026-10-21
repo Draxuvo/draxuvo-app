@@ -22,7 +22,7 @@ import { useSession } from "@/session";
 /** El plano de mesas y la cuenta abierta se consultan cada 4 s mientras la app está activa (research R2). */
 export const POLL_MS = 4000;
 
-function useAppActive(): boolean {
+export function useAppActive(): boolean {
   const [active, setActive] = useState(AppState.currentState !== "background");
   useEffect(() => {
     const sub = AppState.addEventListener("change", (state) => setActive(state === "active"));

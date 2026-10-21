@@ -1,16 +1,21 @@
 import { fireEvent, screen, waitFor } from "@testing-library/react-native";
 import Pedido from "../../app/pedido";
-import Mesas from "../../app/(tabs)/mesas";
 import type { Check, User, WorkOrder } from "@/api/types";
 import { clearStore, mockFetch, reply, seedSession, staffUser } from "@/test/helpers";
 import { renderScreen } from "@/test/render";
 
 jest.mock("expo-constants", () => ({ expoConfig: { version: "1.0.0" } }));
 const mockPush = jest.fn();
-jest.mock("expo-router", () => ({ useRouter: () => ({ push: mockPush }), Stack: { Screen: () => null } }));
+jest.mock("expo-router", () => ({
+  useRouter: () => ({ push: mockPush }),
+  useLocalSearchParams: () => ({}),
+  Stack: { Screen: () => null },
+  Redirect: () => null,
+}));
 let mockUuid = 0;
 jest.mock("expo-crypto", () => ({ randomUUID: () => `uuid-${++mockUuid}` }));
 
+const Mesas = Pedido;
 const fetchMock = mockFetch();
 const orderUser: User = {
   ...staffUser,
@@ -54,8 +59,9 @@ describe("pedido (órdenes sin restaurante)", () => {
     await renderScreen(<Pedido />);
 
     await fireEvent.press(await screen.findByRole("button", { name: "Mesa 3, Ocupada, $40.00" }));
+    await fireEvent.press(await screen.findByTestId("order-bar"));
 
-    expect(await screen.findByText("Café")).toBeTruthy();
+    expect(await screen.findByTestId("order-line-1")).toBeTruthy();
     expect(screen.getByLabelText("Total $40.00")).toBeTruthy();
   });
 
@@ -78,6 +84,38 @@ describe("pedido (órdenes sin restaurante)", () => {
 
     await waitFor(() => expect(calls("POST", "/work_orders/9/items")).toHaveLength(1));
     expect(JSON.parse(calls("POST", "/work_orders/9/items")[0][1].body)).toEqual({ product_id: 7, quantity: 1 });
+  });
+});
+
+describe("pedido (orden cobrada o cancelada en otro lado)", () => {
+  const listed = (o: WorkOrder) => ({ results: [o], info: { page_index: 1, page_end: 1, total: 1 } });
+
+  async function watchThenChange(status: "paid" | "cancelled") {
+    let now: WorkOrder["status"] = "open";
+    serve({
+      "GET /api/v1/work_orders": () => reply(200, listed(order({ total: 40 }))),
+      "GET /api/v1/work_orders/5": () => reply(200, order({ total: 40, status: now })),
+    });
+    const view = await renderScreen(<Pedido />);
+    await fireEvent.press(await screen.findByRole("button", { name: "Mesa 3, Ocupada, $40.00" }));
+    // El encabezado toma el nombre de la orden cuando ya cargó (abierta): recién ahí se cambia el estado.
+    await screen.findByRole("header", { name: "Mesa 3" });
+
+    now = status;
+    await view.client.invalidateQueries();
+  }
+
+  it("cierra en pantalla una orden que se cobró en otro lado y avisa", async () => {
+    await watchThenChange("paid");
+
+    expect(await screen.findByText("La orden ya se cobró")).toBeTruthy();
+    expect(screen.queryByTestId("order-bar")).toBeNull();
+  });
+
+  it("avisa cuando la orden se canceló", async () => {
+    await watchThenChange("cancelled");
+
+    expect(await screen.findByText("La orden se canceló")).toBeTruthy();
   });
 });
 
@@ -107,6 +145,7 @@ describe("cobro desde la pantalla (mesas)", () => {
     await renderScreen(<Mesas />);
 
     await fireEvent.press(await screen.findByRole("button", { name: "4, Ocupada, $25.00" }));
+    await fireEvent.press(await screen.findByTestId("order-bar"));
     await fireEvent.press(await screen.findByRole("button", { name: "Cobrar" }));
     await fireEvent.changeText(await screen.findByLabelText("Recibido"), "50");
     await fireEvent.press(screen.getByRole("button", { name: "Registrar pago" }));

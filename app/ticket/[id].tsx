@@ -14,6 +14,7 @@ import { useKeys } from "@/hooks/use-orders";
 import { haptic } from "@/lib/haptics";
 import { formatMoney } from "@/lib/money";
 import { t, useLocale } from "@/i18n";
+import { tableLabel } from "@/lib/table-label";
 import { radius, rowEnter, space, useTheme } from "@/theme";
 
 /** Borde de recibo: dientes de sierra abajo, del color del fondo. */
@@ -107,7 +108,7 @@ export default function TicketScreen() {
             <AppText tone="muted">{t(`ticket.status.${data.status}`)}</AppText>
             {data.check ? (
               <AppText variant="bodyStrong" testID="ticket-check">
-                {data.check.table ? t("ticket.table", { name: data.check.table }) : t("ticket.takeout", { name: data.check.takeout_name ?? "" })}
+                {data.check.table ? tableLabel("ticket.table", data.check.table) : t("ticket.takeout", { name: data.check.takeout_name ?? "" })}
               </AppText>
             ) : null}
           </View>
@@ -153,9 +154,9 @@ export default function TicketScreen() {
       <Animated.View entering={rowEnter(2)} style={{ gap: space[3] }}>
         <TicketActions ticket={data} canWhatsapp={canWhatsapp && !data.check} />
         <Button
-          label={data.check ? t("ticket.backToTables") : t("ticket.backToOrders")}
+          label={t("ticket.backToOrders")}
           variant="text"
-          onPress={() => router.replace(data.check ? "/(tabs)/mesas" : "/(tabs)/ordenes")}
+          onPress={() => router.replace("/(tabs)/ordenes")}
         />
       </Animated.View>
     </Animated.ScrollView>

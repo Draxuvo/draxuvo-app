@@ -9,7 +9,8 @@
     "no": "No",
     "optional": "Optional",
     "back": "Back",
-    "all": "All"
+    "all": "All",
+    "dismissNotice": "Dismiss notice"
   },
   "login": {
     "title": "Sign in",
@@ -27,8 +28,7 @@
   "tabs": {
     "orders": "Orders",
     "tickets": "Tickets",
-    "profile": "Profile",
-    "tables": "Tables"
+    "profile": "Profile"
   },
   "orders": {
     "title": "Orders",
@@ -126,7 +126,43 @@
     "hello": "Hi, {name}.",
     "pendingToday": "You have {count} to do.",
     "emptyToDoBody": "When an order is assigned to you, it will show up here.",
-    "emptyFinishedBody": "Orders you finish or charge stay here."
+    "emptyFinishedBody": "Orders you finish or charge stay here.",
+    "tabs": {
+      "todo": "Pending",
+      "progress": "In progress",
+      "done": "Finished",
+      "paid": "Paid"
+    },
+    "cancelledFilter": "Cancelled",
+    "empty": {
+      "open": {
+        "title": "No pending orders",
+        "body": "Orders you haven't started show up here."
+      },
+      "in_progress": {
+        "title": "Nothing in progress",
+        "body": "Orders and checks under way show up here."
+      },
+      "done": {
+        "title": "No finished orders",
+        "body": "Finished orders ready to charge show up here."
+      },
+      "paid": {
+        "title": "No payments today",
+        "body": "Orders charged today show up here."
+      },
+      "cancelled": {
+        "title": "No cancelled orders",
+        "body": "Cancelled orders show up here."
+      }
+    },
+    "openChecks": {
+      "table": "Table {name}",
+      "takeout": "Takeout: {name}",
+      "waiter": "Served by {name}",
+      "elapsed": "Open for {time}",
+      "open": "Open the check for {name}"
+    }
   },
   "errors": {
     "generic": "Something went wrong. Try again.",
@@ -203,8 +239,7 @@
     "table": "Table {name}",
     "takeout": "Takeout: {name}",
     "payments": "Payments",
-    "reference": "Ref. {reference}",
-    "backToTables": "Go to tables"
+    "reference": "Ref. {reference}"
   },
   "company": {
     "title": "Switch company",
@@ -410,7 +445,6 @@
     "pickTable": "Pick a table to see its order.",
     "orderEmpty": "Tap a menu item to add it.",
     "sentSection": "Already sent",
-    "fullCheck": "Full check",
     "finishCharge": "Finish and charge",
     "tabTables": "Tables",
     "tabOrder": "Order",
@@ -419,6 +453,36 @@
     "inc": "Add one {name}",
     "dec": "Remove one {name}",
     "stockAlerts": "Items running low: {count}",
-    "noOrders": "There are no open orders."
+    "noOrders": "There are no open orders.",
+    "closedCheck": "The check was paid or closed",
+    "cancelledCheck": "The check was cancelled",
+    "paidOrder": "The order was paid",
+    "cancelledOrder": "The order was cancelled",
+    "release": "Free table",
+    "released": "Table freed",
+    "releaseTitle": "Free this table?",
+    "releaseBody": "Items that haven't been sent yet will be discarded.",
+    "releaseConfirm": "Free table",
+    "sendDone": "Order {number} sent",
+    "orderBar": "Order · {count} items · {total}",
+    "orderBarOne": "Order · 1 item · {total}",
+    "orderBarEmpty": "Empty order",
+    "openOrder": "View order",
+    "closeOrder": "Close order",
+    "changeTable": "Change table",
+    "keepAdding": "Keep adding",
+    "orderSheetTitle": "Order for {name}",
+    "noteSave": "Save note",
+    "noteEdit": "Edit note",
+    "noteSaved": "Note saved",
+    "back": "Back to the order",
+    "moreOptions": "More options",
+    "reassign": "Change waiter",
+    "cancelItemTitle": "Cancel {name}",
+    "viewTicket": "View ticket",
+    "readOnly": "Closed check",
+    "round": "Order {number}",
+    "reassigned": "Waiter changed",
+    "orderGone": "Couldn't open the order."
   }
 }

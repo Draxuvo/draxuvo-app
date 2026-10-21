@@ -42,7 +42,7 @@ describe("avisos de listo", () => {
 
     await fireEvent.press(await screen.findByRole("button", { name: /Mesa 4: Tacos al pastor listo/ }));
 
-    expect(mockPush).toHaveBeenCalledWith("/cuenta/31");
+    expect(mockPush).toHaveBeenCalledWith("/pedido?cuenta=31&hoja=1");
     expect(screen.queryByText("Mesa 4: Tacos al pastor listo")).toBeNull();
   });
 

@@ -55,11 +55,11 @@ describe("ticket de una cuenta", () => {
     expect(screen.getByRole("button", { name: "Descargar y compartir PDF" })).toBeTruthy();
   });
 
-  it("vuelve a las mesas, no a las órdenes", async () => {
+  it("vuelve a Órdenes (ya no hay pestaña Mesas)", async () => {
     await renderScreen(<TicketScreen />);
 
-    const back = await screen.findByRole("button", { name: "Ir a mesas" });
-    expect(back).toBeTruthy();
+    expect(await screen.findByRole("button", { name: "Ir a mis órdenes" })).toBeTruthy();
+    expect(screen.queryByRole("button", { name: "Ir a mesas" })).toBeNull();
   });
 
   it("una cuenta para llevar muestra el nombre del cliente", async () => {

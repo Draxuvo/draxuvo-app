@@ -2,6 +2,7 @@ import { View } from "react-native";
 import type { CheckItem, ItemStatus } from "@/api/types";
 import { t } from "@/i18n";
 import { radius, space, useTheme } from "@/theme";
+import { QtyButton } from "./qty-button";
 import { AppText, Button } from "./ui";
 
 function money(value: string | number): string {
@@ -76,8 +77,8 @@ export function CheckLine({
 
       {draft ? (
         <View style={{ flexDirection: "row", alignItems: "center", gap: space[2] }}>
-          <Button label="−" variant="outline" disabled={busy || item.quantity <= 1} onPress={() => onQuantity(item, item.quantity - 1)} style={{ width: 52 }} />
-          <Button label="+" variant="outline" disabled={busy} onPress={() => onQuantity(item, item.quantity + 1)} style={{ width: 52 }} />
+          <QtyButton kind="minus" label={t("takeOrder.dec", { name: item.name })} disabled={busy || item.quantity <= 1} onPress={() => onQuantity(item, item.quantity - 1)} />
+          <QtyButton kind="plus" label={t("takeOrder.inc", { name: item.name })} disabled={busy} onPress={() => onQuantity(item, item.quantity + 1)} />
           <View style={{ flex: 1 }} />
           <Button label={t("check.remove")} variant="text" icon="trash-2" disabled={busy} onPress={() => onRemove(item)} />
         </View>

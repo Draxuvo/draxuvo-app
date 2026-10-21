@@ -1,5 +1,5 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useEffect, useRef, type ReactNode } from "react";
 import { RefreshControl, View } from "react-native";
 import Animated from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -16,12 +16,13 @@ import { SkeletonBlock } from "@/components/skeleton";
 import { StatusBadge } from "@/components/status-badge";
 import { StepList } from "@/components/step-list";
 import { StepsBar } from "@/components/steps-bar";
-import { AppText, Button, Icon, IconButton, KeyboardFrame } from "@/components/ui";
+import { AppText, Icon, IconButton, KeyboardFrame } from "@/components/ui";
 import { useOutbox } from "@/hooks/use-outbox";
 import { useOrder, useToggleStep } from "@/hooks/use-orders";
 import { t, useLocale } from "@/i18n";
+import { toast } from "@/toast/store";
 import { formatMoney } from "@/lib/money";
-import { fadeIn, radius, rowEnter, sheetIn, space, useTheme } from "@/theme";
+import { radius, rowEnter, sheetIn, space, useTheme } from "@/theme";
 
 function Section({ title, index, children }: { title: string; index: number; children: ReactNode }) {
   const { c } = useTheme();
@@ -47,7 +48,6 @@ export default function OrderDetail() {
   const query = useOrder(orderId);
   const toggle = useToggleStep(orderId);
   const pending = useOutbox(orderId);
-  const [conflict, setConflict] = useState(false);
   const lastStatus = useRef<string | null>(null);
 
   const order = query.data;
@@ -56,13 +56,13 @@ export default function OrderDetail() {
   // Si el estado cambió por otra persona mientras mirabas la orden, se avisa (spec: edge case).
   useEffect(() => {
     if (!order) return;
-    if (lastStatus.current && lastStatus.current !== order.status && !toggle.isPending) setConflict(true);
+    if (lastStatus.current && lastStatus.current !== order.status && !toggle.isPending) toast.info(t("orders.detail.conflict"));
     lastStatus.current = order.status;
   }, [order, toggle.isPending]);
 
   const onActionError = (error: unknown) => {
     if (error instanceof ApiError && [409, 422].includes(error.status)) {
-      setConflict(true);
+      toast.info(t("orders.detail.conflict"));
       void query.refetch();
     }
   };
@@ -123,15 +123,6 @@ export default function OrderDetail() {
         contentContainerStyle={{ padding: space[4], gap: space[5], paddingBottom: hasActions ? 150 + insets.bottom : space[10] + insets.bottom }}
         refreshControl={<RefreshControl refreshing={query.isRefetching} onRefresh={() => void query.refetch()} tintColor={c.primary} colors={[c.primary]} />}
       >
-        {conflict ? (
-          <Animated.View entering={fadeIn} style={{ backgroundColor: c.marker, borderRadius: radius.card, padding: space[4], gap: space[2] }}>
-            <AppText accessibilityRole="alert" testID="order-conflict" style={{ color: c.onMarker }} variant="bodyStrong">
-              {t("orders.detail.conflict")}
-            </AppText>
-            <Button label={t("common.close")} variant="outline" onPress={() => setConflict(false)} />
-          </Animated.View>
-        ) : null}
-
         <Animated.View entering={rowEnter(0)} style={{ gap: space[3] }}>
           <StatusBadge status={order.status} animate />
           <AppText variant="display" accessibilityRole="header">

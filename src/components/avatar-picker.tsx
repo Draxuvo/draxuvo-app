@@ -4,6 +4,7 @@ import { View } from "react-native";
 import { removeAvatar, uploadAvatar } from "@/api/profile";
 import type { User } from "@/api/types";
 import { t } from "@/i18n";
+import { toast } from "@/toast/store";
 import { ImageTooLargeError, NotAnImageError, PermissionDeniedError, pickImage, prepareImage } from "@/lib/image";
 import { space, useTheme } from "@/theme";
 import { describeError } from "./error-view";
@@ -23,16 +24,14 @@ function failureText(error: unknown): string {
 export function AvatarPicker({ user, onChange }: { user: User; onChange: (user: User) => void }) {
   const { c } = useTheme();
   const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
   const run = async (work: () => Promise<User | null>) => {
     setBusy(true);
-    setError(null);
     try {
       const updated = await work();
       if (updated) onChange(updated);
     } catch (failure) {
-      setError(failureText(failure));
+      toast.error(failureText(failure));
     } finally {
       setBusy(false);
     }
@@ -71,11 +70,6 @@ export function AvatarPicker({ user, onChange }: { user: User; onChange: (user: 
         </View>
       </View>
       {user.avatar_url ? <Button label={t("profileScreen.removePhoto")} variant="text" disabled={busy} onPress={() => void run(() => removeAvatar())} /> : null}
-      {error ? (
-        <AppText tone="stamp" accessibilityRole="alert">
-          {error}
-        </AppText>
-      ) : null}
     </View>
   );
 }

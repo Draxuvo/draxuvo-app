@@ -7,10 +7,15 @@ import { screenMode, type ScreenMode } from "./lib";
  * mesas decide si hay restaurante. Un restaurante sin ninguna mesa dada de alta no cuenta, porque los planes
  * Pro y Empresa traen el módulo aunque el negocio no sea un restaurante.
  */
-export function useScreenMode(): ScreenMode {
+export function useScreenModeState(): { mode: ScreenMode; ready: boolean } {
   const { user, companyId } = useSession();
   const tables = useTables();
   const orderMode = user?.companies.find((company) => company.id === companyId)?.order_mode;
   const hasTables = !!tables.data?.results.some((table) => table.active);
-  return screenMode(hasTables ? ["restaurant"] : [], orderMode);
+  // `ready`: la consulta de mesas ya contestó (bien o con error de módulo), así que el modo ya no cambia.
+  return { mode: screenMode(hasTables ? ["restaurant"] : [], orderMode), ready: tables.isSuccess || tables.isError };
+}
+
+export function useScreenMode(): ScreenMode {
+  return useScreenModeState().mode;
 }
