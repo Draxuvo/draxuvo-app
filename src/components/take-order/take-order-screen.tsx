@@ -27,15 +27,15 @@ export const WIDE = 768;
  * Pantalla de tomar pedido (spec 018): plano de mesas, orden y menú de tarjetas sin salir de ella. En el
  * teléfono se alternan en pestañas; en una tableta, la orden y el plano van a la izquierda y el menú a la derecha.
  */
-export function TakeOrderScreen({ mode }: { mode: "restaurant" | "orders" }) {
+export function TakeOrderScreen({ mode, initialCheckId }: { mode: "restaurant" | "orders"; initialCheckId?: number }) {
   useLocale();
   const { c } = useTheme();
   const router = useRouter();
   const { width } = useWindowDimensions();
   const wide = width >= WIDE;
   const { role } = useSession();
-  const [selection, setSelection] = useState<Selection>(null);
-  const [tab, setTab] = useState<Tab>("tables");
+  const [selection, setSelection] = useState<Selection>(initialCheckId ? { kind: "check", id: initialCheckId } : null);
+  const [tab, setTab] = useState<Tab>(initialCheckId ? "order" : "tables");
   // Aviso de cuenta u orden cerrada afuera: se decide al renderizar y se muestra como toast en un efecto.
   const [closedNotice, setClosedNotice] = useState<{ text: string; id: number } | null>(null);
   const [paying, setPaying] = useState(false);

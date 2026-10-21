@@ -28,8 +28,7 @@
   "tabs": {
     "orders": "Órdenes",
     "tickets": "Tickets",
-    "profile": "Perfil",
-    "tables": "Mesas"
+    "profile": "Perfil"
   },
   "orders": {
     "title": "Órdenes",
@@ -127,7 +126,43 @@
     "hello": "Hola, {name}.",
     "pendingToday": "Tienes {count} por hacer.",
     "emptyToDoBody": "Cuando te asignen una orden aparecerá aquí.",
-    "emptyFinishedBody": "Las órdenes que termines o cobres se quedan aquí."
+    "emptyFinishedBody": "Las órdenes que termines o cobres se quedan aquí.",
+    "tabs": {
+      "todo": "Pendientes",
+      "progress": "En curso",
+      "done": "Terminadas",
+      "paid": "Cobradas"
+    },
+    "cancelledFilter": "Canceladas",
+    "empty": {
+      "open": {
+        "title": "No hay órdenes pendientes",
+        "body": "Las órdenes que aún no empiezas aparecen aquí."
+      },
+      "in_progress": {
+        "title": "Nada en curso",
+        "body": "Las órdenes y cuentas en marcha aparecen aquí."
+      },
+      "done": {
+        "title": "No hay órdenes terminadas",
+        "body": "Las órdenes terminadas, listas para cobrar, aparecen aquí."
+      },
+      "paid": {
+        "title": "Aún no hay cobros hoy",
+        "body": "Las órdenes que se cobren hoy aparecen aquí."
+      },
+      "cancelled": {
+        "title": "No hay órdenes canceladas",
+        "body": "Las órdenes canceladas aparecen aquí."
+      }
+    },
+    "openChecks": {
+      "table": "Mesa {name}",
+      "takeout": "Para llevar: {name}",
+      "waiter": "Atiende {name}",
+      "elapsed": "Abierta hace {time}",
+      "open": "Abrir cuenta de {name}"
+    }
   },
   "errors": {
     "generic": "Algo salió mal. Intenta de nuevo.",
@@ -204,8 +239,7 @@
     "table": "Mesa {name}",
     "takeout": "Para llevar: {name}",
     "payments": "Pagos",
-    "reference": "Ref. {reference}",
-    "backToTables": "Ir a mesas"
+    "reference": "Ref. {reference}"
   },
   "company": {
     "title": "Cambiar de empresa",

@@ -1,13 +1,23 @@
 import { fireEvent, screen, waitFor } from "@testing-library/react-native";
 import { Alert } from "react-native";
-import Mesas from "../../app/(tabs)/mesas";
+import Mesas from "../../app/pedido";
 import type { Check, TablesResponse } from "@/api/types";
 import { apiError, clearStore, mockFetch, reply, seedSession, staffUser } from "@/test/helpers";
 import { renderScreen } from "@/test/render";
 
 jest.mock("expo-constants", () => ({ expoConfig: { version: "1.0.0" } }));
 const mockPush = jest.fn();
-jest.mock("expo-router", () => ({ useRouter: () => ({ push: mockPush }) }));
+const mockRedirect = jest.fn();
+let mockParams: Record<string, string> = {};
+jest.mock("expo-router", () => ({
+  useRouter: () => ({ push: mockPush }),
+  useLocalSearchParams: () => mockParams,
+  Stack: { Screen: () => null },
+  Redirect: ({ href }: { href: string }) => {
+    mockRedirect(href);
+    return null;
+  },
+}));
 
 const fetchMock = mockFetch();
 const waiter = { id: 1, name: "Sara Staff" };
@@ -55,6 +65,8 @@ const posts = () => fetchMock.mock.calls.filter(([, init]) => init?.method === "
 beforeEach(async () => {
   fetchMock.mockReset();
   mockPush.mockReset();
+  mockRedirect.mockReset();
+  mockParams = {};
   await clearStore();
   await seedSession(staffUser, 10);
 });
@@ -135,11 +147,29 @@ describe("mesas (pantalla de tomar pedido)", () => {
     expect(screen.queryByTestId("stock-alerts")).toBeNull();
   });
 
-  it("sin mesas muestra el estado vacío", async () => {
+  it("sin mesas (y sin modo pedido) vuelve a Órdenes en lugar de abrir un plano vacío", async () => {
     serve({ "GET /api/v1/restaurant/tables": tables({ results: [] }) });
     await renderScreen(<Mesas />);
 
-    expect(await screen.findByText("Aún no hay mesas")).toBeTruthy();
+    await waitFor(() => expect(mockRedirect).toHaveBeenCalledWith("/(tabs)/ordenes"));
+  });
+
+  it("abre la cuenta de ?cuenta=<id> al entrar desde la lista de Órdenes", async () => {
+    mockParams = { cuenta: "31" };
+    serve({ "GET /api/v1/restaurant/checks/31": check({ id: 31, table: { id: 1, name: "1" }, total: "0.00", items: [draft(1, "Tostada", 2)] }) });
+    await renderScreen(<Mesas />);
+
+    expect(await screen.findByText("Tostada")).toBeTruthy();
+    expect(mockPush).not.toHaveBeenCalled();
+  });
+
+  it("ignora un valor de cuenta que no es un entero positivo", async () => {
+    mockParams = { cuenta: "abc" };
+    serve();
+    await renderScreen(<Mesas />);
+
+    expect(await screen.findByRole("button", { name: "2, Libre" })).toBeTruthy();
+    expect(fetchMock.mock.calls.some(([url]) => String(url).includes("/checks/"))).toBe(false);
   });
 });
 

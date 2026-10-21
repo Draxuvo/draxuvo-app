@@ -153,9 +153,9 @@ export default function TicketScreen() {
       <Animated.View entering={rowEnter(2)} style={{ gap: space[3] }}>
         <TicketActions ticket={data} canWhatsapp={canWhatsapp && !data.check} />
         <Button
-          label={data.check ? t("ticket.backToTables") : t("ticket.backToOrders")}
+          label={t("ticket.backToOrders")}
           variant="text"
-          onPress={() => router.replace(data.check ? "/(tabs)/mesas" : "/(tabs)/ordenes")}
+          onPress={() => router.replace("/(tabs)/ordenes")}
         />
       </Animated.View>
     </Animated.ScrollView>

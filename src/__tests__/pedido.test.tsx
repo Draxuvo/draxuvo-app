@@ -1,16 +1,21 @@
 import { fireEvent, screen, waitFor } from "@testing-library/react-native";
 import Pedido from "../../app/pedido";
-import Mesas from "../../app/(tabs)/mesas";
 import type { Check, User, WorkOrder } from "@/api/types";
 import { clearStore, mockFetch, reply, seedSession, staffUser } from "@/test/helpers";
 import { renderScreen } from "@/test/render";
 
 jest.mock("expo-constants", () => ({ expoConfig: { version: "1.0.0" } }));
 const mockPush = jest.fn();
-jest.mock("expo-router", () => ({ useRouter: () => ({ push: mockPush }), Stack: { Screen: () => null } }));
+jest.mock("expo-router", () => ({
+  useRouter: () => ({ push: mockPush }),
+  useLocalSearchParams: () => ({}),
+  Stack: { Screen: () => null },
+  Redirect: () => null,
+}));
 let mockUuid = 0;
 jest.mock("expo-crypto", () => ({ randomUUID: () => `uuid-${++mockUuid}` }));
 
+const Mesas = Pedido;
 const fetchMock = mockFetch();
 const orderUser: User = {
   ...staffUser,

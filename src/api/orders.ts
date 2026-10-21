@@ -14,6 +14,9 @@ export interface OrderListParams {
   status?: WorkOrderStatus;
   employee_id?: number;
   search?: string;
+  /** Cobradas ese día (yyyy-MM-dd), junto con `status=paid`. */
+  paid_on?: string;
+  page_size?: number;
   sort_by?: "urgency" | "created_at" | "due_date";
 }
 

@@ -2,17 +2,20 @@ import { useIsFocused, useRouter } from "expo-router";
 import { useMemo, useRef, useState } from "react";
 import { RefreshControl, View, type NativeScrollEvent, type NativeSyntheticEvent } from "react-native";
 import Animated from "react-native-reanimated";
-import type { WorkOrder, WorkOrderStatus } from "@/api/types";
+import type { CheckSummary, WorkOrder } from "@/api/types";
+import { CheckCard } from "@/components/check-card";
 import { EmptyState } from "@/components/empty-state";
 import { ErrorView } from "@/components/error-view";
 import { Fab } from "@/components/fab";
 import { EmptyOrdersArt } from "@/components/illustrations";
 import { OrderCard } from "@/components/order-card";
 import { OrderFilters, type OrderFilterValue } from "@/components/order-filters";
+import { OrderStatusTabs, type StatusTab } from "@/components/order-status-tabs";
 import { OrderListSkeleton } from "@/components/skeleton";
-import { AppText, Segmented } from "@/components/ui";
-import { useScreenMode } from "@/components/take-order/use-screen-mode";
-import { useEmployees, useOrders } from "@/hooks/use-orders";
+import { AppText } from "@/components/ui";
+import { useScreenModeState } from "@/components/take-order/use-screen-mode";
+import { useTables } from "@/hooks/use-restaurant";
+import { todayISO, useEmployees, useOrderCounts, useOrders } from "@/hooks/use-orders";
 import { t, useLocale } from "@/i18n";
 import { isBossRole, useSession } from "@/session";
 import { rowEnter, space, TAB_BAR_HEIGHT, useTheme } from "@/theme";
@@ -20,55 +23,68 @@ import { rowEnter, space, TAB_BAR_HEIGHT, useTheme } from "@/theme";
 /** Mientras Órdenes está a la vista se vuelve a consultar cada 10 s. */
 const ORDERS_POLL_MS = 10_000;
 
-type Segment = "toDo" | "finished";
-const SEGMENT_STATUSES: Record<Segment, WorkOrderStatus[]> = {
-  toDo: ["in_progress", "open"],
-  finished: ["done", "paid"],
-};
+type Row =
+  | { kind: "check"; key: string; name: string; takeout: boolean; check: CheckSummary }
+  | { kind: "order"; key: string; order: WorkOrder };
 
+/**
+ * Órdenes y Mesas en una sola pestaña (spec 023): pestañas de estado con contador (Pendientes, En curso, Terminadas,
+ * Cobradas), Canceladas como filtro aparte y, con mesas, las cuentas abiertas dentro de En curso junto a las órdenes.
+ * El botón de nueva orden abre Tomar pedido o el formulario según el modo de la empresa.
+ */
 export default function OrdersList() {
   useLocale();
   const { c } = useTheme();
   const router = useRouter();
   const { role, user } = useSession();
   const boss = isBossRole(role);
-  const [segment, setSegment] = useState<Segment>("toDo");
+  const [tab, setTab] = useState<StatusTab | null>(null);
   const [filters, setFilters] = useState<OrderFilterValue>({});
   const [extended, setExtended] = useState(true);
-  // Con mesas o en modo pedido, "nueva orden" abre la pantalla visual de tomar pedido (spec 018).
-  const screen = useScreenMode();
-  const newOrder = () =>
-    router.push((screen === "restaurant" ? "/mesas" : screen === "orders" ? "/pedido" : "/orden-form/nueva") as never);
 
-  // Con un estado elegido en los filtros manda ese; si no, el segmento. La API acepta un estado por llamada.
-  const statuses = filters.status ? [filters.status] : SEGMENT_STATUSES[segment];
-  const common = { employee_id: boss ? filters.employeeId : undefined };
+  const { mode, ready } = useScreenModeState();
+  const restaurant = mode === "restaurant";
+  const tables = useTables();
+  // Con mesas se abre en En curso, donde viven las cuentas; sin ellas, en Pendientes.
+  const selected: StatusTab = tab ?? (restaurant ? "in_progress" : "open");
+  const status = filters.cancelled ? "cancelled" : selected;
+  const newOrder = () => router.push((mode === "none" ? "/orden-form/nueva" : "/pedido") as never);
+
   // La lista se actualiza sola mientras está a la vista; fuera de ella no consulta (spec 021).
   const focused = useIsFocused();
   const poll = focused ? ORDERS_POLL_MS : undefined;
-  const inProgress = useOrders({ ...common, status: "in_progress" }, statuses.includes("in_progress"), poll);
-  const open = useOrders({ ...common, status: "open" }, statuses.includes("open"), poll);
-  const done = useOrders({ ...common, status: "done" }, statuses.includes("done"), poll);
-  const paid = useOrders({ ...common, status: "paid" }, statuses.includes("paid"), poll);
-  const cancelled = useOrders({ ...common, status: "cancelled" }, statuses.includes("cancelled"), poll);
+  const common = { employee_id: boss ? filters.employeeId : undefined };
+  const list = useOrders({ ...common, status, ...(status === "paid" ? { paid_on: todayISO() } : {}) }, true, poll);
+  const counts = useOrderCounts(common, poll);
   const employees = useEmployees(boss);
 
-  const byStatus: Record<WorkOrderStatus, typeof open> = { in_progress: inProgress, open, done, paid, cancelled };
-  const active = statuses.map((status) => byStatus[status]);
+  // Cuentas abiertas: quien opera ve solo las que atiende; la administración, todas.
+  const checkRows = useMemo<Row[]>(() => {
+    if (!restaurant || !tables.data) return [];
+    const open = [
+      ...tables.data.results.flatMap((table) => (table.check ? [{ key: `table-${table.id}`, name: table.name, takeout: false, check: table.check }] : [])),
+      ...tables.data.takeouts.map((check) => ({ key: `takeout-${check.id}`, name: check.takeout_name, takeout: true, check })),
+    ];
+    return open.filter((item) => boss || item.check.mine).map((item) => ({ kind: "check" as const, ...item }));
+  }, [restaurant, tables.data, boss]);
+  const showChecks = !filters.cancelled && selected === "in_progress";
 
-  const orders = useMemo<WorkOrder[]>(
-    () => active.flatMap((query) => query.data?.pages.flatMap((page) => page.results) ?? []),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [inProgress.data, open.data, done.data, paid.data, cancelled.data, filters.status, segment],
-  );
+  const orders = useMemo<WorkOrder[]>(() => list.data?.pages.flatMap((page) => page.results) ?? [], [list.data]);
+  const rows: Row[] = [
+    ...(showChecks ? checkRows : []),
+    ...orders.map((order) => ({ kind: "order" as const, key: `order-${order.id}`, order })),
+  ];
 
-  const loading = active.some((query) => query.isLoading);
-  const error = active.find((query) => query.isError)?.error;
-  const refreshing = active.some((query) => query.isRefetching && !query.isFetchingNextPage);
-  const refresh = () => active.forEach((query) => void query.refetch());
-  const loadMore = () => active.forEach((query) => query.hasNextPage && !query.isFetchingNextPage && void query.fetchNextPage());
+  const tabCounts = { ...counts, in_progress: counts.in_progress + checkRows.length };
+  const loading = list.isLoading;
+  const error = list.error;
+  const refreshing = list.isRefetching && !list.isFetchingNextPage;
+  const refresh = () => {
+    void list.refetch();
+    void tables.refetch();
+  };
+  const loadMore = () => list.hasNextPage && !list.isFetchingNextPage && void list.fetchNextPage();
 
-  const toDoCount = [inProgress, open].reduce((sum, q) => sum + (q.data?.pages[0]?.info.total ?? 0), 0);
   const lastY = useRef(0);
   const onScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
     const y = event.nativeEvent.contentOffset.y;
@@ -77,41 +93,50 @@ export default function OrdersList() {
   };
 
   const firstName = user?.first_name ?? "";
-  const showEmpty = !loading && !error && orders.length === 0;
+  const pending = counts.open + tabCounts.in_progress;
+  const showEmpty = !loading && !error && rows.length === 0;
+  const alerts = restaurant && boss ? tables.data?.stock_alerts ?? 0 : 0;
 
   return (
     <View style={{ flex: 1, backgroundColor: c.background }}>
       <View style={{ paddingHorizontal: space[4], paddingBottom: space[3], gap: space[3] }}>
         <AppText tone="muted" accessibilityLiveRegion="polite">
           {firstName ? `${t("orders.hello", { name: firstName })} ` : ""}
-          {toDoCount > 0 ? t("orders.pendingToday", { count: toDoCount }) : ""}
+          {pending > 0 ? t("orders.pendingToday", { count: pending }) : ""}
         </AppText>
-        <Segmented
-          value={filters.status ? null : segment}
-          onChange={(value) => {
-            setSegment(value);
-            setFilters((current) => ({ ...current, status: undefined }));
-          }}
-          options={[
-            { value: "toDo", label: t("orders.toDo"), count: toDoCount },
-            { value: "finished", label: t("orders.finished") },
-          ]}
-        />
+        {alerts > 0 ? (
+          <AppText tone="stamp" variant="bodyStrong" accessibilityRole="alert" testID="stock-alerts">
+            {t("takeOrder.stockAlerts", { count: alerts })}
+          </AppText>
+        ) : null}
       </View>
-      {boss ? <OrderFilters value={filters} onChange={setFilters} employees={employees.data?.results} /> : null}
+      <OrderStatusTabs
+        value={filters.cancelled ? null : selected}
+        onChange={(next) => {
+          setTab(next);
+          setFilters((current) => ({ ...current, cancelled: false }));
+        }}
+        counts={tabCounts}
+      />
+      <View style={{ height: space[2] }} />
+      <OrderFilters value={filters} onChange={setFilters} employees={boss ? employees.data?.results : undefined} />
 
-      {error && orders.length === 0 ? (
+      {error && rows.length === 0 ? (
         <ErrorView error={error} onRetry={refresh} />
-      ) : loading && orders.length === 0 ? (
+      ) : (loading || (restaurant === false && !ready)) && rows.length === 0 ? (
         <OrderListSkeleton />
       ) : (
         <Animated.FlatList
-          data={orders}
-          keyExtractor={(order) => String(order.id)}
+          data={rows}
+          keyExtractor={(row) => row.key}
           contentContainerStyle={{ padding: space[4], gap: space[3], flexGrow: 1, paddingBottom: TAB_BAR_HEIGHT + 120 }}
           renderItem={({ item, index }) => (
             <Animated.View entering={rowEnter(index)}>
-              <OrderCard order={item} onPress={() => router.push(`/ordenes/${item.id}` as never)} />
+              {item.kind === "check" ? (
+                <CheckCard name={item.name} takeout={item.takeout} check={item.check} onPress={() => router.push(`/pedido?cuenta=${item.check.id}` as never)} />
+              ) : (
+                <OrderCard order={item.order} onPress={() => router.push(`/ordenes/${item.order.id}` as never)} />
+              )}
             </Animated.View>
           )}
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={refresh} tintColor={c.primary} colors={[c.primary]} />}
@@ -120,12 +145,7 @@ export default function OrdersList() {
           scrollEventThrottle={32}
           ListEmptyComponent={
             showEmpty ? (
-              <EmptyState
-                testID="orders-empty"
-                art={<EmptyOrdersArt />}
-                title={t(!filters.status && segment === "finished" ? "orders.emptyFinished" : "orders.emptyToDo")}
-                body={t(!filters.status && segment === "finished" ? "orders.emptyFinishedBody" : "orders.emptyToDoBody")}
-              />
+              <EmptyState testID="orders-empty" art={<EmptyOrdersArt />} title={t(`orders.empty.${status}.title`)} body={t(`orders.empty.${status}.body`)} />
             ) : null
           }
           ListHeaderComponent={error ? <ErrorView error={error} onRetry={refresh} /> : null}

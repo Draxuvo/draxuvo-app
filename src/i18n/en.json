@@ -28,8 +28,7 @@
   "tabs": {
     "orders": "Orders",
     "tickets": "Tickets",
-    "profile": "Profile",
-    "tables": "Tables"
+    "profile": "Profile"
   },
   "orders": {
     "title": "Orders",
@@ -127,7 +126,43 @@
     "hello": "Hi, {name}.",
     "pendingToday": "You have {count} to do.",
     "emptyToDoBody": "When an order is assigned to you, it will show up here.",
-    "emptyFinishedBody": "Orders you finish or charge stay here."
+    "emptyFinishedBody": "Orders you finish or charge stay here.",
+    "tabs": {
+      "todo": "Pending",
+      "progress": "In progress",
+      "done": "Finished",
+      "paid": "Paid"
+    },
+    "cancelledFilter": "Cancelled",
+    "empty": {
+      "open": {
+        "title": "No pending orders",
+        "body": "Orders you haven't started show up here."
+      },
+      "in_progress": {
+        "title": "Nothing in progress",
+        "body": "Orders and checks under way show up here."
+      },
+      "done": {
+        "title": "No finished orders",
+        "body": "Finished orders ready to charge show up here."
+      },
+      "paid": {
+        "title": "No payments today",
+        "body": "Orders charged today show up here."
+      },
+      "cancelled": {
+        "title": "No cancelled orders",
+        "body": "Cancelled orders show up here."
+      }
+    },
+    "openChecks": {
+      "table": "Table {name}",
+      "takeout": "Takeout: {name}",
+      "waiter": "Served by {name}",
+      "elapsed": "Open for {time}",
+      "open": "Open the check for {name}"
+    }
   },
   "errors": {
     "generic": "Something went wrong. Try again.",
@@ -204,8 +239,7 @@
     "table": "Table {name}",
     "takeout": "Takeout: {name}",
     "payments": "Payments",
-    "reference": "Ref. {reference}",
-    "backToTables": "Go to tables"
+    "reference": "Ref. {reference}"
   },
   "company": {
     "title": "Switch company",
