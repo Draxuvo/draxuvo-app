@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
+import { ApiError } from "@/api/client";
 import { checkIn, checkOut, getMyAttendance, type MyAttendance } from "@/api/attendance";
 import { useAppActive } from "@/hooks/use-restaurant";
 import { useSession } from "@/session";
@@ -20,8 +21,13 @@ export function useAttendance() {
   }, [active, user, companyId, refetch]);
 
   const onSuccess = (data: MyAttendance) => qc.setQueryData(key, data);
-  const markIn = useMutation({ mutationFn: checkIn, onSuccess });
-  const markOut = useMutation({ mutationFn: checkOut, onSuccess });
+  // Si la API respondió que ya no aplica (se marcó desde el panel), el estado mostrado quedó viejo: se vuelve a pedir.
+  // Sin respuesta (sin red) no se toca: pedirlo de nuevo fallaría y ocultaría el acceso.
+  const onError = (error: unknown) => {
+    if (error instanceof ApiError) void qc.invalidateQueries({ queryKey: key });
+  };
+  const markIn = useMutation({ mutationFn: checkIn, onSuccess, onError });
+  const markOut = useMutation({ mutationFn: checkOut, onSuccess, onError });
 
   // Con error (sin red, módulo fuera del plan) no se afirma ningún estado.
   const data = query.isError ? undefined : query.data;
