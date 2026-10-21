@@ -4,6 +4,7 @@ import type { AuthResponse, CompanyRole, User } from "@/api/types";
 import { api, configureClient } from "@/api/client";
 import { getLocale } from "@/i18n";
 import { authenticateBiometric, biometricAvailable } from "./biometric";
+import { clearPrompted } from "@/attendance/prompted";
 import { clearSession, readSession, roleIn, writeSession } from "./store";
 
 /** La cuenta es válida pero no pertenece a ninguna empresa: no hay nada que abrir. */
@@ -67,6 +68,7 @@ export function SessionProvider({ children, onSignedOut }: PropsWithChildren<{ o
 
   const signOut = useCallback(async () => {
     await clearSession();
+    clearPrompted();
     setState(EMPTY);
     stateRef.current = EMPTY;
     setStatus("signedOut");

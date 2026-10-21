@@ -2,6 +2,8 @@ import { useState } from "react";
 import { Switch, View } from "react-native";
 import Animated from "react-native-reanimated";
 import { updateProfile } from "@/api/profile";
+import { AttendanceCard } from "@/components/attendance/attendance-card";
+import { useLogoutFlow } from "@/components/attendance/logout-modal";
 import { AvatarPicker } from "@/components/avatar-picker";
 import { describeError } from "@/components/error-view";
 import { LanguageSwitch } from "@/components/language-switch";
@@ -15,7 +17,8 @@ import { rowEnter, space, TAB_BAR_HEIGHT, useTheme } from "@/theme";
 export default function Perfil() {
   useLocale();
   const { c } = useTheme();
-  const { user, role, setUser, signOut, biometricEnabled, setBiometricEnabled } = useSession();
+  const { user, role, setUser, biometricEnabled, setBiometricEnabled } = useSession();
+  const { requestLogout, modal: logoutModal } = useLogoutFlow();
   const [firstName, setFirstName] = useState(user?.first_name ?? "");
   const [lastName, setLastName] = useState(user?.last_name ?? "");
   const [phone, setPhone] = useState(user?.phone ?? "");
@@ -62,6 +65,8 @@ export default function Perfil() {
         </Card>
       </Animated.View>
 
+      <AttendanceCard />
+
       <Animated.View entering={rowEnter(1)}>
         <Card style={{ gap: space[4] }}>
           <Field label={t("profileScreen.firstName")} value={firstName} onChangeText={setFirstName} error={nameError} testID="profile-first-name" />
@@ -103,7 +108,8 @@ export default function Perfil() {
         </Card>
       </Animated.View>
 
-      <Button label={t("profile.logout")} variant="outline" icon="log-out" onPress={() => void signOut()} />
+      <Button label={t("profile.logout")} variant="outline" icon="log-out" onPress={requestLogout} />
+      {logoutModal}
     </Animated.ScrollView>
 </KeyboardFrame>
   );
