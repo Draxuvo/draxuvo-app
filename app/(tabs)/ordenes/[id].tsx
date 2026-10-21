@@ -12,6 +12,7 @@ import { Monogram } from "@/components/order-card";
 import { NoteBox } from "@/components/note-box";
 import { OrderActions } from "@/components/order-actions";
 import { PhotoGrid } from "@/components/photo-grid";
+import { ProductGlyph } from "@/components/product-icon";
 import { SkeletonBlock } from "@/components/skeleton";
 import { StatusBadge } from "@/components/status-badge";
 import { StepList } from "@/components/step-list";
@@ -168,10 +169,13 @@ export default function OrderDetail() {
         {(order.items ?? []).length > 0 ? (
           <Section title={t("orders.detail.items")} index={1}>
             {(order.items ?? []).map((item) => (
-              <View key={item.id} style={{ flexDirection: "row", justifyContent: "space-between", gap: space[2] }}>
-                <AppText style={{ flexShrink: 1 }}>
-                  {Number(item.quantity)} × {item.description}
-                </AppText>
+              <View key={item.id} style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", gap: space[2] }}>
+                <View style={{ flexShrink: 1, flexDirection: "row", alignItems: "center", gap: space[2] }}>
+                  {item.product ? <ProductGlyph product={item.product} color={c.inkMuted} /> : null}
+                  <AppText style={{ flexShrink: 1 }}>
+                    {Number(item.quantity)} × {item.description}
+                  </AppText>
+                </View>
                 {item.subtotal != null ? <AppText variant="bodyStrong">{formatMoney(item.subtotal)}</AppText> : null}
               </View>
             ))}

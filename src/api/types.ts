@@ -54,6 +54,7 @@ export interface WorkOrderItem {
   subtotal?: number;
   position: number;
   product_id?: number;
+  product?: { id: number; icon?: string | null; type_icon?: string | null } | null;
 }
 
 export interface WorkOrderStep {
@@ -163,6 +164,8 @@ export interface MenuProduct {
   name: string;
   price: number;
   unit?: string;
+  icon?: string | null;
+  product_type?: { icon?: string | null } | null;
   /** Restaurante: agotado o con pocas existencias según lo comprometido en cuentas abiertas. */
   tracks_stock?: boolean;
   station_id?: number | null;
@@ -199,6 +202,9 @@ export type CheckStatus = "open" | "closed" | "cancelled";
 export interface CheckItem {
   id: number;
   name: string;
+  product_id?: number | null;
+  icon?: string | null;
+  type_icon?: string | null;
   quantity: number;
   unit_price: string;
   note: string | null;

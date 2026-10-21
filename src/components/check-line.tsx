@@ -2,6 +2,7 @@ import { View } from "react-native";
 import type { CheckItem, ItemStatus } from "@/api/types";
 import { t } from "@/i18n";
 import { radius, space, useTheme } from "@/theme";
+import { ProductGlyph } from "./product-icon";
 import { QtyButton } from "./qty-button";
 import { AppText, Button } from "./ui";
 
@@ -45,6 +46,7 @@ export function CheckLine({
   onQuantity: (item: CheckItem, quantity: number) => void;
   busy?: boolean;
 }) {
+  const { c } = useTheme();
   const cancelled = item.status === "cancelled";
   const draft = item.status === "draft";
   const label = `${item.quantity} ${item.name}, ${t(`check.status.${item.status}`)}`;
@@ -52,6 +54,10 @@ export function CheckLine({
   return (
     <View accessible={false} style={{ gap: space[2], paddingVertical: space[3] }} testID={`check-line-${item.id}`}>
       <View style={{ flexDirection: "row", justifyContent: "space-between", gap: space[3] }}>
+        <View style={{ flex: 1, flexDirection: "row", gap: space[2] }}>
+        <View style={{ paddingTop: 2 }}>
+          <ProductGlyph product={item} color={c.inkMuted} />
+        </View>
         <View style={{ flex: 1, gap: 2 }} accessible accessibilityLabel={label}>
           <AppText variant="bodyStrong" style={cancelled ? { textDecorationLine: "line-through" } : undefined}>
             {item.quantity} × {item.name}
@@ -66,6 +72,7 @@ export function CheckLine({
               {t("check.station", { name: item.station.name })}
             </AppText>
           ) : null}
+        </View>
         </View>
         <View style={{ alignItems: "flex-end", gap: space[1] }}>
           <AppText variant="bodyStrong" tone={cancelled ? "muted" : "ink"}>
