@@ -115,6 +115,38 @@ describe("tarjeta de asistencia", () => {
     expect(screen.getByRole("button", { name: "Marcar salida" })).toBeTruthy();
   });
 
+  it("si la API dice que ya no hay turno abierto, vuelve a pedir el estado", async () => {
+    let current = status({ state: "working", current: shift });
+    fetchMock.mockImplementation((url: string) => {
+      if (new URL(url).pathname.endsWith("/my_attendance/today")) return reply(200, current);
+      current = status({ state: "done", last: closed }); // otro dispositivo cerró el turno antes
+      return apiError(422, null, "Sin entrada abierta");
+    });
+    await renderScreen(<AttendanceCard />);
+
+    fireEvent.press(await screen.findByRole("button", { name: "Marcar salida" }));
+
+    expect(await screen.findByText(/Salida marcada a las/)).toBeTruthy();
+  });
+
+  it("sin red al marcar no vuelve a pedir el estado y sigue En turno", async () => {
+    let todayCalls = 0;
+    fetchMock.mockImplementation((url: string) => {
+      if (new URL(url).pathname.endsWith("/my_attendance/today")) {
+        todayCalls += 1;
+        return reply(200, status({ state: "working", current: shift }));
+      }
+      return Promise.reject(new TypeError("Network request failed"));
+    });
+    await renderScreen(<AttendanceCard />);
+
+    fireEvent.press(await screen.findByRole("button", { name: "Marcar salida" }));
+
+    expect(await screen.findByText("Sin conexión. Revisa tu red e intenta de nuevo.")).toBeTruthy();
+    expect(todayCalls).toBe(1);
+    expect(screen.getByText(/En turno desde las/)).toBeTruthy();
+  });
+
   it("en turno marca la salida y queda Salida marcada", async () => {
     serve(status({ state: "working", current: shift }), { check_out: status({ state: "done", last: closed }) });
     await renderScreen(<AttendanceCard />);
