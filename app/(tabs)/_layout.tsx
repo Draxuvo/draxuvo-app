@@ -1,6 +1,7 @@
 import { Tabs } from "expo-router";
 import { View } from "react-native";
 import { AppHeader } from "@/components/app-header";
+import { EntryModal } from "@/components/attendance/entry-modal";
 import { DrawerMenu } from "@/components/drawer-menu";
 import { DrawerProvider } from "@/components/drawer-context";
 import { TabBar, type TabBarProps } from "@/components/tab-bar";
@@ -24,6 +25,7 @@ export default function TabsLayout() {
           <Tabs.Screen name="perfil" options={{ title: t("tabs.profile") }} />
         </Tabs>
         <DrawerMenu />
+        <EntryModal />
       </View>
     </DrawerProvider>
   );

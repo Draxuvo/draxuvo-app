@@ -484,5 +484,29 @@
     "round": "Order {number}",
     "reassigned": "Waiter changed",
     "orderGone": "Couldn't open the order."
+  },
+  "attendance": {
+    "title": "Attendance",
+    "entry": {
+      "title": "Clock in",
+      "body": "It's {time}. Do you want to clock in for today?",
+      "mark": "Clock in",
+      "later": "Not now",
+      "done": "Clocked in"
+    },
+    "status": {
+      "none": "Not clocked in today",
+      "working": "On shift since {time}",
+      "done": "Clocked out at {time}",
+      "markIn": "Clock in",
+      "markOut": "Clock out",
+      "checkedOut": "Clocked out"
+    },
+    "logout": {
+      "title": "Clock out?",
+      "body": "You have an open shift. You can clock out before signing out.",
+      "markAndLogout": "Clock out and sign out",
+      "withoutMarking": "Sign out without clocking out"
+    }
   }
 }

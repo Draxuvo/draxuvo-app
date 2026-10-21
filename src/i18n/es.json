@@ -484,5 +484,29 @@
     "round": "Comanda {number}",
     "reassigned": "Mesero cambiado",
     "orderGone": "No se pudo abrir la orden."
+  },
+  "attendance": {
+    "title": "Asistencia",
+    "entry": {
+      "title": "Marcar entrada",
+      "body": "Son las {time}. ¿Marcas tu entrada de hoy?",
+      "mark": "Marcar entrada",
+      "later": "Ahora no",
+      "done": "Entrada marcada"
+    },
+    "status": {
+      "none": "Sin entrada hoy",
+      "working": "En turno desde las {time}",
+      "done": "Salida marcada a las {time}",
+      "markIn": "Marcar entrada",
+      "markOut": "Marcar salida",
+      "checkedOut": "Salida marcada"
+    },
+    "logout": {
+      "title": "¿Marcas tu salida?",
+      "body": "Tienes una entrada abierta. Puedes marcar tu salida antes de cerrar sesión.",
+      "markAndLogout": "Marcar salida y cerrar sesión",
+      "withoutMarking": "Cerrar sin marcar"
+    }
   }
 }

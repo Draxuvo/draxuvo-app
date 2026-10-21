@@ -6,6 +6,8 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { t, useLocale } from "@/i18n";
 import { duration, ease, radius, space, useTheme } from "@/theme";
 import { useSession } from "@/session";
+import { AttendanceCard } from "./attendance/attendance-card";
+import { useLogoutFlow } from "./attendance/logout-modal";
 import { useDrawer } from "./drawer-context";
 import { LanguageSwitch } from "./language-switch";
 import { Monogram } from "./order-card";
@@ -18,7 +20,8 @@ export function DrawerMenu() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { isOpen, close } = useDrawer();
-  const { user, companyId, role, signOut } = useSession();
+  const { user, companyId, role } = useSession();
+  const { requestLogout, modal: logoutModal } = useLogoutFlow();
 
   useEffect(() => {
     if (!isOpen) return;
@@ -87,6 +90,7 @@ export function DrawerMenu() {
               <Icon name="chevron-right" tone="muted" />
             </Pressable>
           ) : null}
+          <AttendanceCard />
           <LanguageSwitch />
         </ScrollView>
         <View style={{ paddingHorizontal: space[5] }}>
@@ -94,12 +98,10 @@ export function DrawerMenu() {
             label={t("profile.logout")}
             variant="outline"
             icon="log-out"
-            onPress={() => {
-              close();
-              void signOut();
-            }}
+            onPress={requestLogout}
           />
         </View>
+        {logoutModal}
       </Animated.View>
     </View>
   );

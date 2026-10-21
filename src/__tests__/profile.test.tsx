@@ -7,6 +7,10 @@ import { renderScreen } from "@/test/render";
 
 jest.mock("expo-constants", () => ({ expoConfig: { version: "1.0.0" } }));
 jest.mock("expo-image", () => ({ Image: "Image" }));
+// La asistencia (spec 026) se prueba aparte; aquí no debe hacer peticiones que cuenten como llamadas del perfil.
+jest.mock("@/hooks/use-attendance", () => ({
+  useAttendance: () => ({ data: undefined, eligible: false, state: undefined, markIn: { mutate: jest.fn() }, markOut: { mutate: jest.fn() } }),
+}));
 const mockPick = jest.fn();
 const mockPrepare = jest.fn();
 jest.mock("@/lib/image", () => {
