@@ -254,6 +254,20 @@
     "noModule": "Su plan no incluye el módulo de órdenes.",
     "checking": "Revisando…"
   },
+  "suspended": {
+    "title": "Suscripción suspendida",
+    "ownerBody": "Hay un pago pendiente. Nadie de la empresa puede operar hasta que se pague.",
+    "memberBody": "La suscripción de la empresa está suspendida por falta de pago. Avisa al dueño de la cuenta para volver a operar.",
+    "reasonPlanChange": "El cambio de plan no se pagó.",
+    "reasonOverdue": "Un cobro lleva más de 7 días sin pagarse.",
+    "pending": "Plan pendiente de pago: {plan}",
+    "cancelsOn": "Si no se paga, la suscripción se cancela el {date}.",
+    "payNow": "Pagar ahora",
+    "paid": "Ya pagué",
+    "stillSuspended": "Todavía no vemos el pago. Puede tardar unos minutos.",
+    "switchCompany": "Cambiar de empresa",
+    "signOut": "Cerrar sesión"
+  },
   "tickets": {
     "search": "Buscar por folio",
     "empty": "No hay tickets.",

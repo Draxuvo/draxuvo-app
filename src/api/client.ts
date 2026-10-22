@@ -1,5 +1,6 @@
 import Constants from "expo-constants";
 import { Platform } from "react-native";
+import type { SuspensionDetails } from "./types";
 
 /** Error devuelto por la API con la forma `{ error: { status, message, details } }`. */
 export class ApiError extends Error {
@@ -33,6 +34,8 @@ interface ClientHooks {
   getCompanyId: () => number | null;
   getLocale: () => string;
   onUnauthorized: () => void;
+  /** La API respondió 403 `subscription_suspended`: la sesión sigue, pero la empresa no puede operar. */
+  onSubscriptionBlocked: (details: SuspensionDetails) => void;
 }
 
 let hooks: ClientHooks = {
@@ -40,6 +43,7 @@ let hooks: ClientHooks = {
   getCompanyId: () => null,
   getLocale: () => "es",
   onUnauthorized: () => {},
+  onSubscriptionBlocked: () => {},
 };
 
 /** La sesión y el idioma se conectan aquí al arrancar; el cliente no los importa. */
@@ -132,7 +136,11 @@ export async function request<T>(method: string, path: string, options: RequestO
 
   if (!response.ok) {
     if (response.status === 401 && !options.skipUnauthorized) hooks.onUnauthorized();
-    throw parseError(response.status, payload);
+    const error = parseError(response.status, payload);
+    if (response.status === 403 && error.code === "subscription_suspended") {
+      hooks.onSubscriptionBlocked(error.details as SuspensionDetails);
+    }
+    throw error;
   }
   return payload as T;
 }
