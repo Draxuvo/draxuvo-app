@@ -4,11 +4,13 @@ import { AppHeader } from "@/components/app-header";
 import { EntryModal } from "@/components/attendance/entry-modal";
 import { TabBar, type TabBarProps } from "@/components/tab-bar";
 import { useOutboxSync } from "@/hooks/use-outbox";
+import { useScreenModeState } from "@/components/take-order/use-screen-mode";
 import { t, useLocale } from "@/i18n";
 
 export default function TabsLayout() {
   useLocale();
   useOutboxSync();
+  const { mode } = useScreenModeState();
 
   return (
     <View style={{ flex: 1 }}>
@@ -16,7 +18,7 @@ export default function TabsLayout() {
         tabBar={(props) => <TabBar {...(props as unknown as TabBarProps)} />}
         screenOptions={{ header: ({ options }) => <AppHeader title={String(options.title ?? "")} /> }}
       >
-        <Tabs.Screen name="ordenes/index" options={{ title: t("tabs.orders") }} />
+        <Tabs.Screen name="ordenes/index" options={{ title: mode === "restaurant" ? t("tabs.accounts") : t("tabs.orders") }} />
         <Tabs.Screen name="ordenes/[id]" options={{ href: null, headerShown: false }} />
         <Tabs.Screen name="tickets" options={{ title: t("tabs.tickets") }} />
         <Tabs.Screen name="perfil" options={{ title: t("tabs.profile") }} />

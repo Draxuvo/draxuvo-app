@@ -153,7 +153,7 @@ export default function OrdersList() {
         />
       )}
 
-      <Fab icon="plus" label={t("orders.new")} extended={extended} onPress={newOrder} />
+      <Fab icon="plus" label={restaurant ? t("orders.newCheck") : t("orders.new")} extended={extended} onPress={newOrder} />
     </View>
   );
 }

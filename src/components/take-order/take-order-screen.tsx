@@ -79,7 +79,9 @@ export function TakeOrderScreen({ mode, initialCheckId, initialSheet }: { mode: 
     } catch (failure) {
       haptic.warning();
       const occupied = failure instanceof ApiError && failure.code === "table_occupied";
-      toast.error(occupied ? t("tables.occupied") : failure instanceof NetworkError ? t("check.notSaved") : describeError(failure));
+      const offMenu = failure instanceof ApiError && failure.code === "not_on_menu";
+      if (offMenu) void menuQuery.refetch();
+      toast.error(occupied ? t("tables.occupied") : offMenu ? t("takeOrder.notOnMenu") : failure instanceof NetworkError ? t("check.notSaved") : describeError(failure));
       source.refetch();
     }
   };

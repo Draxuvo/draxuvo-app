@@ -76,15 +76,55 @@ describe("mesas (pantalla de tomar pedido)", () => {
     serve();
     await renderScreen(<Mesas />);
 
-    expect(await screen.findByRole("button", { name: "1, Ocupada, $155.00" })).toBeTruthy();
+    expect(await screen.findByRole("button", { name: /^1, Ocupada, .*\$155\.00$/ })).toBeTruthy();
     expect(screen.getByRole("button", { name: "2, Libre" })).toBeTruthy();
+  });
+
+  it("cada mesa dice su estado, el tiempo abierta y, si es ajena sin total, no inventa dinero (spec 032)", async () => {
+    const opened = new Date(Date.now() - 25 * 60_000).toISOString();
+    serve({
+      "GET /api/v1/restaurant/tables": tables({
+        results: [
+          { id: 1, name: "1", active: true, position: 1, state: "to_pay", check: { id: 31, waiter, opened_at: opened, total: "155.00", counts: { new: 0, preparing: 0, ready: 0, delivered: 2 }, mine: true } },
+          { id: 2, name: "2", active: true, position: 2, state: "occupied", check: { id: 32, opened_at: opened, counts: { new: 1, preparing: 0, ready: 0, delivered: 0 }, mine: false } },
+          { id: 3, name: "3", active: true, position: 3, state: "free", check: null },
+        ],
+      }),
+    });
+    await renderScreen(<Mesas />);
+
+    expect(await screen.findByRole("button", { name: "1, Por cobrar, 25 min abierta, $155.00" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "2, Ocupada, 25 min abierta" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "3, Libre" })).toBeTruthy();
+  });
+
+  it("Mis mesas deja las propias y las libres, y avisa si no hay cuentas propias", async () => {
+    const opened = new Date().toISOString();
+    serve({
+      "GET /api/v1/restaurant/tables": tables({
+        results: [
+          { id: 1, name: "1", active: true, position: 1, state: "occupied", check: { id: 31, waiter, opened_at: opened, total: "10.00", counts: { new: 1, preparing: 0, ready: 0, delivered: 0 }, mine: true } },
+          { id: 2, name: "2", active: true, position: 2, state: "occupied", check: { id: 32, waiter: { id: 9, name: "Luis" }, opened_at: opened, total: "20.00", counts: { new: 1, preparing: 0, ready: 0, delivered: 0 }, mine: false } },
+          { id: 3, name: "3", active: true, position: 3, state: "free", check: null },
+        ],
+      }),
+    });
+    await renderScreen(<Mesas />);
+
+    await fireEvent.press(await screen.findByRole("button", { name: "Mis mesas" }));
+    expect(screen.getByRole("button", { name: /^1, Ocupada/ })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "3, Libre" })).toBeTruthy();
+    expect(screen.queryByRole("button", { name: /^2, Ocupada/ })).toBeNull();
+
+    await fireEvent.press(screen.getByRole("button", { name: "Todas" }));
+    expect(screen.getByRole("button", { name: /^2, Ocupada/ })).toBeTruthy();
   });
 
   it("muestra la orden de una mesa ocupada en la misma pantalla, sin navegar", async () => {
     serve({ "GET /api/v1/restaurant/checks/31": check({ id: 31, table: { id: 1, name: "1" }, total: "0.00", items: [draft(1, "Tostada", 2)] }) });
     await renderScreen(<Mesas />);
 
-    await fireEvent.press(await screen.findByRole("button", { name: "1, Ocupada, $155.00" }));
+    await fireEvent.press(await screen.findByRole("button", { name: /^1, Ocupada, .*\$155\.00$/ }));
     // Elegir la mesa abre el menú con la barra; tocarla abre la orden en una hoja.
     expect(await screen.findByRole("button", { name: /Ver orden, Orden · 2 productos · \$60.00/ })).toBeTruthy();
     await fireEvent.press(screen.getByTestId("order-bar"));
@@ -129,6 +169,20 @@ describe("mesas (pantalla de tomar pedido)", () => {
     await fireEvent.press(await screen.findByRole("button", { name: "2, Libre" }));
 
     expect(await screen.findByText("La mesa ya tiene una cuenta abierta")).toBeTruthy();
+    expect(screen.getByTestId("toast-error")).toBeTruthy();
+  });
+
+  it("avisa con un toast cuando el producto ya salió del menú (spec 032)", async () => {
+    serve({
+      "POST /api/v1/restaurant/checks": () => reply(201, check()),
+      "GET /api/v1/restaurant/checks/77": check(),
+      "POST /api/v1/restaurant/checks/77/items": () => apiError(422, { code: "not_on_menu" }, "fuera del menú"),
+    });
+    await renderScreen(<Mesas />);
+    await fireEvent.press(await screen.findByRole("button", { name: "2, Libre" }));
+    await fireEvent.press(await screen.findByRole("button", { name: /^Tostada/ }));
+
+    expect(await screen.findByText("Ese producto ya no está en el menú.")).toBeTruthy();
     expect(screen.getByTestId("toast-error")).toBeTruthy();
   });
 
@@ -184,7 +238,7 @@ describe("mesas (cuenta cerrada afuera y liberar mesa)", () => {
     let now: "open" | "closed" | "cancelled" = "open";
     serve({ "GET /api/v1/restaurant/checks/31": () => reply(200, check({ id: 31, table: { id: 1, name: "1" }, total: "155.00", status: now })) });
     const view = await renderScreen(<Mesas />);
-    await fireEvent.press(await screen.findByRole("button", { name: "1, Ocupada, $155.00" }));
+    await fireEvent.press(await screen.findByRole("button", { name: /^1, Ocupada, .*\$155\.00$/ }));
     // El encabezado toma el nombre de la mesa cuando la cuenta ya cargó (abierta): recién ahí se cambia el estado.
     await screen.findByRole("header", { name: "1" });
 
@@ -211,7 +265,7 @@ describe("mesas (cuenta cerrada afuera y liberar mesa)", () => {
     serve({ "GET /api/v1/restaurant/checks/31": check({ id: 31, table: { id: 1, name: "1" }, total: "155.00", status: "closed", ticket_id: 70 }) });
     await renderScreen(<Mesas />);
 
-    await fireEvent.press(await screen.findByRole("button", { name: "1, Ocupada, $155.00" }));
+    await fireEvent.press(await screen.findByRole("button", { name: /^1, Ocupada, .*\$155\.00$/ }));
     await fireEvent.press(await screen.findByTestId("order-bar"));
 
     expect(await screen.findByText("Cuenta cerrada")).toBeTruthy();
@@ -312,7 +366,7 @@ describe("tomar pedido en dos pasos (spec 024)", () => {
 
     await fireEvent.press(await screen.findByRole("button", { name: "Cambiar mesa" }));
 
-    expect(await screen.findByRole("button", { name: "1, Ocupada, $155.00" })).toBeTruthy();
+    expect(await screen.findByRole("button", { name: /^1, Ocupada, .*\$155\.00$/ })).toBeTruthy();
     expect(screen.queryByTestId("order-bar")).toBeNull();
   });
 
@@ -417,7 +471,7 @@ describe("tomar pedido en dos pasos (spec 024)", () => {
     await view.client.invalidateQueries();
 
     expect(await screen.findByText("La cuenta ya se cobró o se cerró")).toBeTruthy();
-    expect(await screen.findByRole("button", { name: "1, Ocupada, $155.00" })).toBeTruthy();
+    expect(await screen.findByRole("button", { name: /^1, Ocupada, .*\$155\.00$/ })).toBeTruthy();
   });
 });
 

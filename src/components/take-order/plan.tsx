@@ -2,9 +2,20 @@ import { View } from "react-native";
 import { t } from "@/i18n";
 import { formatMoney } from "@/lib/money";
 import { space, useTheme } from "@/theme";
-import { AppText, Button, Card, Field } from "../ui";
+import { AppText, Button, Card, Field, Segmented } from "../ui";
 import { useState } from "react";
 import type { Selection, SourceTile } from "./use-order-source";
+
+function minutesOpen(iso: string | null | undefined): number | null {
+  return iso ? Math.max(0, Math.floor((Date.now() - new Date(iso).getTime()) / 60_000)) : null;
+}
+
+/** `12 min` o `1 h 05 min`. */
+export function formatOpen(minutes: number): string {
+  return minutes < 60 ? `${minutes} min` : `${Math.floor(minutes / 60)} h ${String(minutes % 60).padStart(2, "0")} min`;
+}
+
+type Scope = "all" | "mine";
 
 /** Plano de mesas (o de órdenes abiertas): un mosaico por mesa con su estado en color y en texto (spec 018). */
 export function Plan({
@@ -26,6 +37,11 @@ export function Plan({
 }) {
   const { c } = useTheme();
   const [name, setName] = useState("");
+  const [scope, setScope] = useState<Scope>("all");
+  // "Mis mesas": las cuentas propias y las mesas libres, que son las que se pueden abrir (spec 032).
+  const filterable = mode === "restaurant";
+  const visible = filterable && scope === "mine" ? tiles.filter((tile) => tile.mine || tile.state === "free") : tiles;
+  const noneMine = filterable && scope === "mine" && !tiles.some((tile) => tile.mine);
   const selected = (tile: SourceTile) => !!selection && !!tile.selection && tile.selection.kind === selection.kind && tile.selection.id === selection.id;
 
   const submit = () => {
@@ -42,10 +58,24 @@ export function Plan({
           {mode === "restaurant" ? <AppText tone="muted">{t("tables.emptyHint")}</AppText> : null}
         </View>
       ) : null}
+      {filterable ? (
+        <Segmented<Scope>
+          value={scope}
+          onChange={setScope}
+          options={[
+            { value: "all", label: t("takeOrder.scopeAll") },
+            { value: "mine", label: t("takeOrder.scopeMine") },
+          ]}
+        />
+      ) : null}
+      {noneMine ? <AppText tone="muted">{t("takeOrder.noMine")}</AppText> : null}
       <View style={{ flexDirection: "row", flexWrap: "wrap", gap: space[2] }}>
-        {tiles.map((tile) => {
-          const state = tile.state === "free" ? t("takeOrder.free") : t("takeOrder.occupied");
-          const label = tile.state === "occupied" ? `${tile.name}, ${state}, ${formatMoney(tile.total)}` : `${tile.name}, ${state}`;
+        {visible.map((tile) => {
+          const state = t(`takeOrder.state.${tile.state}`);
+          const minutes = tile.state === "free" ? null : minutesOpen(tile.openedAt);
+          const label = [tile.name, state, minutes != null ? t("takeOrder.openFor", { time: formatOpen(minutes) }) : null, tile.state !== "free" && tile.total != null ? formatMoney(tile.total) : null]
+            .filter(Boolean)
+            .join(", ");
           return (
             <View key={tile.key} style={{ width: "31%", flexGrow: 1, minWidth: 96 }}>
               <Card
@@ -55,7 +85,7 @@ export function Plan({
                   minHeight: 88,
                   justifyContent: "space-between",
                   padding: space[3],
-                  backgroundColor: tile.state === "free" ? c.surfaceAlt : c.primarySoft,
+                  backgroundColor: tile.state === "free" ? c.surfaceAlt : tile.state === "to_pay" ? c.marker : c.primarySoft,
                   borderColor: selected(tile) ? c.primary : c.line,
                   borderWidth: selected(tile) ? 2 : 1,
                 }}
@@ -73,13 +103,17 @@ export function Plan({
                   ) : null}
                 </View>
                 <View style={{ gap: 2 }}>
-                  <AppText variant="label" tone={tile.state === "free" ? "ok" : "primary"}>
+                  <AppText variant="label" tone={tile.state === "free" ? "ok" : tile.state === "to_pay" ? undefined : "primary"} style={tile.state === "to_pay" ? { color: c.onMarker } : undefined}>
                     {state.toUpperCase()}
                   </AppText>
-                  {tile.state === "occupied" ? (
-                    <AppText variant="bodyStrong" numberOfLines={1}>
-                      {formatMoney(tile.total)}
-                      {tile.owner ? ` · ${tile.mine ? t("takeOrder.mine") : tile.owner}` : ""}
+                  {tile.state !== "free" ? (
+                    <AppText variant="bodyStrong" numberOfLines={1} style={tile.state === "to_pay" ? { color: c.onMarker } : undefined}>
+                      {[tile.total != null ? formatMoney(tile.total) : null, minutes != null ? formatOpen(minutes) : null].filter(Boolean).join(" · ")}
+                    </AppText>
+                  ) : null}
+                  {tile.state !== "free" && tile.owner ? (
+                    <AppText variant="label" tone="muted" numberOfLines={1} style={tile.state === "to_pay" ? { color: c.onMarker } : undefined}>
+                      {tile.mine ? t("takeOrder.mine") : tile.owner}
                     </AppText>
                   ) : null}
                 </View>

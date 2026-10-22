@@ -27,6 +27,7 @@
   },
   "tabs": {
     "orders": "Órdenes",
+    "accounts": "Cuentas",
     "tickets": "Tickets",
     "profile": "Perfil"
   },
@@ -39,6 +40,7 @@
     "emptyFinished": "Aún no hay órdenes terminadas.",
     "unassigned": "Sin responsable",
     "new": "Nueva orden",
+    "newCheck": "Nueva cuenta",
     "progress": "{done} de {total} pasos",
     "filters": {
       "status": "Estado",
@@ -444,6 +446,16 @@
     "label": "Terminal"
   },
   "takeOrder": {
+    "state": {
+      "free": "Libre",
+      "occupied": "Ocupada",
+      "to_pay": "Por cobrar"
+    },
+    "openFor": "{time} abierta",
+    "scopeAll": "Todas",
+    "scopeMine": "Mis mesas",
+    "noMine": "Todavía no tienes cuentas abiertas. Toca una mesa libre para abrir una.",
+    "notOnMenu": "Ese producto ya no está en el menú.",
     "title": "Tomar pedido",
     "free": "Libre",
     "occupied": "Ocupada",

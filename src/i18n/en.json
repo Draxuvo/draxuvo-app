@@ -27,6 +27,7 @@
   },
   "tabs": {
     "orders": "Orders",
+    "accounts": "Checks",
     "tickets": "Tickets",
     "profile": "Profile"
   },
@@ -39,6 +40,7 @@
     "emptyFinished": "No finished orders yet.",
     "unassigned": "Unassigned",
     "new": "New order",
+    "newCheck": "New check",
     "progress": "{done} of {total} steps",
     "filters": {
       "status": "Status",
@@ -444,6 +446,16 @@
     "label": "Terminal"
   },
   "takeOrder": {
+    "state": {
+      "free": "Free",
+      "occupied": "Occupied",
+      "to_pay": "To pay"
+    },
+    "openFor": "open for {time}",
+    "scopeAll": "All",
+    "scopeMine": "My tables",
+    "noMine": "You have no open checks yet. Tap a free table to open one.",
+    "notOnMenu": "That product is no longer on the menu.",
     "title": "Take order",
     "free": "Free",
     "occupied": "Occupied",

@@ -206,9 +206,28 @@ describe("botón de nueva orden", () => {
     await renderScreen(<OrdersList />);
     await screen.findByRole("button", { name: "Abrir cuenta de 1" });
 
-    await fireEvent.press(screen.getByRole("button", { name: "Nueva orden" }));
+    await fireEvent.press(screen.getByRole("button", { name: "Nueva cuenta" }));
 
     expect(mockPush).toHaveBeenCalledWith("/pedido");
+  });
+
+  it("con mesas la lista se llama Cuentas y marca las que están por cobrar (spec 032)", async () => {
+    await seedSession(staffUser, 10);
+    serve({}, tables({ takeouts: [{ id: 33, takeout_name: "Mario", waiter: { id: 1, name: "Sara Staff" }, opened_at: new Date().toISOString(), total: "20.00", counts: { new: 0, preparing: 0, ready: 0, delivered: 1 }, mine: true }] }));
+    await renderScreen(<OrdersList />);
+
+    expect(await screen.findByRole("button", { name: "Abrir cuenta de Mario" })).toBeTruthy();
+    expect(screen.getByText(/Por cobrar · /)).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Nueva cuenta" })).toBeTruthy();
+  });
+
+  it("una cuenta ajena sin total no muestra dinero", async () => {
+    await seedSession(multiUser, 10);
+    serve({}, tables({ results: [{ id: 2, name: "2", active: true, position: 2, state: "occupied", check: { id: 32, opened_at: new Date().toISOString(), counts, mine: false } }], takeouts: [] }));
+    await renderScreen(<OrdersList />);
+
+    await screen.findByRole("button", { name: "Abrir cuenta de 2" });
+    expect(screen.queryByText(/\$/)).toBeNull();
   });
 
   it("en modo servicio sin mesas abre el formulario de siempre", async () => {

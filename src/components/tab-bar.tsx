@@ -5,6 +5,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useOutbox } from "@/hooks/use-outbox";
 import { haptic } from "@/lib/haptics";
 import { t } from "@/i18n";
+import { useScreenModeState } from "./take-order/use-screen-mode";
 import { radius, space, TAB_BAR_HEIGHT, useTheme } from "@/theme";
 import { AppText, Icon, type IconName } from "./ui";
 
@@ -67,6 +68,8 @@ export function TabBar({ state, navigation }: TabBarProps) {
   const { c } = useTheme();
   const insets = useSafeAreaInsets();
   const pending = useOutbox().filter((item) => item.state === "pending" || item.state === "sending").length;
+  // Con mesas dadas de alta la lista de órdenes se llama Cuentas (spec 032).
+  const { mode } = useScreenModeState();
   const current = state.routes[state.index]?.name;
   if (!TABS.some((tab) => tab.route === current)) return null;
 
@@ -90,7 +93,7 @@ export function TabBar({ state, navigation }: TabBarProps) {
           <TabItem
             key={tab.route}
             icon={tab.icon}
-            label={t(tab.label)}
+            label={tab.route === "ordenes/index" && mode === "restaurant" ? t("tabs.accounts") : t(tab.label)}
             focused={focused}
             badge={tab.route === "ordenes/index" ? pending : undefined}
             onPress={() => {
