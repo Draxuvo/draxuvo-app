@@ -27,6 +27,15 @@ export interface User {
   companies: UserCompany[];
 }
 
+/** Detalle del 403 `subscription_suspended` (spec 031): la empresa no pagó y no puede operar. `pay_url` solo llega a dueño y administrador. */
+export interface SuspensionDetails {
+  code: "subscription_suspended";
+  reason: "plan_change" | "payment_overdue" | null;
+  plan: string | null;
+  cancels_at: string | null;
+  pay_url?: string | null;
+}
+
 export interface AuthResponse {
   token: string;
   user: User;

@@ -254,6 +254,20 @@
     "noModule": "Its plan doesn't include the orders module.",
     "checking": "Checking…"
   },
+  "suspended": {
+    "title": "Subscription suspended",
+    "ownerBody": "A payment is pending. Nobody in the company can operate until it is paid.",
+    "memberBody": "The company subscription is suspended for non-payment. Tell the account owner to get back to work.",
+    "reasonPlanChange": "The plan change was not paid.",
+    "reasonOverdue": "A charge has been unpaid for more than 7 days.",
+    "pending": "Plan pending payment: {plan}",
+    "cancelsOn": "If it is not paid, the subscription is cancelled on {date}.",
+    "payNow": "Pay now",
+    "paid": "I already paid",
+    "stillSuspended": "We do not see the payment yet. It can take a few minutes.",
+    "switchCompany": "Switch company",
+    "signOut": "Sign out"
+  },
   "tickets": {
     "search": "Search by number",
     "empty": "No tickets.",

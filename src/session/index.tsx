@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import type { PropsWithChildren } from "react";
-import type { AuthResponse, CompanyRole, User } from "@/api/types";
+import type { AuthResponse, CompanyRole, SuspensionDetails, User } from "@/api/types";
 import { api, configureClient } from "@/api/client";
 import { getLocale } from "@/i18n";
 import { authenticateBiometric, biometricAvailable } from "./biometric";
@@ -24,6 +24,9 @@ interface SessionValue {
   companyId: number | null;
   role: CompanyRole | null;
   biometricEnabled: boolean;
+  /** La empresa activa está suspendida por falta de pago (spec 031); se levanta con `clearSuspension`. */
+  suspension: SuspensionDetails | null;
+  clearSuspension: () => void;
   signIn: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
   setCompany: (companyId: number) => Promise<void>;
@@ -52,6 +55,7 @@ function pickCompany(user: User, preferred: number | null): number | null {
 export function SessionProvider({ children, onSignedOut }: PropsWithChildren<{ onSignedOut?: () => void }>) {
   const [state, setState] = useState<State>(EMPTY);
   const [status, setStatus] = useState<SessionStatus>("loading");
+  const [suspension, setSuspension] = useState<SuspensionDetails | null>(null);
   const stateRef = useRef(state);
   const onSignedOutRef = useRef(onSignedOut);
   useEffect(() => {
@@ -71,6 +75,7 @@ export function SessionProvider({ children, onSignedOut }: PropsWithChildren<{ o
     clearPrompted();
     setState(EMPTY);
     stateRef.current = EMPTY;
+    setSuspension(null);
     setStatus("signedOut");
     onSignedOutRef.current?.();
   }, []);
@@ -81,6 +86,7 @@ export function SessionProvider({ children, onSignedOut }: PropsWithChildren<{ o
       getCompanyId: () => stateRef.current.companyId,
       getLocale,
       onUnauthorized: () => void signOut(),
+      onSubscriptionBlocked: (details) => setSuspension(details),
     });
   }, [signOut]);
 
@@ -116,9 +122,14 @@ export function SessionProvider({ children, onSignedOut }: PropsWithChildren<{ o
   );
 
   const setCompany = useCallback(
-    async (companyId: number) => persist({ ...stateRef.current, companyId }),
+    async (companyId: number) => {
+      setSuspension(null);
+      await persist({ ...stateRef.current, companyId });
+    },
     [persist],
   );
+
+  const clearSuspension = useCallback(() => setSuspension(null), []);
 
   const setUser = useCallback(
     async (user: User) => persist({ ...stateRef.current, user, companyId: pickCompany(user, stateRef.current.companyId) }),
@@ -149,6 +160,8 @@ export function SessionProvider({ children, onSignedOut }: PropsWithChildren<{ o
       companyId: state.companyId,
       role: state.user && state.companyId != null ? roleIn(state.user, state.companyId) : null,
       biometricEnabled: state.biometricEnabled,
+      suspension,
+      clearSuspension,
       signIn,
       signOut,
       setCompany,
@@ -156,7 +169,7 @@ export function SessionProvider({ children, onSignedOut }: PropsWithChildren<{ o
       setBiometricEnabled,
       unlock,
     }),
-    [status, state, signIn, signOut, setCompany, setUser, setBiometricEnabled, unlock],
+    [status, state, suspension, clearSuspension, signIn, signOut, setCompany, setUser, setBiometricEnabled, unlock],
   );
 
   return <SessionContext.Provider value={value}>{children}</SessionContext.Provider>;

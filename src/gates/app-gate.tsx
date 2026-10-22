@@ -4,6 +4,7 @@ import { ActivityIndicator, View } from "react-native";
 import Animated from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { BrandMark } from "@/components/brand";
+import { SuspendedScreen } from "@/components/suspended-screen";
 import { AppText, Button } from "@/components/ui";
 import { t, useLocale } from "@/i18n";
 import { useSession } from "@/session";
@@ -27,7 +28,7 @@ function Splash() {
 export function AppGate({ children }: PropsWithChildren) {
   useLocale();
   const { c } = useTheme();
-  const { status, unlock, signOut } = useSession();
+  const { status, unlock, signOut, suspension } = useSession();
   const router = useRouter();
   const segments = useSegments();
   const [outdated, setOutdated] = useState<boolean | null>(null);
@@ -67,6 +68,9 @@ export function AppGate({ children }: PropsWithChildren) {
       </SafeAreaView>
     );
   }
+
+  // Empresa suspendida por falta de pago (spec 031): ninguna pantalla de operación hasta que se pague.
+  if (!outdated && status === "signedIn" && suspension) return <SuspendedScreen />;
 
   return <>{children}</>;
 }
