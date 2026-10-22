@@ -58,7 +58,7 @@ describe("pedido (órdenes sin restaurante)", () => {
     });
     await renderScreen(<Pedido />);
 
-    await fireEvent.press(await screen.findByRole("button", { name: "Mesa 3, Ocupada, $40.00" }));
+    await fireEvent.press(await screen.findByRole("button", { name: /^Mesa 3, Ocupada, .*\$40\.00$/ }));
     await fireEvent.press(await screen.findByTestId("order-bar"));
 
     expect(await screen.findByTestId("order-line-1")).toBeTruthy();
@@ -122,7 +122,7 @@ describe("pedido (orden cobrada o cancelada en otro lado)", () => {
       "GET /api/v1/work_orders/5": () => reply(200, order({ total: 40, status: now })),
     });
     const view = await renderScreen(<Pedido />);
-    await fireEvent.press(await screen.findByRole("button", { name: "Mesa 3, Ocupada, $40.00" }));
+    await fireEvent.press(await screen.findByRole("button", { name: /^Mesa 3, Ocupada, .*\$40\.00$/ }));
     // El encabezado toma el nombre de la orden cuando ya cargó (abierta): recién ahí se cambia el estado.
     await screen.findByRole("header", { name: "Mesa 3" });
 
@@ -169,7 +169,7 @@ describe("cobro desde la pantalla (mesas)", () => {
     });
     await renderScreen(<Mesas />);
 
-    await fireEvent.press(await screen.findByRole("button", { name: "4, Ocupada, $25.00" }));
+    await fireEvent.press(await screen.findByRole("button", { name: /^4, Ocupada, .*\$25\.00$/ }));
     await fireEvent.press(await screen.findByTestId("order-bar"));
     await fireEvent.press(await screen.findByRole("button", { name: "Cobrar" }));
     await fireEvent.changeText(await screen.findByLabelText("Recibido"), "50");

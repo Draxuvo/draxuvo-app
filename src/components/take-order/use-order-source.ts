@@ -3,7 +3,7 @@ import * as Crypto from "expo-crypto";
 import { useRef } from "react";
 import { listOrders } from "@/api/orders";
 import { sendRound } from "@/api/restaurant";
-import type { Check, RoundResponse, WorkOrder } from "@/api/types";
+import type { Check, RoundResponse, TableState, WorkOrder } from "@/api/types";
 import { POLL_MS, useApplyCheck, useCheck, useCheckActions, useOpenCheck, useTables, useWaiters } from "@/hooks/use-restaurant";
 import { useOpenOrder, useOrder, useOrderItemActions } from "@/hooks/use-orders";
 import { useSession } from "@/session";
@@ -17,8 +17,11 @@ export type Selection = { kind: "check"; id: number } | { kind: "order"; id: num
 export interface SourceTile {
   key: string;
   name: string;
-  state: "free" | "occupied";
-  total: number;
+  state: TableState;
+  /** Cuándo se abrió la cuenta; las órdenes de trabajo no lo traen. */
+  openedAt?: string | null;
+  /** `null` cuando la cuenta es ajena y quien pide no es jefe (spec 032, FR-019b). */
+  total: number | null;
   owner: string | null;
   mine: boolean;
   ready: number;
@@ -48,6 +51,7 @@ export interface CurrentOrder {
 }
 
 const num = (value: string | number | null | undefined) => Number(value ?? 0) || 0;
+const numOrNull = (value: string | number | null | undefined) => (value == null ? null : num(value));
 
 export function checkLines(check: Check): Line[] {
   return check.items.map((i) => ({
@@ -112,8 +116,9 @@ export function useOrderSource(mode: "restaurant" | "orders", selection: Selecti
       ...(overview.data?.results ?? []).filter((t) => t.active).map((t): SourceTile => ({
         key: `table:${t.id}`,
         name: t.name,
-        state: t.check ? "occupied" : "free",
-        total: num(t.check?.total),
+        state: t.state ?? (t.check ? "occupied" : "free"),
+        openedAt: t.check?.opened_at,
+        total: numOrNull(t.check?.total),
         owner: t.check?.waiter?.name ?? null,
         mine: !!t.check?.mine,
         ready: t.check?.counts.ready ?? 0,
@@ -124,7 +129,8 @@ export function useOrderSource(mode: "restaurant" | "orders", selection: Selecti
         key: `check:${c.id}`,
         name: c.takeout_name,
         state: "occupied",
-        total: num(c.total),
+        openedAt: c.opened_at,
+        total: numOrNull(c.total),
         owner: c.waiter?.name ?? null,
         mine: c.mine,
         ready: c.counts.ready,

@@ -299,18 +299,23 @@ export interface ItemCounts {
 
 export interface CheckSummary {
   id: number;
-  waiter: PersonName | null;
+  /** Mesero y total solo llegan de las cuentas propias o a quien es jefe (spec 032, FR-019b). */
+  waiter?: PersonName | null;
   opened_at: string;
-  total: string;
+  total?: string;
   counts: ItemCounts;
   mine: boolean;
 }
+
+/** Estado de la mesa que calcula la API a partir de su cuenta abierta (spec 032). */
+export type TableState = "free" | "occupied" | "to_pay";
 
 export interface TableSummary {
   id: number;
   name: string;
   active: boolean;
   position: number;
+  state?: TableState;
   check: CheckSummary | null;
 }
 

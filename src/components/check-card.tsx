@@ -14,6 +14,7 @@ function minutesSince(iso: string): number {
 export function CheckCard({ name, takeout, check, onPress }: { name: string; takeout: boolean; check: CheckSummary; onPress: () => void }) {
   const title = takeout ? t("orders.openChecks.takeout", { name }) : tableLabel("orders.openChecks.table", name);
   const elapsed = t("orders.openChecks.elapsed", { time: t("tables.elapsed", { minutes: minutesSince(check.opened_at) }) });
+  const toPay = check.counts.new + check.counts.preparing + check.counts.ready === 0 && check.counts.delivered > 0;
   const waiter = check.waiter ? `${t("orders.openChecks.waiter", { name: check.waiter.name })} · ` : "";
   return (
     <Card onPress={onPress} accessibilityLabel={t("orders.openChecks.open", { name })} style={{ minHeight: 72, justifyContent: "center" }}>
@@ -23,11 +24,12 @@ export function CheckCard({ name, takeout, check, onPress }: { name: string; tak
             {title}
           </AppText>
           <AppText tone="muted" numberOfLines={1}>
+            {toPay ? `${t("takeOrder.state.to_pay")} · ` : ""}
             {waiter}
             {elapsed}
           </AppText>
         </View>
-        <AppText variant="figure">{formatMoney(check.total)}</AppText>
+        {check.total != null ? <AppText variant="figure">{formatMoney(check.total)}</AppText> : null}
       </View>
     </Card>
   );
