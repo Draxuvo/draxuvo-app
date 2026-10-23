@@ -99,6 +99,26 @@ export default function Perfil() {
 
       <AttendanceCard />
 
+      {role === "admin" || role === "owner" ? (
+        <Animated.View entering={rowEnter(1)}>
+          <Card>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={t("teamAttendance.entry")}
+              onPress={() => router.push("/asistencia-equipo")}
+              style={{ flexDirection: "row", alignItems: "center", gap: space[3], minHeight: 48 }}
+            >
+              <Icon name="users" />
+              <View style={{ flex: 1 }}>
+                <AppText variant="bodyStrong">{t("teamAttendance.entry")}</AppText>
+                <AppText tone="muted">{t("teamAttendance.entryHint")}</AppText>
+              </View>
+              <Icon name="chevron-right" tone="muted" />
+            </Pressable>
+          </Card>
+        </Animated.View>
+      ) : null}
+
       <Animated.View entering={rowEnter(1)}>
         <Card style={{ gap: space[4] }}>
           <Field label={t("profileScreen.firstName")} value={firstName} onChangeText={setFirstName} error={nameError} testID="profile-first-name" />

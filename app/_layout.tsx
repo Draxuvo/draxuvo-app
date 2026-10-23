@@ -35,6 +35,7 @@ function Screens() {
         <Stack.Screen name="empresa" options={{ ...pushed, presentation: "modal", animation: "slide_from_bottom" }} />
         <Stack.Screen name="cobro/[id]" options={pushed} />
         <Stack.Screen name="pedido" options={pushed} />
+        <Stack.Screen name="asistencia-equipo" options={pushed} />
         <Stack.Screen name="cuenta/[id]" options={pushed} />
         <Stack.Screen name="ticket/[id]" options={pushed} />
         <Stack.Screen name="orden-form/[id]" options={pushed} />

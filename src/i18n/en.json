@@ -530,5 +530,33 @@
       "markAndLogout": "Clock out and sign out",
       "withoutMarking": "Sign out without clocking out"
     }
+  },
+  "teamAttendance": {
+    "title": "Team attendance",
+    "entry": "Team attendance",
+    "entryHint": "Check your staff in and out",
+    "empty": "There are no active employees yet.",
+    "loadError": "Today's list could not be loaded.",
+    "noEntry": "No check-in today",
+    "workingSince": "On shift since {time}",
+    "doneRange": "{from} to {to}",
+    "capturedBy": "entered by {name}",
+    "markIn": "Check in",
+    "markOut": "Check out",
+    "state": {
+      "none": "No check-in",
+      "working": "On shift",
+      "done": "Checked out"
+    },
+    "sheetIn": "Check-in for {name}",
+    "sheetOut": "Check-out for {name}",
+    "sheetHint": "It is recorded under your name. Change the date or time if they forgot to clock.",
+    "date": "Date (YYYY-MM-DD)",
+    "time": "Time (HH:mm)",
+    "capturedNote": "It will be flagged as entered by you.",
+    "invalid": "Enter a valid date and time.",
+    "future": "The time cannot be in the future.",
+    "doneIn": "{name}'s check-in recorded",
+    "doneOut": "{name}'s check-out recorded"
   }
 }

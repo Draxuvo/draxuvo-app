@@ -530,5 +530,33 @@
       "markAndLogout": "Marcar salida y cerrar sesión",
       "withoutMarking": "Cerrar sin marcar"
     }
+  },
+  "teamAttendance": {
+    "title": "Asistencia del equipo",
+    "entry": "Asistencia del equipo",
+    "entryHint": "Marca la entrada y la salida de tu personal",
+    "empty": "Todavía no hay empleados activos.",
+    "loadError": "No se pudo cargar la lista de hoy.",
+    "noEntry": "Sin entrada hoy",
+    "workingSince": "En turno desde las {time}",
+    "doneRange": "De {from} a {to}",
+    "capturedBy": "capturada por {name}",
+    "markIn": "Marcar entrada",
+    "markOut": "Marcar salida",
+    "state": {
+      "none": "Sin entrada",
+      "working": "En turno",
+      "done": "Con salida"
+    },
+    "sheetIn": "Entrada de {name}",
+    "sheetOut": "Salida de {name}",
+    "sheetHint": "Se registra a tu nombre. Cambia la fecha o la hora si se le olvidó marcar.",
+    "date": "Fecha (AAAA-MM-DD)",
+    "time": "Hora (HH:mm)",
+    "capturedNote": "Quedará señalada como capturada por ti.",
+    "invalid": "Escribe una fecha y una hora válidas.",
+    "future": "La hora no puede ser futura.",
+    "doneIn": "Entrada de {name} registrada",
+    "doneOut": "Salida de {name} registrada"
   }
 }
