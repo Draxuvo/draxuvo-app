@@ -2,8 +2,8 @@ import { useIsFocused, useRouter } from "expo-router";
 import { useMemo, useRef, useState } from "react";
 import { RefreshControl, View, type NativeScrollEvent, type NativeSyntheticEvent } from "react-native";
 import Animated from "react-native-reanimated";
-import type { CheckSummary, WorkOrder } from "@/api/types";
-import { CheckCard } from "@/components/check-card";
+import type { CheckSummary, ClosedCheckSummary, WorkOrder } from "@/api/types";
+import { CheckCard, ClosedCheckCard } from "@/components/check-card";
 import { EmptyState } from "@/components/empty-state";
 import { ErrorView } from "@/components/error-view";
 import { Fab } from "@/components/fab";
@@ -25,6 +25,7 @@ const ORDERS_POLL_MS = 10_000;
 
 type Row =
   | { kind: "check"; key: string; name: string; takeout: boolean; check: CheckSummary }
+  | { kind: "closed"; key: string; check: ClosedCheckSummary }
   | { kind: "order"; key: string; order: WorkOrder };
 
 /**
@@ -58,6 +59,9 @@ export default function OrdersList() {
   const counts = useOrderCounts(common, poll);
   const employees = useEmployees(boss);
 
+  // El responsable elegido recorta también las cuentas de mesa por su mesero; sin usuario ligado no atiende ninguna (-1).
+  const waiterId = filters.employeeId ? (employees.data?.results.find((e) => e.id === filters.employeeId)?.user_id ?? -1) : null;
+
   // Cuentas abiertas: quien opera ve solo las que atiende; la administración, todas.
   const checkRows = useMemo<Row[]>(() => {
     if (!restaurant || !tables.data) return [];
@@ -65,17 +69,27 @@ export default function OrdersList() {
       ...tables.data.results.flatMap((table) => (table.check ? [{ key: `table-${table.id}`, name: table.name, takeout: false, check: table.check }] : [])),
       ...tables.data.takeouts.map((check) => ({ key: `takeout-${check.id}`, name: check.takeout_name, takeout: true, check })),
     ];
-    return open.filter((item) => boss || item.check.mine).map((item) => ({ kind: "check" as const, ...item }));
-  }, [restaurant, tables.data, boss]);
+    return open.filter((item) => (boss || item.check.mine) && (waiterId == null || item.check.waiter?.id === waiterId)).map((item) => ({ kind: "check" as const, ...item }));
+  }, [restaurant, tables.data, boss, waiterId]);
   const showChecks = !filters.cancelled && selected === "in_progress";
+
+  // Cuentas cobradas hoy: viven en Cobradas junto a las órdenes cobradas (mismo criterio de quién las ve).
+  const closedRows = useMemo<Row[]>(() => {
+    if (!restaurant || !tables.data?.closed_today) return [];
+    return tables.data.closed_today
+      .filter((check) => (boss || check.mine) && (waiterId == null || check.waiter?.id === waiterId))
+      .map((check) => ({ kind: "closed" as const, key: `closed-${check.id}`, check }));
+  }, [restaurant, tables.data, boss, waiterId]);
+  const showClosed = !filters.cancelled && selected === "paid";
 
   const orders = useMemo<WorkOrder[]>(() => list.data?.pages.flatMap((page) => page.results) ?? [], [list.data]);
   const rows: Row[] = [
     ...(showChecks ? checkRows : []),
+    ...(showClosed ? closedRows : []),
     ...orders.map((order) => ({ kind: "order" as const, key: `order-${order.id}`, order })),
   ];
 
-  const tabCounts = { ...counts, in_progress: counts.in_progress + checkRows.length };
+  const tabCounts = { ...counts, in_progress: counts.in_progress + checkRows.length, paid: counts.paid + closedRows.length };
   const loading = list.isLoading;
   const error = list.error;
   const refreshing = list.isRefetching && !list.isFetchingNextPage;
@@ -135,6 +149,8 @@ export default function OrdersList() {
             <Animated.View entering={rowEnter(index)}>
               {item.kind === "check" ? (
                 <CheckCard name={item.name} takeout={item.takeout} check={item.check} onPress={() => router.push(`/pedido?cuenta=${item.check.id}` as never)} />
+              ) : item.kind === "closed" ? (
+                <ClosedCheckCard check={item.check} onPress={() => router.push(`/pedido?cuenta=${item.check.id}&hoja=1` as never)} />
               ) : (
                 <OrderCard order={item.order} onPress={() => router.push(`/ordenes/${item.order.id}` as never)} />
               )}

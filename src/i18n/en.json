@@ -164,6 +164,10 @@
       "waiter": "Served by {name}",
       "elapsed": "Open for {time}",
       "open": "Open the check for {name}"
+    },
+    "closedChecks": {
+      "at": "Paid at {time}",
+      "open": "View paid check of {name}"
     }
   },
   "errors": {
@@ -248,7 +252,6 @@
     "current": "Active",
     "roles": {
       "staff": "Staff",
-      "manager": "Manager",
       "admin": "Admin",
       "owner": "Owner"
     },

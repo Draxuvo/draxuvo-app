@@ -1,11 +1,11 @@
-# Recorrido: el encargado crea una orden asignada en Volta; el staff no ve "Nueva orden".
+# Recorrido: el administrador crea una orden asignada en Volta; el staff no ve "Nueva orden".
 appId: com.draxuvo.app
 ---
 - launchApp:
     clearState: true
 - tapOn:
     id: login-email
-- inputText: "manager@volta.demo"
+- inputText: "admin@volta.demo"
 - tapOn:
     id: login-password
 - inputText: "Demo12345*"

@@ -13,7 +13,7 @@ jest.mock("expo-router", () => ({ useRouter: () => ({ push: jest.fn() }), Stack:
 
 const fetchMock = mockFetch();
 
-const asRole = (role: "admin" | "owner" | "manager" | "staff") => ({
+const asRole = (role: "admin" | "owner" | "staff") => ({
   ...staffUser,
   role,
   companies: [{ ...staffUser.companies[0], role }],
@@ -106,8 +106,8 @@ describe("Asistencia del equipo (spec 036)", () => {
     expect(await screen.findByText("Ya tiene una entrada registrada sin salida")).toBeTruthy();
   });
 
-  it("el gerente no entra: no consulta la lista", async () => {
-    await seedSession(asRole("manager"), 10);
+  it("el staff no entra: no consulta la lista", async () => {
+    await seedSession(asRole("staff"), 10);
     serve();
     await renderScreen(<AsistenciaEquipo />);
 
@@ -117,7 +117,7 @@ describe("Asistencia del equipo (spec 036)", () => {
 });
 
 describe("Perfil", () => {
-  it.each([["admin", true], ["owner", true], ["manager", false], ["staff", false]] as const)("%s: la entrada a Asistencia del equipo %s", async (role, visible) => {
+  it.each([["admin", true], ["owner", true], ["staff", false]] as const)("%s: la entrada a Asistencia del equipo %s", async (role, visible) => {
     await seedSession(asRole(role), 10);
     fetchMock.mockReturnValue(reply(200, { eligible: false, state: "none", current: null, last: null, server_time: "2026-10-20T15:00:00Z" }));
     await renderScreen(<Perfil />);
