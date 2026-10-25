@@ -199,6 +199,64 @@ describe("Órdenes con mesas (spec 023)", () => {
   });
 });
 
+describe("Cuentas cobradas hoy en Cobradas", () => {
+  const closed_today = [
+    { id: 40, name: "2", takeout_name: null, closed_at: new Date().toISOString(), ticket_id: 7, waiter: { id: 1, name: "Sara Staff" }, total: "380.00", mine: true },
+    { id: 41, name: null, takeout_name: "Eva", closed_at: new Date().toISOString(), ticket_id: 8, mine: false },
+  ];
+
+  it("el operador ve en Cobradas solo las suyas y suma al contador", async () => {
+    await seedSession(staffUser, 10);
+    serve({}, tables({ closed_today }));
+    await renderScreen(<OrdersList />);
+
+    await fireEvent.press(await screen.findByRole("tab", { name: /^Cobradas/ }));
+
+    expect(await screen.findByRole("button", { name: "Ver cuenta cobrada de 2" })).toBeTruthy();
+    expect(screen.queryByRole("button", { name: "Ver cuenta cobrada de Eva" })).toBeNull();
+    expect(screen.getByRole("tab", { name: "Cobradas, 1" })).toBeTruthy();
+  });
+
+  it("la administración ve todas y tocar una abre su hoja con el ticket", async () => {
+    await seedSession(multiUser, 10);
+    serve({}, tables({ closed_today }));
+    await renderScreen(<OrdersList />);
+    await fireEvent.press(await screen.findByRole("tab", { name: /^Cobradas/ }));
+
+    expect(await screen.findByRole("button", { name: "Ver cuenta cobrada de Eva" })).toBeTruthy();
+    await fireEvent.press(screen.getByRole("button", { name: "Ver cuenta cobrada de 2" }));
+
+    expect(mockPush).toHaveBeenCalledWith("/pedido?cuenta=40&hoja=1");
+  });
+
+  it("el responsable elegido recorta las cuentas cobradas y las abiertas por su mesero", async () => {
+    await seedSession(multiUser, 10);
+    fetchMock.mockImplementation((url: string) => {
+      if (url.includes("/employees")) return reply(200, { info: { page_size: 20, page_index: 1, total: 1, page_start: 1, page_end: 1 }, results: [{ id: 5, user_id: 1, name: "Sara Staff" }] });
+      if (url.includes("/restaurant/tables")) return reply(200, tables({ closed_today }));
+      return page([]);
+    });
+    await renderScreen(<OrdersList />);
+    await fireEvent.press(await screen.findByRole("button", { name: "Sara Staff" }));
+
+    // Sara (usuario 1) atiende la mesa 1 y cobró la 2; Luis atiende la 2 abierta.
+    expect(await screen.findByRole("button", { name: "Abrir cuenta de 1" })).toBeTruthy();
+    expect(screen.queryByRole("button", { name: "Abrir cuenta de 2" })).toBeNull();
+    await fireEvent.press(screen.getByRole("tab", { name: /^Cobradas/ }));
+    expect(await screen.findByRole("button", { name: "Ver cuenta cobrada de 2" })).toBeTruthy();
+    expect(screen.queryByRole("button", { name: "Ver cuenta cobrada de Eva" })).toBeNull();
+  });
+
+  it("no salen en En curso", async () => {
+    await seedSession(multiUser, 10);
+    serve({}, tables({ closed_today }));
+    await renderScreen(<OrdersList />);
+
+    await screen.findByRole("button", { name: "Abrir cuenta de 1" });
+    expect(screen.queryByRole("button", { name: "Ver cuenta cobrada de 2" })).toBeNull();
+  });
+});
+
 describe("botón de nueva orden", () => {
   it("con mesas abre Tomar pedido", async () => {
     await seedSession(staffUser, 10);

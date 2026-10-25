@@ -164,6 +164,10 @@
       "waiter": "Atiende {name}",
       "elapsed": "Abierta hace {time}",
       "open": "Abrir cuenta de {name}"
+    },
+    "closedChecks": {
+      "at": "Cobrada a las {time}",
+      "open": "Ver cuenta cobrada de {name}"
     }
   },
   "errors": {
@@ -248,7 +252,6 @@
     "current": "Activa",
     "roles": {
       "staff": "Staff",
-      "manager": "Encargado",
       "admin": "Administrador",
       "owner": "Dueño"
     },

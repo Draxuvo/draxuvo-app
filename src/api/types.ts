@@ -1,7 +1,7 @@
 // Tipos que usa la app, copiados del contrato de la API (specs/011-app-movil-hibrida/contracts).
 // La app no comparte código con draxuvo-ui: si la API cambia, se actualiza aquí.
 
-export type CompanyRole = "staff" | "manager" | "admin" | "owner";
+export type CompanyRole = "staff" | "admin" | "owner";
 export type Role = CompanyRole | "super_admin";
 export type OrderMode = "service" | "order";
 
@@ -164,6 +164,8 @@ export interface PaginatedResponse<T> {
 
 export interface Employee {
   id: number;
+  /** Usuario ligado a la ficha, si tiene; une al empleado con el mesero de una cuenta. */
+  user_id?: number | null;
   name: string;
   position?: string;
 }
@@ -333,9 +335,23 @@ export interface ReadyItem {
   ready_at: string;
 }
 
+/** Cuenta cobrada hoy; mesero y total solo llegan de las cuentas propias o a quien es jefe. */
+export interface ClosedCheckSummary {
+  id: number;
+  /** Nombre de la mesa; `null` en las cuentas para llevar. */
+  name: string | null;
+  takeout_name: string | null;
+  closed_at: string;
+  ticket_id: number | null;
+  waiter?: PersonRef | null;
+  total?: string;
+  mine: boolean;
+}
+
 export interface TablesResponse {
   results: TableSummary[];
   takeouts: TakeoutSummary[];
+  closed_today?: ClosedCheckSummary[];
   ready_items: ReadyItem[];
   stock_alerts?: number;
 }

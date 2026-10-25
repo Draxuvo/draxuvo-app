@@ -183,5 +183,5 @@ export function useSession(): SessionValue {
 
 /** Quien puede crear y editar órdenes de todo el negocio (FR-025). */
 export function isBossRole(role: CompanyRole | null): boolean {
-  return role === "manager" || role === "admin" || role === "owner";
+  return role === "admin" || role === "owner";
 }

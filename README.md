@@ -32,7 +32,7 @@ npm test             # Jest (jest-expo) con Testing Library
 npm run e2e          # recorridos Maestro de e2e/ (necesita Maestro y un simulador con la app instalada)
 ```
 
-Las pruebas de pantalla viven en `src/__tests__/` (no en `app/`: Expo Router toma todo lo de `app/` como ruta). Los recorridos de `e2e/` esperan la API con datos de demo (`staff@volta.demo`, `manager@volta.demo`, `multi@demo.demo`); `sin-red.yaml` usa el modo avión y solo corre en Android.
+Las pruebas de pantalla viven en `src/__tests__/` (no en `app/`: Expo Router toma todo lo de `app/` como ruta). Los recorridos de `e2e/` esperan la API con datos de demo (`staff@volta.demo`, `admin@volta.demo`, `multi@demo.demo`); `sin-red.yaml` usa el modo avión y solo corre en Android.
 
 ## Estructura
 
