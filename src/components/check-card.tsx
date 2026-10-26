@@ -43,7 +43,6 @@ function timeOf(iso: string): string {
 export function ClosedCheckCard({ check, onPress }: { check: ClosedCheckSummary; onPress: () => void }) {
   const name = check.name ?? check.takeout_name ?? "";
   const title = check.name == null ? t("orders.openChecks.takeout", { name }) : tableLabel("orders.openChecks.table", name);
-  const waiter = check.waiter ? `${t("orders.openChecks.waiter", { name: check.waiter.name })} · ` : "";
   return (
     <Card onPress={onPress} accessibilityLabel={t("orders.closedChecks.open", { name })} style={{ minHeight: 72, justifyContent: "center" }}>
       <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", gap: space[3] }}>
@@ -51,9 +50,9 @@ export function ClosedCheckCard({ check, onPress }: { check: ClosedCheckSummary;
           <AppText variant="headline" numberOfLines={1}>
             {title}
           </AppText>
-          <AppText tone="muted" numberOfLines={1}>
-            {waiter}
+          <AppText tone="muted" numberOfLines={2}>
             {t("orders.closedChecks.at", { time: timeOf(check.closed_at) })}
+            {check.waiter ? ` · ${t("orders.openChecks.waiter", { name: check.waiter.name })}` : ""}
           </AppText>
         </View>
         {check.total != null ? <AppText variant="figure">{formatMoney(check.total)}</AppText> : null}
