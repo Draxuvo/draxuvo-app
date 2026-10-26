@@ -217,6 +217,16 @@ describe("Cuentas cobradas hoy en Cobradas", () => {
     expect(screen.getByRole("tab", { name: "Cobradas, 1" })).toBeTruthy();
   });
 
+  it("la hora de cobro va primero, para que no se pierda si el nombre del mesero es largo", async () => {
+    await seedSession(staffUser, 10);
+    serve({}, tables({ closed_today }));
+    await renderScreen(<OrdersList />);
+    await fireEvent.press(await screen.findByRole("tab", { name: /^Cobradas/ }));
+
+    await screen.findByRole("button", { name: "Ver cuenta cobrada de 2" });
+    expect(screen.getByText(/^Cobrada a las .* · Atiende Sara Staff$/)).toBeTruthy();
+  });
+
   it("la administración ve todas y tocar una abre su hoja con el ticket", async () => {
     await seedSession(multiUser, 10);
     serve({}, tables({ closed_today }));
