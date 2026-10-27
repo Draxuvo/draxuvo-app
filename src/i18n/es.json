@@ -188,6 +188,7 @@
     "title": "Perfil",
     "logout": "Cerrar sesión",
     "language": "Idioma",
+    "sound": "Sonido de comandas listas",
     "biometric": "Entrar con huella o rostro",
     "biometricReason": "Confirma que eres tú para abrir Draxuvo.",
     "biometricRetry": "Usar contraseña"

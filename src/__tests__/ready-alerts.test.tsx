@@ -1,10 +1,12 @@
 import { act, fireEvent, screen, waitFor } from "@testing-library/react-native";
 import { ReadyAlertsHost } from "@/components/ready-alerts-host";
+import { playReadySound } from "@/lib/sound";
 import type { ReadyItem, TablesResponse } from "@/api/types";
 import { clearStore, mockFetch, reply, seedSession, staffUser } from "@/test/helpers";
 import { renderScreen } from "@/test/render";
 
 jest.mock("expo-constants", () => ({ expoConfig: { version: "1.0.0" } }));
+jest.mock("@/lib/sound", () => ({ playReadySound: jest.fn() }));
 const mockPush = jest.fn();
 jest.mock("expo-router", () => ({ useRouter: () => ({ push: mockPush }) }));
 
@@ -17,6 +19,7 @@ const tables = (ready_items: ReadyItem[]): TablesResponse => ({ results: [], tak
 beforeEach(async () => {
   fetchMock.mockReset();
   mockPush.mockReset();
+  (playReadySound as jest.Mock).mockClear();
   await clearStore();
   await seedSession(staffUser, 10);
 });
@@ -86,6 +89,21 @@ describe("avisos de listo", () => {
     });
 
     await waitFor(() => expect(screen.queryByText("Mesa 4: Tacos al pastor listo")).toBeNull());
+  });
+
+  it("no suena en la carga inicial, solo cuando aparece un artículo nuevo", async () => {
+    fetchMock.mockReturnValue(reply(200, tables([ready(1, "Tacos al pastor")])));
+    const { client } = await renderScreen(<ReadyAlertsHost />);
+    await screen.findByText("Mesa 4: Tacos al pastor listo");
+    expect(playReadySound).not.toHaveBeenCalled();
+
+    fetchMock.mockReturnValue(reply(200, tables([ready(1, "Tacos al pastor"), ready(3, "Sopa del día")])));
+    await act(async () => {
+      await client.invalidateQueries();
+    });
+
+    await screen.findByText("Mesa 4: Sopa del día listo");
+    expect(playReadySound).toHaveBeenCalled();
   });
 
   it("una empresa sin restaurante no muestra avisos ni deja de funcionar", async () => {

@@ -11,6 +11,7 @@ import { LanguageSwitch } from "@/components/language-switch";
 import { Monogram } from "@/components/order-card";
 import { AppText, Button, Card, Field, Icon, KeyboardFrame } from "@/components/ui";
 import { haptic } from "@/lib/haptics";
+import { useSoundPreference } from "@/hooks/use-sound-preference";
 import { t, useLocale } from "@/i18n";
 import { biometricAvailable } from "@/session/biometric";
 import { useSession } from "@/session";
@@ -20,6 +21,7 @@ export default function Perfil() {
   useLocale();
   const { c } = useTheme();
   const { user, companyId, role, setUser, biometricEnabled, setBiometricEnabled } = useSession();
+  const sound = useSoundPreference("ready");
   const router = useRouter();
   const { requestLogout, modal: logoutModal } = useLogoutFlow();
   const [firstName, setFirstName] = useState(user?.first_name ?? "");
@@ -141,6 +143,22 @@ export default function Perfil() {
       <Animated.View entering={rowEnter(2)}>
         <Card style={{ gap: space[4] }}>
           <LanguageSwitch />
+          <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", gap: space[3], minHeight: 48 }}>
+            <View style={{ flexDirection: "row", alignItems: "center", gap: space[3], flex: 1 }}>
+              <Icon name="bell" tone="muted" />
+              <AppText style={{ flexShrink: 1 }}>{t("profile.sound")}</AppText>
+            </View>
+            <Switch
+              accessibilityLabel={t("profile.sound")}
+              value={sound.enabled}
+              onValueChange={(value) => {
+                haptic.select();
+                sound.setEnabled(value);
+              }}
+              trackColor={{ true: c.primary, false: c.line }}
+              thumbColor={c.surface}
+            />
+          </View>
           <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", gap: space[3], minHeight: 48 }}>
             <View style={{ flexDirection: "row", alignItems: "center", gap: space[3], flex: 1 }}>
               <Icon name="smartphone" tone="muted" />
