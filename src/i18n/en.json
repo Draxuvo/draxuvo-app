@@ -188,6 +188,7 @@
     "title": "Profile",
     "logout": "Sign out",
     "language": "Language",
+    "sound": "Ready order sound",
     "biometric": "Sign in with fingerprint or face",
     "biometricReason": "Confirm it's you to open Draxuvo.",
     "biometricRetry": "Use password"

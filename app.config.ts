@@ -25,6 +25,7 @@ const config: ExpoConfig = {
   plugins: [
     "expo-router",
     "expo-secure-store",
+    "expo-audio",
     "expo-sqlite",
     [
       "expo-local-authentication",
