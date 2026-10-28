@@ -9,6 +9,7 @@ import { AvatarPicker } from "@/components/avatar-picker";
 import { describeError } from "@/components/error-view";
 import { LanguageSwitch } from "@/components/language-switch";
 import { Monogram } from "@/components/order-card";
+import { SoundPicker, useReadySoundName } from "@/components/sound-picker";
 import { AppText, Button, Card, Field, Icon, KeyboardFrame } from "@/components/ui";
 import { haptic } from "@/lib/haptics";
 import { useSoundPreference } from "@/hooks/use-sound-preference";
@@ -22,6 +23,8 @@ export default function Perfil() {
   const { c } = useTheme();
   const { user, companyId, role, setUser, biometricEnabled, setBiometricEnabled } = useSession();
   const sound = useSoundPreference("ready");
+  const readySoundName = useReadySoundName();
+  const [pickingSound, setPickingSound] = useState(false);
   const router = useRouter();
   const { requestLogout, modal: logoutModal } = useLogoutFlow();
   const [firstName, setFirstName] = useState(user?.first_name ?? "");
@@ -159,6 +162,18 @@ export default function Perfil() {
               thumbColor={c.surface}
             />
           </View>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={`${t("sounds.row")}: ${readySoundName}`}
+            onPress={() => setPickingSound(true)}
+            style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", gap: space[3], minHeight: 48 }}
+          >
+            <View style={{ flexDirection: "row", alignItems: "center", gap: space[3], flex: 1 }}>
+              <Icon name="music" tone="muted" />
+              <AppText style={{ flexShrink: 1 }}>{t("sounds.row")}</AppText>
+            </View>
+            <AppText tone="muted">{readySoundName}</AppText>
+          </Pressable>
           <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", gap: space[3], minHeight: 48 }}>
             <View style={{ flexDirection: "row", alignItems: "center", gap: space[3], flex: 1 }}>
               <Icon name="smartphone" tone="muted" />
@@ -180,6 +195,7 @@ export default function Perfil() {
 
       <Button label={t("profile.logout")} variant="outline" icon="log-out" onPress={requestLogout} />
       {logoutModal}
+      <SoundPicker visible={pickingSound} onClose={() => setPickingSound(false)} />
     </Animated.ScrollView>
 </KeyboardFrame>
   );

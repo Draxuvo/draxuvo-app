@@ -567,6 +567,28 @@
     "doneIn": "Entrada de {name} registrada",
     "doneOut": "Salida de {name} registrada"
   },
+  "sounds": {
+    "title": "Sonido de comanda lista",
+    "row": "Sonido de comanda lista",
+    "preview": "Probar",
+    "previewLabel": "Probar {sound}",
+    "reset": "Restablecer",
+    "playError": "No se pudo reproducir el sonido",
+    "hint": "Se guarda en este teléfono.",
+    "close": "Hecho",
+    "cocina": "Cocina",
+    "barra": "Barra",
+    "otra": "Otra estación",
+    "urgente": "Urgente",
+    "listo": "Listo",
+    "clasico": "Clásico",
+    "campana": "Campana",
+    "marimba": "Marimba",
+    "gota": "Gota",
+    "timbre": "Timbre",
+    "pulso": "Pulso",
+    "arpegio": "Arpegio"
+  },
   "alerts": {
     "title": "Alertas",
     "bell": "Alertas",
