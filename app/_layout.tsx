@@ -5,7 +5,7 @@ import { StatusBar } from "expo-status-bar";
 import { useEffect, useState } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaProvider } from "react-native-safe-area-context";
-import { ReadyAlertsHost } from "@/components/ready-alerts-host";
+import { RestaurantAlertsHost } from "@/components/restaurant-alerts-host";
 import { AppGate } from "@/gates/app-gate";
 import { ToastHost } from "@/toast/toast-host";
 import { loadLocale } from "@/i18n";
@@ -40,7 +40,7 @@ function Screens() {
         <Stack.Screen name="ticket/[id]" options={pushed} />
         <Stack.Screen name="orden-form/[id]" options={pushed} />
       </Stack>
-      <ReadyAlertsHost />
+      <RestaurantAlertsHost />
       <ToastHost />
     </>
   );

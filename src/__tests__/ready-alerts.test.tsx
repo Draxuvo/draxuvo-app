@@ -1,7 +1,7 @@
 import { act, fireEvent, screen, waitFor } from "@testing-library/react-native";
-import { ReadyAlertsHost } from "@/components/ready-alerts-host";
+import { RestaurantAlertsHost } from "@/components/restaurant-alerts-host";
 import { playReadySound } from "@/lib/sound";
-import type { ReadyItem, TablesResponse } from "@/api/types";
+import type { CheckSummary, ReadyItem, TablesResponse, TableState, TableSummary } from "@/api/types";
 import { clearStore, mockFetch, reply, seedSession, staffUser } from "@/test/helpers";
 import { renderScreen } from "@/test/render";
 
@@ -14,7 +14,28 @@ const fetchMock = mockFetch();
 const ready = (id: number, name: string, table: string | null = "4", takeout: string | null = null): ReadyItem => ({
   id, name, quantity: 1, check_id: 31, table, takeout_name: takeout, ready_at: "2026-10-19T19:00:00Z",
 });
-const tables = (ready_items: ReadyItem[]): TablesResponse => ({ results: [], takeouts: [], ready_items });
+const check = (id: number, over: Partial<CheckSummary> = {}): CheckSummary => ({
+  id, opened_at: "2026-10-19T18:00:00Z", total: "120.00", counts: { new: 0, preparing: 0, ready: 0, delivered: 2 }, mine: true, ...over,
+});
+const table = (id: number, name: string, state: TableState, own: CheckSummary | null): TableSummary => ({ id, name, active: true, position: id, state, check: own });
+const overview = (over: Partial<TablesResponse> = {}): TablesResponse => ({ results: [], takeouts: [], ready_items: [], ...over });
+const tables = (ready_items: ReadyItem[]): TablesResponse => overview({ ready_items });
+
+type Rendered = Awaited<ReturnType<typeof renderScreen>>;
+
+/** Abre la pantalla con lo que ya estaba listo (la carga inicial no debe avisar). */
+async function mount(initial: ReadyItem[] = []): Promise<Rendered> {
+  fetchMock.mockReturnValue(reply(200, tables(initial)));
+  return renderScreen(<RestaurantAlertsHost />);
+}
+
+/** Un sondeo nuevo que trae estos artículos listos: así se ve un "pasa a listo" en vivo. */
+async function poll(client: Rendered["client"], items: ReadyItem[]): Promise<void> {
+  fetchMock.mockReturnValue(reply(200, tables(items)));
+  await act(async () => {
+    await client.invalidateQueries();
+  });
+}
 
 beforeEach(async () => {
   fetchMock.mockReset();
@@ -25,23 +46,29 @@ beforeEach(async () => {
 });
 
 describe("avisos de listo", () => {
-  it("avisa con la mesa y el platillo", async () => {
-    fetchMock.mockReturnValue(reply(200, tables([ready(1, "Tacos al pastor")])));
-    await renderScreen(<ReadyAlertsHost />);
+  it("no avisa por lo que ya estaba listo al abrir", async () => {
+    await mount([ready(1, "Tacos al pastor")]);
+
+    expect(screen.queryByText("Mesa 4: Tacos al pastor listo")).toBeNull();
+  });
+
+  it("avisa con la mesa y el platillo cuando un artículo pasa a listo", async () => {
+    const { client } = await mount([]);
+    await poll(client, [ready(1, "Tacos al pastor")]);
 
     expect(await screen.findByText("Mesa 4: Tacos al pastor listo")).toBeTruthy();
   });
 
   it("una cuenta para llevar avisa con el nombre del cliente", async () => {
-    fetchMock.mockReturnValue(reply(200, tables([ready(2, "Cola", null, "Luis")])));
-    await renderScreen(<ReadyAlertsHost />);
+    const { client } = await mount([]);
+    await poll(client, [ready(2, "Cola", null, "Luis")]);
 
     expect(await screen.findByText("Luis: Cola listo")).toBeTruthy();
   });
 
   it("tocar el aviso abre la cuenta y lo descarta", async () => {
-    fetchMock.mockReturnValue(reply(200, tables([ready(1, "Tacos al pastor")])));
-    await renderScreen(<ReadyAlertsHost />);
+    const { client } = await mount([]);
+    await poll(client, [ready(1, "Tacos al pastor")]);
 
     await fireEvent.press(await screen.findByRole("button", { name: /Mesa 4: Tacos al pastor listo/ }));
 
@@ -50,8 +77,8 @@ describe("avisos de listo", () => {
   });
 
   it("descartar un aviso no lo repite en el siguiente sondeo", async () => {
-    fetchMock.mockReturnValue(reply(200, tables([ready(1, "Tacos al pastor")])));
-    const { client } = await renderScreen(<ReadyAlertsHost />);
+    const { client } = await mount([]);
+    await poll(client, [ready(1, "Tacos al pastor")]);
     await screen.findByText("Mesa 4: Tacos al pastor listo");
 
     await fireEvent.press(screen.getByRole("button", { name: "Cerrar" }));
@@ -65,42 +92,71 @@ describe("avisos de listo", () => {
   });
 
   it("un artículo nuevo que pasa a listo genera otro aviso", async () => {
-    fetchMock.mockReturnValue(reply(200, tables([ready(1, "Tacos al pastor")])));
-    const { client } = await renderScreen(<ReadyAlertsHost />);
+    const { client } = await mount([]);
+    await poll(client, [ready(1, "Tacos al pastor")]);
     await screen.findByText("Mesa 4: Tacos al pastor listo");
 
-    fetchMock.mockReturnValue(reply(200, tables([ready(1, "Tacos al pastor"), ready(3, "Sopa del día")])));
-    await act(async () => {
-      await client.invalidateQueries();
-    });
+    await poll(client, [ready(1, "Tacos al pastor"), ready(3, "Sopa del día")]);
 
     expect(await screen.findByText("Mesa 4: Sopa del día listo")).toBeTruthy();
     expect(screen.getByText("Mesa 4: Tacos al pastor listo")).toBeTruthy();
   });
 
-  it("el aviso se va solo cuando el artículo se entrega", async () => {
-    fetchMock.mockReturnValue(reply(200, tables([ready(1, "Tacos al pastor")])));
-    const { client } = await renderScreen(<ReadyAlertsHost />);
-    await screen.findByText("Mesa 4: Tacos al pastor listo");
+  it("muestra tres avisos y resume el resto en un contador", async () => {
+    const { client } = await mount([]);
+    await poll(client, [ready(1, "Uno"), ready(2, "Dos"), ready(3, "Tres"), ready(4, "Cuatro")]);
 
-    fetchMock.mockReturnValue(reply(200, tables([])));
+    await screen.findByText("Mesa 4: Uno listo");
+    expect(screen.getByText("Mesa 4: Dos listo")).toBeTruthy();
+    expect(screen.getByText("Mesa 4: Tres listo")).toBeTruthy();
+    expect(screen.queryByText("Mesa 4: Cuatro listo")).toBeNull();
+    expect(screen.getByText("+1")).toBeTruthy();
+  });
+
+  it("avisa cuando una cuenta propia queda por cobrar", async () => {
+    const { client } = await mount();
+    await poll(client, []);
+    fetchMock.mockReturnValue(reply(200, overview({ results: [table(4, "Mesa 4", "to_pay", check(31))] })));
     await act(async () => {
       await client.invalidateQueries();
     });
+
+    expect(await screen.findByText("Mesa 4 por cobrar")).toBeTruthy();
+  });
+
+  it("avisa cuando otra persona toma una mesa libre", async () => {
+    fetchMock.mockReturnValue(reply(200, overview({ results: [table(4, "Mesa 4", "free", null)] })));
+    const { client } = await renderScreen(<RestaurantAlertsHost />);
+    await act(async () => {
+      await client.invalidateQueries();
+    });
+
+    fetchMock.mockReturnValue(reply(200, overview({ results: [table(4, "Mesa 4", "occupied", check(31, { mine: false }))] })));
+    await act(async () => {
+      await client.invalidateQueries();
+    });
+
+    expect(await screen.findByText("Mesa 4: la tomó otra persona")).toBeTruthy();
+  });
+
+  it("el aviso se va solo cuando el artículo se entrega", async () => {
+    const { client } = await mount([]);
+    await poll(client, [ready(1, "Tacos al pastor")]);
+    await screen.findByText("Mesa 4: Tacos al pastor listo");
+
+    await poll(client, []);
 
     await waitFor(() => expect(screen.queryByText("Mesa 4: Tacos al pastor listo")).toBeNull());
   });
 
   it("no suena en la carga inicial, solo cuando aparece un artículo nuevo", async () => {
-    fetchMock.mockReturnValue(reply(200, tables([ready(1, "Tacos al pastor")])));
-    const { client } = await renderScreen(<ReadyAlertsHost />);
-    await screen.findByText("Mesa 4: Tacos al pastor listo");
-    expect(playReadySound).not.toHaveBeenCalled();
-
-    fetchMock.mockReturnValue(reply(200, tables([ready(1, "Tacos al pastor"), ready(3, "Sopa del día")])));
+    const { client } = await mount([ready(1, "Tacos al pastor")]);
     await act(async () => {
       await client.invalidateQueries();
     });
+    expect(playReadySound).not.toHaveBeenCalled();
+
+    await poll(client, [ready(1, "Tacos al pastor"), ready(3, "Sopa del día")]);
 
     await screen.findByText("Mesa 4: Sopa del día listo");
     expect(playReadySound).toHaveBeenCalled();
@@ -108,14 +164,14 @@ describe("avisos de listo", () => {
 
   it("una empresa sin restaurante no muestra avisos ni deja de funcionar", async () => {
     fetchMock.mockReturnValue(reply(403, { error: { status: 403, message: "x", details: { code: "module_not_in_plan" } } }));
-    await renderScreen(<ReadyAlertsHost />);
+    await renderScreen(<RestaurantAlertsHost />);
 
     expect(screen.queryByRole("button")).toBeNull();
   });
 
   it("sin sesión no consulta nada", async () => {
     await clearStore();
-    await renderScreen(<ReadyAlertsHost />);
+    await renderScreen(<RestaurantAlertsHost />);
 
     expect(fetchMock).not.toHaveBeenCalled();
   });
