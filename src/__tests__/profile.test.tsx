@@ -41,6 +41,14 @@ beforeEach(async () => {
 });
 
 describe("perfil", () => {
+  it("muestra el sonido de comanda lista y abre la hoja para cambiarlo (spec 046)", async () => {
+    await renderScreen(<Perfil />);
+
+    fireEvent.press(await screen.findByLabelText("Sonido de comanda lista: Clásico"));
+
+    expect(await screen.findByRole("radio", { name: "Campana" })).toBeTruthy();
+  });
+
   it("muestra correo y rol sin poder editarlos", async () => {
     await renderScreen(<Perfil />);
 
