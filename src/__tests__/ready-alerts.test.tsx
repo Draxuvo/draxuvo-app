@@ -23,18 +23,34 @@ const tables = (ready_items: ReadyItem[]): TablesResponse => overview({ ready_it
 
 type Rendered = Awaited<ReturnType<typeof renderScreen>>;
 
-/** Abre la pantalla con lo que ya estaba listo (la carga inicial no debe avisar). */
-async function mount(initial: ReadyItem[] = []): Promise<Rendered> {
-  fetchMock.mockReturnValue(reply(200, tables(initial)));
-  return renderScreen(<RestaurantAlertsHost />);
+const TABLES_KEY = ["company", 10, "restaurant", "tables"];
+
+/**
+ * Abre la pantalla y espera a que el primer sondeo resuelva: si no, el sondeo siguiente pisaría la
+ * respuesta inicial (la carga inicial solo se registra) y el aviso no se vería como un cambio.
+ */
+async function mountWith(payload: TablesResponse): Promise<Rendered> {
+  fetchMock.mockReturnValue(reply(200, payload));
+  const rendered = await renderScreen(<RestaurantAlertsHost />);
+  await waitFor(() => expect(rendered.client.getQueryData(TABLES_KEY)).toBeTruthy());
+  return rendered;
 }
 
-/** Un sondeo nuevo que trae estos artículos listos: así se ve un "pasa a listo" en vivo. */
-async function poll(client: Rendered["client"], items: ReadyItem[]): Promise<void> {
-  fetchMock.mockReturnValue(reply(200, tables(items)));
+/** Abre la pantalla con lo que ya estaba listo (la carga inicial no debe avisar). */
+async function mount(initial: ReadyItem[] = []): Promise<Rendered> {
+  return mountWith(tables(initial));
+}
+
+/** Un sondeo nuevo: así se ve un "pasa a listo", un "queda por cobrar" o una "mesa tomada" en vivo. */
+async function poll(client: Rendered["client"], payload: TablesResponse): Promise<void> {
+  fetchMock.mockReturnValue(reply(200, payload));
   await act(async () => {
     await client.invalidateQueries();
   });
+}
+
+async function pollReady(client: Rendered["client"], items: ReadyItem[]): Promise<void> {
+  await poll(client, tables(items));
 }
 
 beforeEach(async () => {
@@ -54,21 +70,21 @@ describe("avisos de listo", () => {
 
   it("avisa con la mesa y el platillo cuando un artículo pasa a listo", async () => {
     const { client } = await mount([]);
-    await poll(client, [ready(1, "Tacos al pastor")]);
+    await pollReady(client, [ready(1, "Tacos al pastor")]);
 
     expect(await screen.findByText("Mesa 4: Tacos al pastor listo")).toBeTruthy();
   });
 
   it("una cuenta para llevar avisa con el nombre del cliente", async () => {
     const { client } = await mount([]);
-    await poll(client, [ready(2, "Cola", null, "Luis")]);
+    await pollReady(client, [ready(2, "Cola", null, "Luis")]);
 
     expect(await screen.findByText("Luis: Cola listo")).toBeTruthy();
   });
 
   it("tocar el aviso abre la cuenta y lo descarta", async () => {
     const { client } = await mount([]);
-    await poll(client, [ready(1, "Tacos al pastor")]);
+    await pollReady(client, [ready(1, "Tacos al pastor")]);
 
     await fireEvent.press(await screen.findByRole("button", { name: /Mesa 4: Tacos al pastor listo/ }));
 
@@ -78,7 +94,7 @@ describe("avisos de listo", () => {
 
   it("descartar un aviso no lo repite en el siguiente sondeo", async () => {
     const { client } = await mount([]);
-    await poll(client, [ready(1, "Tacos al pastor")]);
+    await pollReady(client, [ready(1, "Tacos al pastor")]);
     await screen.findByText("Mesa 4: Tacos al pastor listo");
 
     await fireEvent.press(screen.getByRole("button", { name: "Cerrar" }));
@@ -93,10 +109,10 @@ describe("avisos de listo", () => {
 
   it("un artículo nuevo que pasa a listo genera otro aviso", async () => {
     const { client } = await mount([]);
-    await poll(client, [ready(1, "Tacos al pastor")]);
+    await pollReady(client, [ready(1, "Tacos al pastor")]);
     await screen.findByText("Mesa 4: Tacos al pastor listo");
 
-    await poll(client, [ready(1, "Tacos al pastor"), ready(3, "Sopa del día")]);
+    await pollReady(client, [ready(1, "Tacos al pastor"), ready(3, "Sopa del día")]);
 
     expect(await screen.findByText("Mesa 4: Sopa del día listo")).toBeTruthy();
     expect(screen.getByText("Mesa 4: Tacos al pastor listo")).toBeTruthy();
@@ -104,7 +120,7 @@ describe("avisos de listo", () => {
 
   it("muestra tres avisos y resume el resto en un contador", async () => {
     const { client } = await mount([]);
-    await poll(client, [ready(1, "Uno"), ready(2, "Dos"), ready(3, "Tres"), ready(4, "Cuatro")]);
+    await pollReady(client, [ready(1, "Uno"), ready(2, "Dos"), ready(3, "Tres"), ready(4, "Cuatro")]);
 
     await screen.findByText("Mesa 4: Uno listo");
     expect(screen.getByText("Mesa 4: Dos listo")).toBeTruthy();
@@ -114,37 +130,25 @@ describe("avisos de listo", () => {
   });
 
   it("avisa cuando una cuenta propia queda por cobrar", async () => {
-    const { client } = await mount();
-    await poll(client, []);
-    fetchMock.mockReturnValue(reply(200, overview({ results: [table(4, "Mesa 4", "to_pay", check(31))] })));
-    await act(async () => {
-      await client.invalidateQueries();
-    });
+    const { client } = await mountWith(overview({ results: [table(4, "Mesa 4", "occupied", check(31))] }));
+    await poll(client, overview({ results: [table(4, "Mesa 4", "to_pay", check(31))] }));
 
     expect(await screen.findByText("Mesa 4 por cobrar")).toBeTruthy();
   });
 
   it("avisa cuando otra persona toma una mesa libre", async () => {
-    fetchMock.mockReturnValue(reply(200, overview({ results: [table(4, "Mesa 4", "free", null)] })));
-    const { client } = await renderScreen(<RestaurantAlertsHost />);
-    await act(async () => {
-      await client.invalidateQueries();
-    });
-
-    fetchMock.mockReturnValue(reply(200, overview({ results: [table(4, "Mesa 4", "occupied", check(31, { mine: false }))] })));
-    await act(async () => {
-      await client.invalidateQueries();
-    });
+    const { client } = await mountWith(overview({ results: [table(4, "Mesa 4", "free", null)] }));
+    await poll(client, overview({ results: [table(4, "Mesa 4", "occupied", check(31, { mine: false }))] }));
 
     expect(await screen.findByText("Mesa 4: la tomó otra persona")).toBeTruthy();
   });
 
   it("el aviso se va solo cuando el artículo se entrega", async () => {
     const { client } = await mount([]);
-    await poll(client, [ready(1, "Tacos al pastor")]);
+    await pollReady(client, [ready(1, "Tacos al pastor")]);
     await screen.findByText("Mesa 4: Tacos al pastor listo");
 
-    await poll(client, []);
+    await pollReady(client, []);
 
     await waitFor(() => expect(screen.queryByText("Mesa 4: Tacos al pastor listo")).toBeNull());
   });
@@ -156,7 +160,7 @@ describe("avisos de listo", () => {
     });
     expect(playReadySound).not.toHaveBeenCalled();
 
-    await poll(client, [ready(1, "Tacos al pastor"), ready(3, "Sopa del día")]);
+    await pollReady(client, [ready(1, "Tacos al pastor"), ready(3, "Sopa del día")]);
 
     await screen.findByText("Mesa 4: Sopa del día listo");
     expect(playReadySound).toHaveBeenCalled();
