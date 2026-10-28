@@ -416,6 +416,10 @@
     "open": "View check",
     "deliver": "Deliver"
   },
+  "restaurantAlerts": {
+    "toPay": "{name} to charge",
+    "tableTaken": "{name}: someone else took it"
+  },
   "checkout": {
     "title": "Charge check",
     "total": "Total",

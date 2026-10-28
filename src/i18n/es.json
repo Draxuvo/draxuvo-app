@@ -416,6 +416,10 @@
     "open": "Ver cuenta",
     "deliver": "Entregar"
   },
+  "restaurantAlerts": {
+    "toPay": "{name} por cobrar",
+    "tableTaken": "{name}: la tomó otra persona"
+  },
   "checkout": {
     "title": "Cobrar cuenta",
     "total": "Total",
