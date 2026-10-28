@@ -588,5 +588,57 @@
     "timbre": "Timbre",
     "pulso": "Pulso",
     "arpegio": "Arpegio"
+  },
+  "alerts": {
+    "title": "Alertas",
+    "bell": "Alertas",
+    "bellCount": "Alertas, {count} activas",
+    "kinds": {
+      "kitchen_wait": "Comanda sin atender",
+      "kitchen_preparing": "Comanda tardando",
+      "work_order_stalled": "Orden estancada",
+      "table_open": "Mesa abierta mucho tiempo",
+      "low_stock": "Stock bajo"
+    },
+    "severity": {
+      "warning": "Atención",
+      "critical": "Urgente"
+    },
+    "elapsed": "Lleva {time} (límite {limit})",
+    "owner": {
+      "waiter": "Mesero: {name}",
+      "station": "Estación: {name}",
+      "employee": "Responsable: {name}"
+    },
+    "total": "Total {amount}",
+    "stock": "Existencia {stock} · Mínimo {min}",
+    "open": "Abrir",
+    "time": {
+      "minutes": "{count} min",
+      "hours": "{count} h",
+      "hoursMinutes": "{hours} h {minutes} min",
+      "days": "{count} d",
+      "daysHours": "{days} d {hours} h"
+    },
+    "snooze": {
+      "action": "Posponer",
+      "title": "Posponer alerta",
+      "hint": "Vuelve a aparecer sola si el pedido sigue sin avanzar.",
+      "m30": "30 minutos",
+      "m60": "1 hora",
+      "m120": "2 horas",
+      "cancel": "Cancelar",
+      "until": "Pospuesta hasta las {time}",
+      "by": "por {name}",
+      "undo": "Quitar posposición",
+      "done": "Alerta pospuesta",
+      "undone": "La alerta vuelve a contar"
+    },
+    "snoozedTitle": "Pospuestas ({count})",
+    "countOne": "1 alerta activa",
+    "countMany": "{count} alertas activas",
+    "empty": "Todo en orden: no hay pedidos, mesas ni stock que atender ahora.",
+    "more": "Ver más",
+    "capped": "Mostrando las {shown} más urgentes de {total}."
   }
 }

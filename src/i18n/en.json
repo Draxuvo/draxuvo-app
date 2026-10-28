@@ -588,5 +588,57 @@
     "timbre": "Doorbell",
     "pulso": "Pulse",
     "arpegio": "Arpeggio"
+  },
+  "alerts": {
+    "title": "Alerts",
+    "bell": "Alerts",
+    "bellCount": "Alerts, {count} active",
+    "kinds": {
+      "kitchen_wait": "Order not started",
+      "kitchen_preparing": "Order taking long",
+      "work_order_stalled": "Stalled work order",
+      "table_open": "Table open for too long",
+      "low_stock": "Low stock"
+    },
+    "severity": {
+      "warning": "Attention",
+      "critical": "Urgent"
+    },
+    "elapsed": "For {time} (limit {limit})",
+    "owner": {
+      "waiter": "Waiter: {name}",
+      "station": "Station: {name}",
+      "employee": "Assigned to: {name}"
+    },
+    "total": "Total {amount}",
+    "stock": "On hand {stock} · Minimum {min}",
+    "open": "Open",
+    "time": {
+      "minutes": "{count} min",
+      "hours": "{count} h",
+      "hoursMinutes": "{hours} h {minutes} min",
+      "days": "{count} d",
+      "daysHours": "{days} d {hours} h"
+    },
+    "snooze": {
+      "action": "Snooze",
+      "title": "Snooze alert",
+      "hint": "It comes back by itself if the order still has not moved on.",
+      "m30": "30 minutes",
+      "m60": "1 hour",
+      "m120": "2 hours",
+      "cancel": "Cancel",
+      "until": "Snoozed until {time}",
+      "by": "by {name}",
+      "undo": "Remove snooze",
+      "done": "Alert snoozed",
+      "undone": "The alert counts again"
+    },
+    "snoozedTitle": "Snoozed ({count})",
+    "countOne": "1 active alert",
+    "countMany": "{count} active alerts",
+    "empty": "All good: no orders, tables or stock need attention right now.",
+    "more": "Show more",
+    "capped": "Showing the {shown} most urgent of {total}."
   }
 }
