@@ -368,3 +368,45 @@ export interface PaymentResponse {
   check: { status: CheckStatus; total: string; paid: string; balance: string };
   ticket: Ticket | null;
 }
+
+// --- Alertas operativas (spec 045) ---
+
+export type AlertKind = "kitchen_wait" | "kitchen_preparing" | "work_order_stalled" | "table_open" | "low_stock";
+/** El stock bajo no se pospone. */
+export type SnoozableAlertKind = Exclude<AlertKind, "low_stock">;
+export type AlertSeverity = "warning" | "critical";
+export type SnoozeMinutes = 30 | 60 | 120;
+
+export interface OperationalAlert {
+  /** `<kind>:<subject_key>`; la clave del elemento es lo que va a la API para posponer. */
+  id: string;
+  kind: AlertKind;
+  severity: AlertSeverity;
+  minutes: number | null;
+  threshold_minutes: number | null;
+  subject: {
+    type: "kitchen_order" | "check" | "work_order" | "product";
+    id: number;
+    label: string;
+    /** Cuenta a la que pertenece la comanda o la mesa (para abrirla en Tomar pedido). */
+    check_id?: number;
+  };
+  owner: { type: "station" | "waiter" | "employee"; name: string } | null;
+  /** Solo en `table_open`: total de la cuenta con 2 decimales. */
+  total: string | null;
+  stock: number | null;
+  min_stock: number | null;
+}
+
+export interface SnoozedAlert extends OperationalAlert {
+  snoozed_until: string;
+  snoozed_by: string | null;
+}
+
+export interface AlertsResponse {
+  info: PageInfo;
+  /** Total de alertas activas, aunque no quepan en la página. */
+  count: number;
+  results: OperationalAlert[];
+  snoozed: SnoozedAlert[];
+}
