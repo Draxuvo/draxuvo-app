@@ -2,6 +2,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { ReadyItem, TableState, TablesResponse } from "@/api/types";
 import { haptic } from "@/lib/haptics";
 import { playReadySound } from "@/lib/sound";
+import { resolve } from "@/lib/sounds/choices";
+import { useSoundChoices } from "./use-sound-choices";
 import { useSoundPreference } from "./use-sound-preference";
 import { useTables } from "./use-restaurant";
 
@@ -90,6 +92,7 @@ export function alertsDelta(prev: TablesResponse | null, data: TablesResponse): 
 export function useRestaurantAlerts(enabled = true) {
   const tables = useTables(enabled);
   const sound = useSoundPreference("ready");
+  const { choices } = useSoundChoices();
   const data = tables.data;
   const [announced, setAnnounced] = useState<Set<string>>(() => new Set());
   const [taken, setTaken] = useState<Map<string, NamedCheck>>(() => new Map());
@@ -121,8 +124,8 @@ export function useRestaurantAlerts(enabled = true) {
     if (!readyToSound.current) return;
     readyToSound.current = false;
     haptic.success();
-    if (sound.enabled) playReadySound(sound.volume);
-  }, [data, sound.enabled, sound.volume]);
+    if (sound.enabled) playReadySound(sound.volume, resolve("ready", choices));
+  }, [data, sound.enabled, sound.volume, choices]);
 
   const alerts = useMemo<RestaurantAlert[]>(() => {
     if (!data) return [];

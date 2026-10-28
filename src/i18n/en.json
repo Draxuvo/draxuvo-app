@@ -566,5 +566,27 @@
     "future": "The time cannot be in the future.",
     "doneIn": "{name}'s check-in recorded",
     "doneOut": "{name}'s check-out recorded"
+  },
+  "sounds": {
+    "title": "Order ready sound",
+    "row": "Order ready sound",
+    "preview": "Preview",
+    "previewLabel": "Preview {sound}",
+    "reset": "Reset",
+    "playError": "Could not play the sound",
+    "hint": "Saved on this phone.",
+    "close": "Done",
+    "cocina": "Kitchen",
+    "barra": "Bar",
+    "otra": "Other station",
+    "urgente": "Urgent",
+    "listo": "Ready",
+    "clasico": "Classic",
+    "campana": "Bell",
+    "marimba": "Marimba",
+    "gota": "Drop",
+    "timbre": "Doorbell",
+    "pulso": "Pulse",
+    "arpegio": "Arpeggio"
   }
 }
