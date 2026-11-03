@@ -11,10 +11,12 @@ import { EmptyOrdersArt } from "@/components/illustrations";
 import { OrderCard } from "@/components/order-card";
 import { OrderFilters, type OrderFilterValue } from "@/components/order-filters";
 import { OrderStatusTabs, type StatusTab } from "@/components/order-status-tabs";
+import { TicketsHistory } from "@/components/orders/tickets-history";
 import { OrderListSkeleton } from "@/components/skeleton";
-import { AppText } from "@/components/ui";
+import { AppText, Chip } from "@/components/ui";
 import { useScreenModeState } from "@/components/take-order/use-screen-mode";
 import { useTables } from "@/hooks/use-restaurant";
+import { useTicketsAvailable } from "@/hooks/use-tickets-available";
 import { todayISO, useEmployees, useOrderCounts, useOrders } from "@/hooks/use-orders";
 import { t, useLocale } from "@/i18n";
 import { isBossRole, useSession } from "@/session";
@@ -42,6 +44,9 @@ export default function OrdersList() {
   const [tab, setTab] = useState<StatusTab | null>(null);
   const [filters, setFilters] = useState<OrderFilterValue>({});
   const [extended, setExtended] = useState(true);
+  // Cobradas: «Hoy» (lo cobrado hoy) o «Historial» (todos los tickets), spec 051.
+  const [paidScope, setPaidScope] = useState<"today" | "history">("today");
+  const tickets = useTicketsAvailable();
 
   const { mode, ready } = useScreenModeState();
   const restaurant = mode === "restaurant";
@@ -106,6 +111,7 @@ export default function OrdersList() {
     lastY.current = y;
   };
 
+  const showHistory = !filters.cancelled && selected === "paid" && tickets.available && paidScope === "history";
   const firstName = user?.first_name ?? "";
   const pending = counts.open + tabCounts.in_progress;
   const showEmpty = !loading && !error && rows.length === 0;
@@ -134,9 +140,17 @@ export default function OrdersList() {
         cancelled={!!filters.cancelled}
         onToggleCancelled={() => setFilters((current) => ({ ...current, cancelled: !current.cancelled }))}
       />
-      <OrderFilters value={filters} onChange={setFilters} employees={boss ? employees.data?.results : undefined} />
+      {!filters.cancelled && selected === "paid" && tickets.available ? (
+        <View style={{ flexDirection: "row", gap: space[2], paddingHorizontal: space[4], paddingTop: space[3] }} accessibilityRole="radiogroup">
+          <Chip label={t("orders.paid.today")} selected={paidScope === "today"} onPress={() => setPaidScope("today")} role="radio" />
+          <Chip label={t("orders.paid.history")} selected={paidScope === "history"} onPress={() => setPaidScope("history")} role="radio" />
+        </View>
+      ) : null}
+      {showHistory ? null : <OrderFilters value={filters} onChange={setFilters} employees={boss ? employees.data?.results : undefined} />}
 
-      {error && rows.length === 0 ? (
+      {showHistory ? (
+        <TicketsHistory />
+      ) : error && rows.length === 0 ? (
         <ErrorView error={error} onRetry={refresh} />
       ) : (loading || (restaurant === false && !ready)) && rows.length === 0 ? (
         <OrderListSkeleton />

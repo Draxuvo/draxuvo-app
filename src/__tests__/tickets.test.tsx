@@ -1,5 +1,5 @@
 import { fireEvent, screen, waitFor } from "@testing-library/react-native";
-import TicketsList from "../../app/(tabs)/tickets";
+import { TicketsHistory } from "@/components/orders/tickets-history";
 import type { Ticket } from "@/api/types";
 import { clearStore, mockFetch, reply, seedSession, staffUser } from "@/test/helpers";
 import { renderScreen } from "@/test/render";
@@ -23,9 +23,9 @@ beforeEach(async () => {
   fetchMock.mockImplementation(() => page([ticket(1, "T-0001", "paid"), ticket(2, "T-0002", "pending")]));
 });
 
-describe("mis tickets", () => {
+describe("historial de tickets (Órdenes → Cobradas → Historial)", () => {
   it("lista los tickets y abre uno", async () => {
-    await renderScreen(<TicketsList />);
+    await renderScreen(<TicketsHistory />);
 
     await fireEvent.press(await screen.findByRole("button", { name: /T-0001/ }));
 
@@ -33,7 +33,7 @@ describe("mis tickets", () => {
   });
 
   it("filtra por estado", async () => {
-    await renderScreen(<TicketsList />);
+    await renderScreen(<TicketsHistory />);
     await screen.findByText("T-0001");
 
     await fireEvent.press(screen.getByRole("button", { name: "Cobrado" }));
@@ -42,7 +42,7 @@ describe("mis tickets", () => {
   });
 
   it("busca por folio", async () => {
-    await renderScreen(<TicketsList />);
+    await renderScreen(<TicketsHistory />);
     await screen.findByText("T-0001");
 
     await fireEvent.changeText(screen.getByTestId("tickets-search"), "T-0002");
@@ -52,7 +52,7 @@ describe("mis tickets", () => {
 
   it("sin tickets muestra el estado vacío", async () => {
     fetchMock.mockImplementation(() => page([]));
-    await renderScreen(<TicketsList />);
+    await renderScreen(<TicketsHistory />);
 
     expect(await screen.findByText("No hay tickets.")).toBeTruthy();
   });

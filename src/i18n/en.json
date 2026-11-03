@@ -28,7 +28,6 @@
   "tabs": {
     "orders": "Orders",
     "accounts": "Checks",
-    "tickets": "Tickets",
     "profile": "Profile"
   },
   "orders": {
@@ -134,6 +133,10 @@
       "progress": "In progress",
       "done": "Finished",
       "paid": "Paid"
+    },
+    "paid": {
+      "today": "Today",
+      "history": "History"
     },
     "cancelledFilter": "Cancelled",
     "empty": {

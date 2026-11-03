@@ -1,4 +1,4 @@
-# Recorrido: filtrar tickets, buscar por folio y cambiar el idioma desde el perfil.
+# Recorrido: filtrar el historial de tickets (Órdenes → Cobradas → Historial), buscar por folio y cambiar el idioma desde el perfil.
 appId: com.draxuvo.app
 ---
 - launchApp:
@@ -10,7 +10,8 @@ appId: com.draxuvo.app
     id: login-password
 - inputText: "Demo12345*"
 - tapOn: "Entrar"
-- tapOn: "Tickets"
+- tapOn: "Cobradas"
+- tapOn: "Historial"
 - tapOn: "Cobrado"
 - tapOn:
     id: tickets-search
