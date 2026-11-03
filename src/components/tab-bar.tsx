@@ -20,7 +20,6 @@ export interface TabBarProps {
 
 const TABS: { route: string; icon: IconName; label: string }[] = [
   { route: "ordenes/index", icon: "clipboard", label: "tabs.orders" },
-  { route: "tickets", icon: "file-text", label: "tabs.tickets" },
   { route: "perfil", icon: "user", label: "tabs.profile" },
 ];
 
@@ -63,7 +62,7 @@ function TabItem({ icon, label, focused, badge, onPress }: { icon: IconName; lab
   );
 }
 
-/** Barra inferior de tres destinos. En el detalle de una orden se esconde: ahí manda la barra de acciones. */
+/** Barra inferior de dos destinos (Órdenes o Cuentas, y Perfil; los tickets viven en Órdenes → Cobradas, spec 051). En el detalle de una orden se esconde: ahí manda la barra de acciones. */
 export function TabBar({ state, navigation }: TabBarProps) {
   const { c } = useTheme();
   const insets = useSafeAreaInsets();

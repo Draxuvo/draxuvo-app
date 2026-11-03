@@ -9,6 +9,7 @@ const mockPush = jest.fn();
 jest.mock("expo-router", () => ({ useRouter: () => ({ push: mockPush }), useIsFocused: () => true }));
 
 const fetchMock = mockFetch();
+let noTickets = false;
 
 const order = (id: number, title: string, status: WorkOrder["status"]): WorkOrder => ({
   id, title, status, priority: "medium", progress: 0, items_count: 0, steps_count: 2, steps_done: 1, created_at: "2026-10-15T10:00:00Z",
@@ -33,6 +34,9 @@ const tables = (extra: Partial<TablesResponse> = {}): TablesResponse => ({
 function serve(byStatus: Record<string, WorkOrder[]>, restaurant?: TablesResponse) {
   fetchMock.mockImplementation((url: string) => {
     if (url.includes("/employees")) return page([]);
+    if (url.includes("/api/v1/tickets")) {
+      return noTickets ? apiError(403, { code: "module_not_in_plan" }, "sin módulo") : reply(200, { info: { page_size: 20, page_index: 1, total: 1, page_start: 1, page_end: 1 }, results: [{ id: 7, folio: "T-0007", status: "paid", work_order_id: 1, total: 80, created_at: "2026-10-15T10:00:00Z", work_order: { id: 1, title: "Orden 1" } }] });
+    }
     if (url.includes("/restaurant/tables")) {
       return restaurant ? reply(200, restaurant) : apiError(403, { code: "module_not_in_plan" }, "sin módulo");
     }
@@ -46,6 +50,7 @@ const listCalls = () => fetchMock.mock.calls.map(([url]) => new URL(url as strin
 beforeEach(async () => {
   fetchMock.mockReset();
   mockPush.mockReset();
+  noTickets = false;
   await clearStore();
 });
 
@@ -307,5 +312,33 @@ describe("botón de nueva orden", () => {
     await fireEvent.press(screen.getByRole("button", { name: "Nueva orden" }));
 
     expect(mockPush).toHaveBeenCalledWith("/orden-form/nueva");
+  });
+});
+
+describe("Cobradas: Hoy e Historial (spec 051)", () => {
+  it("ofrece Hoy e Historial y el historial lista los tickets y abre uno", async () => {
+    await seedSession(staffUser, 10);
+    serve({ open: [order(2, "Revisar luces", "open")], paid: [order(5, "Cobrada hoy", "paid")] });
+    await renderScreen(<OrdersList />);
+
+    await fireEvent.press(await screen.findByRole("tab", { name: /^Cobradas/ }));
+    expect(await screen.findByText("Cobrada hoy")).toBeTruthy();
+    await fireEvent.press(await screen.findByRole("radio", { name: "Historial" }));
+
+    await fireEvent.press(await screen.findByRole("button", { name: /T-0007/ }));
+    expect(mockPush).toHaveBeenCalledWith("/ticket/7");
+    expect(screen.queryByText("Cobrada hoy")).toBeNull();
+  });
+
+  it("sin el módulo de tickets (403) no ofrece Historial ni muestra errores", async () => {
+    noTickets = true;
+    await seedSession(staffUser, 10);
+    serve({ open: [order(2, "Revisar luces", "open")], paid: [order(5, "Cobrada hoy", "paid")] });
+    await renderScreen(<OrdersList />);
+
+    await fireEvent.press(await screen.findByRole("tab", { name: /^Cobradas/ }));
+    expect(await screen.findByText("Cobrada hoy")).toBeTruthy();
+    expect(screen.queryByRole("radio", { name: "Historial" })).toBeNull();
+    expect(screen.queryByRole("alert")).toBeNull();
   });
 });

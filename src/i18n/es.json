@@ -28,7 +28,6 @@
   "tabs": {
     "orders": "Órdenes",
     "accounts": "Cuentas",
-    "tickets": "Tickets",
     "profile": "Perfil"
   },
   "orders": {
@@ -134,6 +133,10 @@
       "progress": "En curso",
       "done": "Terminadas",
       "paid": "Cobradas"
+    },
+    "paid": {
+      "today": "Hoy",
+      "history": "Historial"
     },
     "cancelledFilter": "Canceladas",
     "empty": {

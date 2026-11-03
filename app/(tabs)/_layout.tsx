@@ -20,7 +20,6 @@ export default function TabsLayout() {
       >
         <Tabs.Screen name="ordenes/index" options={{ title: mode === "restaurant" ? t("tabs.accounts") : t("tabs.orders") }} />
         <Tabs.Screen name="ordenes/[id]" options={{ href: null, headerShown: false }} />
-        <Tabs.Screen name="tickets" options={{ title: t("tabs.tickets") }} />
         <Tabs.Screen name="perfil" options={{ title: t("tabs.profile") }} />
       </Tabs>
       <EntryModal />

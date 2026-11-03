@@ -17,7 +17,8 @@ import { rowEnter, space, TAB_BAR_HEIGHT, useTheme } from "@/theme";
 
 const STATUSES: TicketStatus[] = ["pending", "paid", "voided"];
 
-export default function TicketsList() {
+/** Historial de cobros (tickets) de cualquier origen dentro de Órdenes → Cobradas → Historial (spec 051). La API recorta al staff a los suyos. */
+export function TicketsHistory() {
   useLocale();
   const { c } = useTheme();
   const router = useRouter();
