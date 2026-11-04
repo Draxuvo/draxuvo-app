@@ -59,3 +59,22 @@ jest.mock("expo-audio", () => ({
   })),
   setAudioModeAsync: jest.fn(async () => {}),
 }));
+
+// expo-camera (spec 056): la cámara real no existe en Jest. `CameraView` expone sus props para que cada prueba
+// dispare `onBarcodeScanned`, y el permiso se controla con `__setCameraPermission`.
+jest.mock("expo-camera", () => {
+  /* eslint-disable @typescript-eslint/no-require-imports */
+  const { View } = require("react-native");
+  const React = require("react");
+  /* eslint-enable @typescript-eslint/no-require-imports */
+  let permission: { granted: boolean; canAskAgain: boolean } | null = { granted: true, canAskAgain: true };
+  const request = jest.fn(async () => permission);
+  return {
+    CameraView: (props: Record<string, unknown>) => React.createElement(View, { testID: "camera-view", ...props }),
+    useCameraPermissions: () => [permission, request],
+    __setCameraPermission: (value: typeof permission) => {
+      permission = value;
+    },
+    __requestPermission: request,
+  };
+});

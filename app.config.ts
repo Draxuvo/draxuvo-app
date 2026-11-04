@@ -39,6 +39,13 @@ const config: ExpoConfig = {
       },
     ],
     [
+      "expo-camera",
+      {
+        cameraPermission: "Draxuvo usa la cámara para leer códigos de barras. Solo se lee el número; no se guarda ninguna imagen.",
+        recordAudioAndroid: false,
+      },
+    ],
+    [
       "expo-splash-screen",
       {
         backgroundColor: "#F1EFE9",
