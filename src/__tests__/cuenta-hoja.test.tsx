@@ -325,7 +325,8 @@ describe("cobrar desde la hoja", () => {
     expect(mockPush).not.toHaveBeenCalled();
   });
 
-  it("tarjeta pide la referencia antes de enviar", async () => {
+  // Spec 054 (H-51): la referencia es obligatoria solo con transferencia; con tarjeta es opcional.
+  it("tarjeta se registra sin referencia", async () => {
     current = paid();
     route({ "POST /api/v1/restaurant/checks/31/payments": () => reply(201, { payment: {}, check: { status: "open" }, ticket: null }) });
     await renderScreen(<Pedido />);
@@ -333,13 +334,38 @@ describe("cobrar desde la hoja", () => {
 
     await fireEvent.press(await screen.findByRole("radio", { name: "Tarjeta" }));
     await fireEvent.press(screen.getByRole("button", { name: "Registrar pago" }));
-    expect((await screen.findAllByText("Escribe la referencia")).length).toBeGreaterThan(0);
-    expect(paymentCalls()).toHaveLength(0);
+    await waitFor(() => expect(paymentCalls()).toHaveLength(1));
+    expect(lastBody()).toEqual({ method: "card", amount: "500.00" });
+  });
 
-    await fireEvent.changeText(screen.getByLabelText("Referencia"), "A8812");
+  it("tarjeta manda la referencia si se captura", async () => {
+    current = paid();
+    route({ "POST /api/v1/restaurant/checks/31/payments": () => reply(201, { payment: {}, check: { status: "open" }, ticket: null }) });
+    await renderScreen(<Pedido />);
+    await openPay();
+
+    await fireEvent.press(await screen.findByRole("radio", { name: "Tarjeta" }));
+    await fireEvent.changeText(screen.getByLabelText("Referencia (opcional)"), "A8812");
     await fireEvent.press(screen.getByRole("button", { name: "Registrar pago" }));
     await waitFor(() => expect(paymentCalls()).toHaveLength(1));
     expect(lastBody()).toEqual({ method: "card", amount: "500.00", reference: "A8812" });
+  });
+
+  it("transferencia pide la referencia antes de enviar", async () => {
+    current = paid();
+    route({ "POST /api/v1/restaurant/checks/31/payments": () => reply(201, { payment: {}, check: { status: "open" }, ticket: null }) });
+    await renderScreen(<Pedido />);
+    await openPay();
+
+    await fireEvent.press(await screen.findByRole("radio", { name: "Transferencia" }));
+    await fireEvent.press(screen.getByRole("button", { name: "Registrar pago" }));
+    expect((await screen.findAllByText("Escribe la referencia")).length).toBeGreaterThan(0);
+    expect(paymentCalls()).toHaveLength(0);
+
+    await fireEvent.changeText(screen.getByLabelText("Referencia"), "T-77");
+    await fireEvent.press(screen.getByRole("button", { name: "Registrar pago" }));
+    await waitFor(() => expect(paymentCalls()).toHaveLength(1));
+    expect(lastBody()).toEqual({ method: "transfer", amount: "500.00", reference: "T-77" });
   });
 
   it("tarjeta elige la terminal del negocio y la manda con la referencia (spec 015)", async () => {
@@ -356,7 +382,7 @@ describe("cobrar desde la hoja", () => {
     await openPay();
 
     await fireEvent.press(await screen.findByRole("radio", { name: "Tarjeta" }));
-    await fireEvent.changeText(screen.getByLabelText("Referencia"), "A8812");
+    await fireEvent.changeText(screen.getByLabelText("Referencia (opcional)"), "A8812");
     await fireEvent.press(screen.getByRole("button", { name: "Registrar pago" }));
     expect((await screen.findAllByText("Elige la terminal en que se cobró.")).length).toBeGreaterThan(0);
     expect(paymentCalls()).toHaveLength(0);

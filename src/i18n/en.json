@@ -438,6 +438,7 @@
     "amountReceived": "Received",
     "change": "Change",
     "reference": "Reference",
+    "referenceOptional": "Reference (optional)",
     "referencePlaceholder": "Terminal receipt number",
     "referenceRequired": "Enter the reference",
     "addPayment": "Record payment",

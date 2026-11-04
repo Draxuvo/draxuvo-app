@@ -21,7 +21,8 @@ const fixed = (value: number) => value.toFixed(2);
  * Un pago de la cuenta. El monto empieza en el saldo; en efectivo se captura lo recibido y se calcula
  * el cambio, y con tarjeta o transferencia se captura la referencia (FR-021 a FR-023). El botón se bloquea
  * hasta recibir respuesta: un doble toque no cobra dos veces. Con tarjeta se elige además la terminal del
- * negocio en que se cobró (spec 015); la referencia sigue siendo obligatoria.
+ * negocio en que se cobró (spec 015). La referencia solo es obligatoria en la transferencia (spec 054, H-51): con
+ * tarjeta es opcional y se manda si se captura, igual que en el cobro de una orden.
  */
 export function PaymentForm({
   balance,
@@ -52,7 +53,7 @@ export function PaymentForm({
     if (due == null || due <= 0) return fail(t("checkout.invalidAmount"));
     if (method !== "cash") {
       if (due > balance) return fail(t("checkout.exceeds"));
-      if (!reference.trim()) return fail(t("checkout.referenceRequired"));
+      if (method === "transfer" && !reference.trim()) return fail(t("checkout.referenceRequired"));
       if (method === "card" && terminals.length > 0 && terminal == null) return fail(t("charge.terminalRequired"));
     } else if (got != null && got < covered) {
       return fail(t("charge.insufficient"));
@@ -67,7 +68,7 @@ export function PaymentForm({
           : {
               method,
               amount: fixed(due),
-              reference: reference.trim(),
+              ...(reference.trim() ? { reference: reference.trim() } : {}),
               ...(method === "card" && terminal != null ? { terminal_id: terminal } : {}),
             };
       await onSubmit(body);
@@ -104,7 +105,7 @@ export function PaymentForm({
       ) : (
         <>
           {method === "card" ? <TerminalPicker terminals={terminals} value={terminal} onChange={setTerminalId} /> : null}
-          <Field label={t("checkout.reference")} value={reference} onChangeText={setReference} placeholder={t("checkout.referencePlaceholder")} autoCapitalize="characters" />
+          <Field label={method === "card" ? t("checkout.referenceOptional") : t("checkout.reference")} value={reference} onChangeText={setReference} placeholder={t("checkout.referencePlaceholder")} autoCapitalize="characters" />
         </>
       )}
       {error ? (
