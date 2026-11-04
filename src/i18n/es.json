@@ -438,6 +438,7 @@
     "amountReceived": "Recibido",
     "change": "Cambio",
     "reference": "Referencia",
+    "referenceOptional": "Referencia (opcional)",
     "referencePlaceholder": "Folio de la terminal",
     "referenceRequired": "Escribe la referencia",
     "addPayment": "Registrar pago",
