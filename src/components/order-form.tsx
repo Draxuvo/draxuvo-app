@@ -13,6 +13,11 @@ import {
   type OrderFormValues,
 } from "./order-form-schema";
 import { ProductGlyph } from "./product-icon";
+import { productByCode } from "@/api/products";
+import { resolveProduct } from "@/lib/scan";
+import { toast } from "@/toast/store";
+import { ScanSheet } from "./scan/scan-sheet";
+import { scanFailureText } from "./scan/scan-messages";
 import { AppText, Button, Card, Chip, Field } from "./ui";
 
 const PRIORITIES: WorkOrderPriority[] = ["low", "medium", "high", "urgent"];
@@ -83,6 +88,14 @@ export function OrderForm({
     });
   };
 
+  // Leer o escribir un código agrega el producto del menú igual que tocar su chip (spec 056).
+  const scanCode = async (code: string) => {
+    const result = await resolveProduct(code, menu.flatMap((group) => group.items), productByCode, "menu");
+    if (!result.ok) return void toast.error(scanFailureText(code, result));
+    addMenuProduct(result.product);
+    toast.success(t("scan.added", { name: result.product.name }));
+  };
+
   return (
     <View style={{ gap: space[5] }}>
       {apiErrors.length ? (
@@ -122,7 +135,7 @@ export function OrderForm({
               <Field label={t("orderForm.customerPhone")} icon="phone" value={values.customerPhone} onChangeText={(customerPhone) => patch({ customerPhone })} error={err(errors.customerPhone)} keyboardType="phone-pad" testID="form-phone" />
             </>
           ) : null}
-          <MenuChips menu={menu} onPick={addMenuProduct} />
+          <MenuChips menu={menu} onPick={addMenuProduct} onScanCode={scanCode} />
         </>
       ) : !isOrder ? (
         <>
@@ -157,7 +170,7 @@ export function OrderForm({
           </Group>
         </>
       ) : (
-        <MenuChips menu={menu} onPick={addMenuProduct} />
+        <MenuChips menu={menu} onPick={addMenuProduct} onScanCode={scanCode} />
       )}
 
       <Group title={t("orderForm.items")}>
@@ -201,9 +214,20 @@ export function OrderForm({
   );
 }
 
-function MenuChips({ menu, onPick }: { menu: MenuGroup[]; onPick: (product: MenuGroup["items"][number]) => void }) {
+function MenuChips({
+  menu,
+  onPick,
+  onScanCode,
+}: {
+  menu: MenuGroup[];
+  onPick: (product: MenuGroup["items"][number]) => void;
+  onScanCode: (code: string) => Promise<void> | void;
+}) {
+  const [scanOpen, setScanOpen] = useState(false);
   return (
     <Group title={t("orderForm.menu")}>
+      <Button label={t("scan.open")} icon="camera" variant="tonal" onPress={() => setScanOpen(true)} />
+      <ScanSheet visible={scanOpen} onClose={() => setScanOpen(false)} onScan={onScanCode} />
       {menu.map((group) => (
         <View key={group.category} style={{ gap: space[2] }}>
           <AppText variant="bodyStrong">{group.category}</AppText>

@@ -8,6 +8,9 @@ import { useRestaurantMenu } from "@/hooks/use-restaurant";
 import { useOrderTransition } from "@/hooks/use-orders";
 import { haptic } from "@/lib/haptics";
 import { toast } from "@/toast/store";
+import { productByCode } from "@/api/products";
+import { resolveProduct } from "@/lib/scan";
+import { scanFailureText } from "../scan/scan-messages";
 import { t, useLocale } from "@/i18n";
 import { isBossRole, useSession } from "@/session";
 import { space, TAB_BAR_HEIGHT, useTheme } from "@/theme";
@@ -69,8 +72,15 @@ export function TakeOrderScreen({ mode, initialCheckId, initialSheet }: { mode: 
 
   const menu: MenuSection[] = (menuQuery.data?.menu ?? []).map((group) => ({
     category: group.category,
-    items: group.items.map((p) => ({ id: p.id, name: p.name, price: Number(p.price), icon: p.icon, product_type: p.product_type, sold_out: p.sold_out, low: p.low, available_qty: p.available_qty })),
+    items: group.items.map((p) => ({ id: p.id, name: p.name, sku: p.sku, barcodes: p.barcodes, price: Number(p.price), icon: p.icon, product_type: p.product_type, sold_out: p.sold_out, low: p.low, available_qty: p.available_qty })),
   }));
+
+  // Un código leído agrega el producto igual que tocar su tarjeta; si no se puede, dice el código y el motivo (spec 056).
+  const addByCode = async (code: string) => {
+    const result = await resolveProduct(code, menu.flatMap((section) => section.items), productByCode, "menu");
+    if (!result.ok) return void toast.error(scanFailureText(code, result));
+    await run(() => source.tap(result.product));
+  };
 
   // Ejecuta un cambio; si no se guarda, lo dice y la orden queda como estaba (FR-010).
   const run = async (work: () => Promise<unknown>) => {
@@ -224,7 +234,7 @@ export function TakeOrderScreen({ mode, initialCheckId, initialSheet }: { mode: 
   const sheetTitle =
     view.kind === "cancel" ? t("takeOrder.cancelItemTitle", { name: view.item.name }) : view.kind === "waiters" ? t("takeOrder.reassign") : t("takeOrder.orderSheetTitle", { name: current?.title ?? "" });
   const menuCards = (
-    <MenuCards menu={menu} loading={menuQuery.isLoading} disabled={!current?.canAdd} countOf={(card) => source.inOrder(card)} onTap={(card: MenuCard) => void run(() => source.tap(card))} />
+    <MenuCards menu={menu} loading={menuQuery.isLoading} disabled={!current?.canAdd} countOf={(card) => source.inOrder(card)} onTap={(card: MenuCard) => void run(() => source.tap(card))} onScanCode={current?.canAdd ? addByCode : undefined} />
   );
 
   const banner = (

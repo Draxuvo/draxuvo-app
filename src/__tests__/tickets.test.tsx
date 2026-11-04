@@ -56,4 +56,34 @@ describe("historial de tickets (Órdenes → Cobradas → Historial)", () => {
 
     expect(await screen.findByText("No hay tickets.")).toBeTruthy();
   });
+
+  describe("folio leído o escrito en la cámara (spec 056)", () => {
+    async function scan(code: string) {
+      await fireEvent.press(await screen.findByLabelText("Escanear con cámara"));
+      const input = await screen.findByLabelText("Código de barras");
+      await fireEvent.changeText(input, code);
+      await fireEvent(input, "submitEditing");
+    }
+
+    it("un folio exacto abre ese ticket y deja la búsqueda aplicada", async () => {
+      await renderScreen(<TicketsHistory />);
+      await screen.findByText("T-0001");
+
+      await scan("T-0002");
+
+      await waitFor(() => expect(mockPush).toHaveBeenCalledWith("/ticket/2"));
+      await waitFor(() => expect(lastUrl().searchParams.get("search")).toBe("T-0002"));
+    });
+
+    it("un folio que no existe solo filtra: no abre nada ni revela otras empresas", async () => {
+      fetchMock.mockImplementation(() => page([]));
+      await renderScreen(<TicketsHistory />);
+      await screen.findByText("No hay tickets.");
+
+      await scan("T-999999");
+
+      await waitFor(() => expect(lastUrl().searchParams.get("search")).toBe("T-999999"));
+      expect(mockPush).not.toHaveBeenCalled();
+    });
+  });
 });

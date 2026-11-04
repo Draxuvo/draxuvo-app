@@ -58,3 +58,7 @@ e2e/                  # recorridos Maestro
 ## Publicar
 
 Compilaciones y envío a TestFlight y a la prueba interna de Google Play con EAS. Cuentas, credenciales, ficha y cómo subir la versión mínima en la API: [STORE.md](./STORE.md).
+
+## Lector de códigos (spec 056)
+
+`ScanSheet` (`src/components/scan/scan-sheet.tsx`) lee códigos de barras con `expo-camera` y siempre ofrece un campo para escribirlos. `expo-camera` es un módulo nativo y agrega el permiso de cámara: requiere una compilación nueva de EAS; no llega por actualización OTA.

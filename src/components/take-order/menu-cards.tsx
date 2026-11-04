@@ -4,7 +4,8 @@ import { t } from "@/i18n";
 import { formatMoney } from "@/lib/money";
 import { radius, space, useTheme } from "@/theme";
 import { ProductIconBadge } from "../product-icon";
-import { AppText, Chip, Field } from "../ui";
+import { ScanSheet } from "../scan/scan-sheet";
+import { AppText, Chip, Field, IconButton } from "../ui";
 import { categoryColor, filterMenu, type MenuCard, type MenuSection } from "./lib";
 
 /** Menú de tarjetas por categoría, con buscador y chips de categoría (spec 018). Tocar una tarjeta agrega una unidad. */
@@ -14,6 +15,7 @@ export function MenuCards({
   disabled,
   countOf,
   onTap,
+  onScanCode,
 }: {
   menu: MenuSection[];
   loading: boolean;
@@ -21,15 +23,24 @@ export function MenuCards({
   disabled: boolean;
   countOf: (card: MenuCard) => number;
   onTap: (card: MenuCard) => void;
+  /** Código leído con la cámara o escrito (spec 056); sin él no hay botón de cámara. */
+  onScanCode?: (code: string) => Promise<void> | void;
 }) {
   const { c } = useTheme();
+  const [scanOpen, setScanOpen] = useState(false);
   const [term, setTerm] = useState("");
   const [category, setCategory] = useState<string | null>(null);
   const sections = useMemo(() => filterMenu(menu, term).filter((s) => !category || s.category === category), [menu, term, category]);
 
   return (
     <View style={{ gap: space[3] }}>
-      <Field label={t("menuPicker.search")} value={term} onChangeText={setTerm} icon="search" autoCapitalize="none" />
+      <View style={{ flexDirection: "row", alignItems: "flex-end", gap: space[2] }}>
+        <View style={{ flex: 1 }}>
+          <Field label={t("menuPicker.search")} value={term} onChangeText={setTerm} icon="search" autoCapitalize="none" />
+        </View>
+        {onScanCode ? <IconButton icon="camera" label={t("scan.open")} onPress={() => setScanOpen(true)} /> : null}
+      </View>
+      {onScanCode ? <ScanSheet visible={scanOpen} onClose={() => setScanOpen(false)} onScan={onScanCode} /> : null}
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: space[2] }}>
         <Chip label={t("common.all")} selected={category === null} onPress={() => setCategory(null)} />
         {menu.map((s) => (

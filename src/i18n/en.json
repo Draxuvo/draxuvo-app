@@ -644,5 +644,27 @@
     "empty": "All good: no orders, tables or stock need attention right now.",
     "more": "Show more",
     "capped": "Showing the {shown} most urgent of {total}."
+  },
+  "scan": {
+    "open": "Scan with camera",
+    "title": "Scan code",
+    "hint": "Point the camera at the barcode. You can keep scanning; close when you are done.",
+    "close": "Close camera",
+    "torchOn": "Turn light on",
+    "torchOff": "Turn light off",
+    "manualLabel": "Barcode",
+    "manualPlaceholder": "Type the code",
+    "manualSubmit": "Search",
+    "permissionAsk": "Draxuvo needs the camera to read barcodes. Only the number is read; no image is saved.",
+    "permissionAllow": "Allow camera",
+    "permissionDenied": "Camera permission is off. Turn it on in Settings or type the code by hand.",
+    "openSettings": "Open Settings",
+    "read": "Read: {code}",
+    "invalid": "Invalid code, try again.",
+    "notFound": "Code not found: {code}",
+    "notSellable": "{name} is not for sale (code {code}).",
+    "notOnMenu": "{name} is not on the menu (code {code}).",
+    "frame": "Scanning frame",
+    "added": "Added: {name}"
   }
 }

@@ -173,6 +173,9 @@ export interface Employee {
 export interface MenuProduct {
   id: number;
   name: string;
+  /** Clave y códigos de barras (spec 056): permiten agregarlo leyendo su código. */
+  sku?: string;
+  barcodes?: string[];
   price: number;
   unit?: string;
   icon?: string | null;

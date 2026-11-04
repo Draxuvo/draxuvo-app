@@ -112,6 +112,59 @@ describe("pedido (órdenes sin restaurante)", () => {
   });
 });
 
+describe("pedido: agregar leyendo un código (spec 056)", () => {
+  const scanMenu = { menu: [{ category: "Bebidas", items: [{ id: 7, name: "Café", price: 20, sku: "CAF-1", barcodes: ["7501234567890"] }] }] };
+
+  async function openOrder(extra: Record<string, unknown> = {}) {
+    serve({
+      "GET /api/v1/work_orders": { results: [], info: { page_index: 1, page_end: 1, total: 0 } },
+      "POST /api/v1/work_orders": () => reply(201, order({ id: 9, title: "Luis" })),
+      "GET /api/v1/work_orders/9": order({ id: 9, title: "Luis" }),
+      "POST /api/v1/work_orders/9/items": () => reply(201, order({ id: 9, title: "Luis", total: 20, items_count: 1, items: [{ id: 3, description: "Café", quantity: 1, unit_price: 20, position: 0, product_id: 7 }] })),
+      "GET /api/v1/products/menu": scanMenu,
+      ...extra,
+    });
+    await renderScreen(<Pedido />);
+    await screen.findByText("No hay órdenes abiertas.");
+    await fireEvent.changeText(screen.getByLabelText("Mesa o cliente"), "Luis");
+    await fireEvent.press(screen.getByRole("button", { name: "Nueva orden" }));
+    await screen.findByRole("button", { name: /^Café, \$20.00/ });
+  }
+
+  async function typeCode(code: string) {
+    await fireEvent.press(screen.getByLabelText("Escanear con cámara"));
+    const input = await screen.findByLabelText("Código de barras");
+    await fireEvent.changeText(input, code);
+    await fireEvent(input, "submitEditing");
+  }
+
+  it("el código escrito agrega el producto como tocar su tarjeta, sin consultar la red", async () => {
+    await openOrder();
+    await typeCode("7501234567890");
+
+    await waitFor(() => expect(calls("POST", "/work_orders/9/items")).toHaveLength(1));
+    expect(JSON.parse(calls("POST", "/work_orders/9/items")[0][1].body)).toEqual({ product_id: 7, quantity: 1 });
+    expect(fetchMock.mock.calls.some(([url]) => String(url).includes("by_code"))).toBe(false);
+    await fireEvent.press(screen.getByLabelText("Cerrar cámara"));
+  });
+
+  it("un código que no existe avisa con el número y no agrega nada", async () => {
+    await openOrder();
+    await typeCode("999");
+
+    expect((await screen.findAllByText("Código no encontrado: 999")).length).toBeGreaterThan(0);
+    expect(calls("POST", "/work_orders/9/items")).toHaveLength(0);
+  });
+
+  it("un producto que existe pero no está en el menú avisa el motivo", async () => {
+    await openOrder({ "GET /api/v1/products/by_code": { id: 50, name: "Harina", sku: "H-1", product_type: { sellable: true } } });
+    await typeCode("H-1");
+
+    expect((await screen.findAllByText("Harina no está en el menú (código H-1).")).length).toBeGreaterThan(0);
+    expect(calls("POST", "/work_orders/9/items")).toHaveLength(0);
+  });
+});
+
 describe("pedido (orden cobrada o cancelada en otro lado)", () => {
   const listed = (o: WorkOrder) => ({ results: [o], info: { page_index: 1, page_end: 1, total: 1 } });
 

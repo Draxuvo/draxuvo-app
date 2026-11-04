@@ -9,7 +9,8 @@ import { EmptyState } from "@/components/empty-state";
 import { ErrorView } from "@/components/error-view";
 import { EmptyTicketsArt } from "@/components/illustrations";
 import { SkeletonBlock } from "@/components/skeleton";
-import { AppText, Card, Chip, Field } from "@/components/ui";
+import { ScanSheet } from "@/components/scan/scan-sheet";
+import { AppText, Card, Chip, Field, IconButton } from "@/components/ui";
 import { useKeys } from "@/hooks/use-orders";
 import { formatMoney } from "@/lib/money";
 import { t, useLocale } from "@/i18n";
@@ -26,11 +27,25 @@ export function TicketsHistory() {
   const [status, setStatus] = useState<TicketStatus | undefined>();
   const [search, setSearch] = useState("");
   const [debounced, setDebounced] = useState("");
+  const [scanOpen, setScanOpen] = useState(false);
   useEffect(() => {
     const timer = setTimeout(() => setDebounced(search.trim()), 300);
     return () => clearTimeout(timer);
   }, [search]);
   const filters = { status, search: debounced || undefined };
+
+  // Un folio leído (código del ticket impreso) se busca al instante; si hay un ticket con ese folio exacto, se abre (spec 056).
+  const scanFolio = async (code: string) => {
+    setSearch(code);
+    setDebounced(code);
+    try {
+      const found = await listTickets({ search: code });
+      const exact = found.results.find((ticket) => ticket.folio.toLowerCase() === code.toLowerCase());
+      if (exact) router.push(`/ticket/${exact.id}` as never);
+    } catch {
+      // Si la consulta falla, la lista de abajo ya muestra su propio error.
+    }
+  };
 
   const query = useInfiniteQuery({
     queryKey: keys.tickets(filters),
@@ -43,7 +58,13 @@ export function TicketsHistory() {
   return (
     <View style={{ flex: 1, backgroundColor: c.background }}>
       <View style={{ paddingHorizontal: space[4], gap: space[3], paddingBottom: space[3] }}>
-        <Field label={t("tickets.search")} icon="search" value={search} onChangeText={setSearch} autoCapitalize="characters" autoCorrect={false} testID="tickets-search" />
+        <View style={{ flexDirection: "row", alignItems: "flex-end", gap: space[2] }}>
+          <View style={{ flex: 1 }}>
+            <Field label={t("tickets.search")} icon="search" value={search} onChangeText={setSearch} autoCapitalize="characters" autoCorrect={false} testID="tickets-search" />
+          </View>
+          <IconButton icon="camera" label={t("scan.open")} onPress={() => setScanOpen(true)} />
+        </View>
+        <ScanSheet visible={scanOpen} onClose={() => setScanOpen(false)} onScan={scanFolio} continuous={false} />
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: space[2] }}>
           {[undefined, ...STATUSES].map((value) => (
             <Chip key={value ?? "all"} label={value ? t(`ticket.status.${value}`) : t("tickets.filterAll")} selected={status === value} onPress={() => setStatus(value)} />
