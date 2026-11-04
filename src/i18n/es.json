@@ -664,6 +664,7 @@
     "notFound": "Código no encontrado: {code}",
     "notSellable": "{name} no se vende (código {code}).",
     "notOnMenu": "{name} no está en el menú (código {code}).",
-    "frame": "Marco de lectura"
+    "frame": "Marco de lectura",
+    "added": "Agregado: {name}"
   }
 }

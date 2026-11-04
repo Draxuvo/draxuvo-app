@@ -17,6 +17,8 @@ export function normalize(text: string): string {
 export interface MenuCard {
   id: number;
   name: string;
+  sku?: string;
+  barcodes?: string[];
   price: number;
   icon?: string | null;
   product_type?: { icon?: string | null } | null;

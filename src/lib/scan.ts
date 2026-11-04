@@ -59,3 +59,53 @@ export function pickCentral(codes: DetectedCode[], width: number, height: number
   const dist = (c: DetectedCode) => (c.center ? Math.hypot(c.center.x - cx, c.center.y - cy) : Number.POSITIVE_INFINITY);
   return codes.reduce((best, c) => (dist(c) < dist(best) ? c : best));
 }
+
+// --- Resolución contra los productos de la pantalla (spec 056, D5); misma regla que draxuvo-ui/src/lib/scan/resolve.ts ---
+
+export interface Scannable {
+  id: number;
+  name: string;
+  sku?: string;
+  barcodes?: string[];
+}
+
+export interface RemoteProduct extends Scannable {
+  available?: boolean;
+  product_type?: { sellable?: boolean } | null;
+}
+
+export type ScanReason = "not_found" | "not_sellable" | "not_on_menu";
+export type Resolution<T> = { ok: true; product: T } | { ok: false; reason: ScanReason; name?: string };
+
+/** Producto de la lista cuyo código de barras (o, si no, su clave) es exactamente el código. */
+export function findByCode<T extends Scannable>(code: string, list: T[]): T | null {
+  const byBarcode = list.find((p) => p.barcodes?.includes(code));
+  if (byBarcode) return byBarcode;
+  const sku = code.toLowerCase();
+  return list.find((p) => p.sku && p.sku.toLowerCase() === sku) ?? null;
+}
+
+/**
+ * Primero la lista que la pantalla ya tiene; solo si no está se consulta `lookup` para dar el motivo. En modo `menu` la
+ * lista es todo el menú; en `catalog` es parcial y un producto vendible que no estaba cargado se acepta.
+ */
+export async function resolveProduct<T extends Scannable>(
+  code: string,
+  list: T[],
+  lookup: (code: string) => Promise<RemoteProduct | null>,
+  mode: "menu" | "catalog" = "menu",
+): Promise<Resolution<T>> {
+  const local = findByCode(code, list);
+  if (local) return { ok: true, product: local };
+
+  let remote: RemoteProduct | null = null;
+  try {
+    remote = await lookup(code);
+  } catch {
+    return { ok: false, reason: "not_found" };
+  }
+  if (!remote) return { ok: false, reason: "not_found" };
+  if (remote.product_type?.sellable === false) return { ok: false, reason: "not_sellable", name: remote.name };
+  if (mode === "catalog" && remote.available !== false) return { ok: true, product: remote as unknown as T };
+  return { ok: false, reason: mode === "menu" ? "not_on_menu" : "not_sellable", name: remote.name };
+}
