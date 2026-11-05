@@ -81,15 +81,17 @@ jest.mock("expo-camera", () => {
 
 // expo-notifications (spec 057): sin servicio de avisos en Jest. El permiso se controla con `__setPushPermission`; una
 // prueba simula que llega un aviso con `__emitNotification` o que la persona lo toca con `__emitNotificationResponse`
-// (o con `__setLastResponse` para el caso de la app cerrada).
+// (o con `__setLastResponse` para el caso de la app cerrada). Como Expo, el aviso tocado queda como «último» hasta que
+// se limpia; cada aviso tiene su propio identificador.
 type MockListener = (event: unknown) => void;
 jest.mock("expo-notifications", () => {
   let permission = { status: "undetermined", granted: false, canAskAgain: true };
   let lastResponse: unknown = null;
   const received = new Set<MockListener>();
   const responses = new Set<MockListener>();
+  let sequence = 0;
   const notification = (data: Record<string, unknown>, title = "", body = "") => ({
-    request: { identifier: "n1", content: { title, body, data } },
+    request: { identifier: `n${++sequence}`, content: { title, body, data } },
     date: Date.now(),
   });
   const listen = (set: Set<MockListener>) => (cb: MockListener) => {
@@ -112,6 +114,7 @@ jest.mock("expo-notifications", () => {
     clearLastNotificationResponseAsync: jest.fn(async () => {
       lastResponse = null;
     }),
+    dismissAllNotificationsAsync: jest.fn(async () => {}),
     __setPushPermission: (value: typeof permission) => {
       permission = value;
     },
@@ -120,8 +123,10 @@ jest.mock("expo-notifications", () => {
     },
     __emitNotification: (data: Record<string, unknown>, title?: string, body?: string) =>
       received.forEach((cb) => cb(notification(data, title, body))),
-    __emitNotificationResponse: (data: Record<string, unknown>) =>
-      responses.forEach((cb) => cb({ notification: notification(data), actionIdentifier: "default" })),
+    __emitNotificationResponse: (data: Record<string, unknown>) => {
+      lastResponse = { notification: notification(data), actionIdentifier: "default" };
+      responses.forEach((cb) => cb(lastResponse));
+    },
   };
 });
 

@@ -1,7 +1,9 @@
 import { act, fireEvent, screen, waitFor } from "@testing-library/react-native";
 import * as Notifications from "expo-notifications";
 import * as SecureStore from "expo-secure-store";
+import { useEffect, useState } from "react";
 import { clearStore, mockFetch, multiUser, reply, seedSession } from "@/test/helpers";
+import { setEntryBlocking } from "@/attendance/prompted";
 import { renderScreen } from "@/test/render";
 import { PushHost } from "../host";
 import { DEVICE_KEY } from "../registration";
@@ -32,7 +34,17 @@ beforeEach(async () => {
   await SecureStore.deleteItemAsync(DEVICE_KEY);
   await SecureStore.deleteItemAsync(`draxuvo.push-asked.${multiUser.id}`);
   await seedSession(multiUser, 10);
+  setEntryBlocking(false);
 });
+
+const remounts = { trigger: () => {} };
+function Remountable() {
+  const [key, setKey] = useState(0);
+  useEffect(() => {
+    remounts.trigger = () => setKey((value) => value + 1);
+  }, []);
+  return <PushHost key={key} />;
+}
 
 describe("avisos push en la app (spec 057)", () => {
   it("con la app a la vista no dibuja la notificación del sistema", async () => {
@@ -88,6 +100,34 @@ describe("avisos push en la app (spec 057)", () => {
 
     await waitFor(() => expect(mockPush).toHaveBeenCalledWith("/pedido?cuenta=7&hoja=1"));
     expect(JSON.parse((await SecureStore.getItemAsync("draxuvo.session"))!).companyId).toBe(20);
+  });
+
+  it("un aviso ya abierto no se vuelve a abrir al iniciar sesión otra vez", async () => {
+    // Sin permiso ni hoja: aquí solo importa abrir avisos, sin registros que se cuelen en la prueba siguiente.
+    await SecureStore.setItemAsync(`draxuvo.push-asked.${multiUser.id}`, "true");
+    await renderScreen(<Remountable />);
+    await act(async () => {});
+    await act(async () => notifications.__emitNotificationResponse({ kind: "work_order_assigned", company_id: 10, path: "/ordenes/116" }));
+    await waitFor(() => expect(mockPush).toHaveBeenCalledTimes(1));
+
+    // Como al cerrar sesión y entrar de nuevo: el host se monta otra vez y Expo aún recuerda ese aviso como el último.
+    await act(async () => remounts.trigger());
+    await act(async () => {});
+
+    expect(mockPush).toHaveBeenCalledTimes(1);
+  });
+
+  it("la hoja de permiso espera a que se cierre «Marcar entrada»", async () => {
+    setEntryBlocking(true);
+    await renderScreen(<PushHost />);
+    await act(async () => {});
+    expect(screen.queryByTestId("push-permission-sheet")).toBeNull();
+
+    await act(async () => setEntryBlocking(false));
+    expect(await screen.findByTestId("push-permission-sheet")).toBeTruthy();
+
+    await fireEvent.press(screen.getByRole("button", { name: "Ahora no" }));
+    await waitFor(async () => expect(await SecureStore.getItemAsync(`draxuvo.push-asked.${multiUser.id}`)).toBe("true"));
   });
 
   it("el aviso que abrió la app desde cerrada también se abre", async () => {

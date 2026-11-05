@@ -32,9 +32,14 @@ export function MyNotifications() {
   const refreshPermission = useCallback(() => void permissionState().then(setPermission), []);
   useEffect(() => {
     refreshPermission();
-    const subscription = AppState.addEventListener("change", (state) => state === "active" && refreshPermission());
+    // Al volver a la app se vuelve a pedir: pudo cambiarse desde otro teléfono.
+    const subscription = AppState.addEventListener("change", (state) => {
+      if (state !== "active") return;
+      refreshPermission();
+      if (available) void queryClient.invalidateQueries({ queryKey: ["push-preference", companyId] });
+    });
     return () => subscription.remove();
-  }, [refreshPermission]);
+  }, [refreshPermission, available, queryClient, companyId]);
 
   const update = useMutation({
     mutationFn: updatePushPreference,

@@ -82,6 +82,8 @@ function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
  * pendiente para reintentarla; un rechazo de la API (JWT vencido) no se reintenta.
  */
 export async function unregisterOnSignOut(auth: { jwt: string | null; companyId: number | null }, now = Date.now()): Promise<void> {
+  // Los avisos de esta persona no deben quedar en la bandeja para quien entre después en el mismo teléfono.
+  await Notifications.dismissAllNotificationsAsync().catch(() => {});
   const saved = await readJson<SavedDevice>(DEVICE_KEY);
   await removeKey(DEVICE_KEY);
   if (!saved || !auth.jwt) return;

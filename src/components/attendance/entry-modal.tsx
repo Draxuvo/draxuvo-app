@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { markPrompted, promptKey, wasPrompted } from "@/attendance/prompted";
+import { useEffect, useState } from "react";
+import { markPrompted, promptKey, setEntryBlocking, wasPrompted } from "@/attendance/prompted";
 import { describeError } from "@/components/error-view";
 import { useAttendance } from "@/hooks/use-attendance";
 import { t, useLocale } from "@/i18n";
@@ -12,11 +12,17 @@ import { AttendanceModal } from "./attendance-modal";
 export function EntryModal() {
   useLocale();
   const { user, companyId } = useSession();
-  const { data, eligible, state, markIn } = useAttendance();
+  const { data, eligible, state, loading, markIn } = useAttendance();
   const key = promptKey(user?.id, companyId);
   const [closedKey, setClosedKey] = useState<string | null>(null);
 
-  const visible = eligible && state !== "working" && closedKey !== key && !wasPrompted(key);
+  const pending = closedKey !== key && !wasPrompted(key);
+  const visible = eligible && state !== "working" && pending;
+  const blocking = visible || (loading && pending);
+  useEffect(() => {
+    setEntryBlocking(blocking);
+    return () => setEntryBlocking(false);
+  }, [blocking]);
 
   const close = () => {
     markPrompted(key);

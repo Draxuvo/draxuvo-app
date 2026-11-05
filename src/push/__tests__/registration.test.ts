@@ -60,6 +60,7 @@ describe("registro del teléfono (spec 057)", () => {
     expect(init.headers.Authorization).toBe("Bearer jwt-old");
     expect(await SecureStore.getItemAsync(DEVICE_KEY)).toBeNull();
     expect(await SecureStore.getItemAsync(PENDING_KEY)).toBeNull();
+    expect(Notifications.dismissAllNotificationsAsync).toHaveBeenCalled();
   });
 
   it("sin red deja la baja pendiente y la reintenta después; vencida se descarta", async () => {

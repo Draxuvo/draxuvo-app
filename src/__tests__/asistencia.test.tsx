@@ -2,7 +2,7 @@ import { fireEvent, screen, waitFor } from "@testing-library/react-native";
 import { Text } from "react-native";
 import Perfil from "../../app/(tabs)/perfil";
 import type { MyAttendance, Shift } from "@/api/attendance";
-import { clearPrompted } from "@/attendance/prompted";
+import { clearPrompted, isEntryBlocking } from "@/attendance/prompted";
 import { AttendanceCard } from "@/components/attendance/attendance-card";
 import { EntryModal } from "@/components/attendance/entry-modal";
 import { useLogoutFlow } from "@/components/attendance/logout-modal";
@@ -55,6 +55,17 @@ describe("modal de entrada", () => {
     await waitFor(() => expect(posts("check_in")).toHaveLength(1));
     expect(await screen.findByText("Entrada marcada")).toBeTruthy();
     await waitFor(() => expect(screen.queryByText("Ahora no")).toBeNull());
+  });
+
+  it("mientras está a la vista frena las otras hojas de inicio, y al cerrarse las suelta (spec 057)", async () => {
+    serve(status());
+    await renderScreen(<EntryModal />);
+
+    await screen.findByRole("button", { name: "Ahora no" });
+    expect(isEntryBlocking()).toBe(true);
+
+    fireEvent.press(screen.getByRole("button", { name: "Ahora no" }));
+    await waitFor(() => expect(isEntryBlocking()).toBe(false));
   });
 
   it("Ahora no lo omite sin marcar y no vuelve a salir en la sesión", async () => {
