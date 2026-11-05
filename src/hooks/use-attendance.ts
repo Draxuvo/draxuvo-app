@@ -31,5 +31,5 @@ export function useAttendance() {
 
   // Con error (sin red, módulo fuera del plan) no se afirma ningún estado.
   const data = query.isError ? undefined : query.data;
-  return { data, eligible: !!data?.eligible, state: data?.state, markIn, markOut };
+  return { data, eligible: !!data?.eligible, state: data?.state, loading: query.isLoading, markIn, markOut };
 }

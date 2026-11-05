@@ -1,7 +1,8 @@
 import * as Notifications from "expo-notifications";
 import { useRouter } from "expo-router";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { AppState } from "react-native";
+import { isEntryBlocking, subscribeEntryBlocking } from "@/attendance/prompted";
 import { PermissionSheet } from "@/components/push/permission-sheet";
 import { t } from "@/i18n";
 import { useSession } from "@/session";
@@ -16,6 +17,10 @@ import { ensureRegistered, flushPendingUnregister } from "./registration";
 Notifications.setNotificationHandler({
   handleNotification: async () => ({ shouldShowBanner: false, shouldShowList: false, shouldPlaySound: false, shouldSetBadge: false }),
 });
+
+// Avisos tocados que ya se abrieron. Expo recuerda el último aviso tocado aunque haya llegado por el listener; sin esto,
+// al iniciar sesión otra vez (incluso con otra persona) `getLastNotificationResponseAsync` lo volvía a abrir.
+const handledResponses = new Set<string>();
 
 function PushRuntime({ userId }: { userId: number }) {
   const router = useRouter();
@@ -66,14 +71,16 @@ function PushRuntime({ userId }: { userId: number }) {
 
   // Tocar un aviso con la app abierta o en segundo plano, y el que abrió la app desde cerrada.
   useEffect(() => {
-    const responses = Notifications.addNotificationResponseReceivedListener((response) => {
-      void open(response.notification.request.content.data);
-    });
-    void Notifications.getLastNotificationResponseAsync().then((response) => {
+    const handle = (response: Notifications.NotificationResponse | null) => {
       if (!response) return;
       void Notifications.clearLastNotificationResponseAsync().catch(() => {});
+      const id = response.notification.request.identifier;
+      if (handledResponses.has(id)) return;
+      handledResponses.add(id);
       void open(response.notification.request.content.data);
-    });
+    };
+    const responses = Notifications.addNotificationResponseReceivedListener(handle);
+    void Notifications.getLastNotificationResponseAsync().then(handle);
     const received = Notifications.addNotificationReceivedListener((notification) => {
       const { title, body, data } = notification.request.content;
       const parsed = parsePushData(data);
@@ -92,7 +99,10 @@ function PushRuntime({ userId }: { userId: number }) {
     if (enable && (await requestPermission())) await ensureRegistered(userId);
   };
 
-  return <PermissionSheet visible={asking} onEnable={() => void finishAsking(true)} onLater={() => void finishAsking(false)} />;
+  // La hoja espera a que se cierre «Marcar entrada» para no salir encimada (spec 026 y 057).
+  const entryBlocking = useSyncExternalStore(subscribeEntryBlocking, isEntryBlocking);
+
+  return <PermissionSheet visible={asking && !entryBlocking} onEnable={() => void finishAsking(true)} onLater={() => void finishAsking(false)} />;
 }
 
 /** Avisos push de la app (spec 057): solo con sesión abierta. */
