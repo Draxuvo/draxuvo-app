@@ -9,6 +9,7 @@ import { RestaurantAlertsHost } from "@/components/restaurant-alerts-host";
 import { AppGate } from "@/gates/app-gate";
 import { ToastHost } from "@/toast/toast-host";
 import { loadLocale } from "@/i18n";
+import { PushHost } from "@/push/host";
 import { createQueryClient } from "@/query/client";
 import { SessionProvider } from "@/session";
 import { fontFamily, useTheme } from "@/theme";
@@ -41,6 +42,7 @@ function Screens() {
         <Stack.Screen name="orden-form/[id]" options={pushed} />
       </Stack>
       <RestaurantAlertsHost />
+      <PushHost />
       <ToastHost />
     </>
   );

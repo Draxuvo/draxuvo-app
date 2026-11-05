@@ -45,3 +45,7 @@ yarn-error.*
 .eas/
 coverage/
 .maestro-output/
+
+# Avisos push (spec 057): el archivo de Firebase llega por EAS (GOOGLE_SERVICES_JSON); nunca al repo.
+google-services.json
+GoogleService-Info.plist

@@ -127,3 +127,25 @@ describe("biometría opcional", () => {
     await waitFor(() => expect(result.current.status).toBe("signedIn"));
   });
 });
+
+describe("sesión y avisos push (spec 057)", () => {
+  it("al cerrar sesión da de baja el teléfono antes de olvidar el JWT", async () => {
+    await seedSession(staffUser, 10);
+    await SecureStore.setItemAsync(
+      "draxuvo.push-device",
+      JSON.stringify({ token: "ExponentPushToken[abc]", userId: staffUser.id, locale: "es", registeredAt: Date.now() }),
+    );
+    fetchMock.mockReturnValue(reply(204, null));
+    const { result } = await renderHook(useSession, { wrapper });
+    await waitFor(() => expect(result.current.status).toBe("signedIn"));
+
+    await act(() => result.current.signOut());
+
+    const [url, init] = fetchMock.mock.calls[0];
+    expect(init.method).toBe("DELETE");
+    expect(url).toContain(encodeURIComponent("ExponentPushToken[abc]"));
+    expect(init.headers).toMatchObject({ Authorization: "Bearer tok", "X-Company-Id": "10" });
+    expect(result.current.status).toBe("signedOut");
+    expect(await SecureStore.getItemAsync("draxuvo.push-device")).toBeNull();
+  });
+});

@@ -666,5 +666,42 @@
     "notOnMenu": "{name} is not on the menu (code {code}).",
     "frame": "Scanning frame",
     "added": "Added: {name}"
+  },
+  "push": {
+    "channels": {
+      "orders": "Orders and tickets",
+      "business": "Business alerts"
+    },
+    "sheet": {
+      "title": "Turn on notifications",
+      "body": "We'll notify you on your phone, even with the app closed, when your order is ready or a work order is assigned to you. We never show amounts on the lock screen. You can choose which ones you get in Profile → My notifications.",
+      "enable": "Turn on",
+      "later": "Not now"
+    },
+    "prefs": {
+      "title": "My notifications",
+      "unavailable": "Notifications are not available in this version of the app.",
+      "blocked": "Notifications are turned off on this phone. You can choose what to get, but nothing will arrive until you allow them in settings.",
+      "openSettings": "Open settings",
+      "askable": "This phone does not have permission to show notifications yet.",
+      "enable": "Turn on notifications",
+      "loadError": "Your notifications could not be loaded.",
+      "none": "There are no notifications for your role in this company."
+    },
+    "kinds": {
+      "check_ready": "Order ready",
+      "work_order_assigned": "Work order assigned",
+      "operational_alert": "Operational alerts",
+      "low_stock": "Low stock"
+    },
+    "hints": {
+      "check_ready": "When the kitchen or bar finishes your checks' items.",
+      "work_order_assigned": "When a work order is assigned to you while your shift is open.",
+      "operational_alert": "Late orders, tables open too long and stalled work orders.",
+      "low_stock": "When products drop below their minimum."
+    },
+    "open": {
+      "noAccess": "You no longer have access to that company."
+    }
   }
 }
