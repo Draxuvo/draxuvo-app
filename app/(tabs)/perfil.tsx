@@ -9,6 +9,7 @@ import { AvatarPicker } from "@/components/avatar-picker";
 import { describeError } from "@/components/error-view";
 import { LanguageSwitch } from "@/components/language-switch";
 import { Monogram } from "@/components/order-card";
+import { MyNotifications } from "@/components/push/my-notifications";
 import { SoundPicker, useReadySoundName } from "@/components/sound-picker";
 import { AppText, Button, Card, Field, Icon, KeyboardFrame } from "@/components/ui";
 import { haptic } from "@/lib/haptics";
@@ -192,6 +193,12 @@ export default function Perfil() {
           </View>
         </Card>
       </Animated.View>
+
+      {company ? (
+        <Animated.View entering={rowEnter(2)}>
+          <MyNotifications />
+        </Animated.View>
+      ) : null}
 
       <Button label={t("profile.logout")} variant="outline" icon="log-out" onPress={requestLogout} />
       {logoutModal}

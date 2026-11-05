@@ -78,3 +78,51 @@ jest.mock("expo-camera", () => {
     __requestPermission: request,
   };
 });
+
+// expo-notifications (spec 057): sin servicio de avisos en Jest. El permiso se controla con `__setPushPermission`; una
+// prueba simula que llega un aviso con `__emitNotification` o que la persona lo toca con `__emitNotificationResponse`
+// (o con `__setLastResponse` para el caso de la app cerrada).
+type MockListener = (event: unknown) => void;
+jest.mock("expo-notifications", () => {
+  let permission = { status: "undetermined", granted: false, canAskAgain: true };
+  let lastResponse: unknown = null;
+  const received = new Set<MockListener>();
+  const responses = new Set<MockListener>();
+  const notification = (data: Record<string, unknown>, title = "", body = "") => ({
+    request: { identifier: "n1", content: { title, body, data } },
+    date: Date.now(),
+  });
+  const listen = (set: Set<MockListener>) => (cb: MockListener) => {
+    set.add(cb);
+    return { remove: () => set.delete(cb) };
+  };
+  return {
+    AndroidImportance: { DEFAULT: 3, HIGH: 4 },
+    getPermissionsAsync: jest.fn(async () => permission),
+    requestPermissionsAsync: jest.fn(async () => {
+      permission = { status: "granted", granted: true, canAskAgain: true };
+      return permission;
+    }),
+    getExpoPushTokenAsync: jest.fn(async () => ({ type: "expo", data: "ExponentPushToken[test-token-123456]" })),
+    setNotificationHandler: jest.fn(),
+    setNotificationChannelAsync: jest.fn(async () => null),
+    addNotificationReceivedListener: jest.fn(listen(received)),
+    addNotificationResponseReceivedListener: jest.fn(listen(responses)),
+    getLastNotificationResponseAsync: jest.fn(async () => lastResponse),
+    clearLastNotificationResponseAsync: jest.fn(async () => {
+      lastResponse = null;
+    }),
+    __setPushPermission: (value: typeof permission) => {
+      permission = value;
+    },
+    __setLastResponse: (data: Record<string, unknown> | null) => {
+      lastResponse = data ? { notification: notification(data), actionIdentifier: "default" } : null;
+    },
+    __emitNotification: (data: Record<string, unknown>, title?: string, body?: string) =>
+      received.forEach((cb) => cb(notification(data, title, body))),
+    __emitNotificationResponse: (data: Record<string, unknown>) =>
+      responses.forEach((cb) => cb({ notification: notification(data), actionIdentifier: "default" })),
+  };
+});
+
+jest.mock("expo-device", () => ({ isDevice: true }));

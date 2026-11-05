@@ -413,3 +413,17 @@ export interface AlertsResponse {
   results: OperationalAlert[];
   snoozed: SnoozedAlert[];
 }
+
+/** Tipos de aviso push (spec 057, contracts/push-api.md). */
+export type PushKind = "check_ready" | "work_order_assigned" | "operational_alert" | "low_stock";
+
+/** Lo que la persona puede elegir en «Mis avisos» para la empresa activa y su valor. */
+export type PushPreference = { available: PushKind[] } & Partial<Record<PushKind, boolean>>;
+
+export interface PushDeviceResponse {
+  id: number;
+  platform: "android" | "ios";
+  locale: "es" | "en";
+  token_hint: string;
+  last_seen_at: string;
+}

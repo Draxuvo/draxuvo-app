@@ -1,4 +1,11 @@
+import { existsSync } from "node:fs";
 import type { ExpoConfig } from "expo/config";
+
+// Avisos push (spec 057): el proyecto de EAS y el archivo de Firebase llegan por variables de entorno (EAS o local);
+// sin ellos la app compila igual y simplemente no pide token.
+const easProjectId = process.env.EAS_PROJECT_ID;
+const googleServicesFile =
+  process.env.GOOGLE_SERVICES_JSON ?? (existsSync("./google-services.json") ? "./google-services.json" : undefined);
 
 const config: ExpoConfig = {
   name: "Draxuvo",
@@ -15,6 +22,7 @@ const config: ExpoConfig = {
   },
   android: {
     package: "com.draxuvo.app",
+    ...(googleServicesFile ? { googleServicesFile } : {}),
     adaptiveIcon: {
       backgroundColor: "#2340C8",
       foregroundImage: "./assets/images/android-icon-foreground.png",
@@ -46,6 +54,10 @@ const config: ExpoConfig = {
       },
     ],
     [
+      "expo-notifications",
+      { icon: "./assets/images/android-icon-monochrome.png", color: "#2340C8" },
+    ],
+    [
       "expo-splash-screen",
       {
         backgroundColor: "#F1EFE9",
@@ -57,6 +69,7 @@ const config: ExpoConfig = {
   ],
   extra: {
     apiUrl: process.env.EXPO_PUBLIC_API_URL ?? "http://localhost:3000",
+    ...(easProjectId ? { eas: { projectId: easProjectId } } : {}),
   },
 };
 

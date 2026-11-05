@@ -5,6 +5,7 @@ import { api, configureClient } from "@/api/client";
 import { getLocale } from "@/i18n";
 import { authenticateBiometric, biometricAvailable } from "./biometric";
 import { clearPrompted } from "@/attendance/prompted";
+import { unregisterOnSignOut } from "@/push/registration";
 import { clearSession, readSession, roleIn, writeSession } from "./store";
 
 /** La cuenta es válida pero no pertenece a ninguna empresa: no hay nada que abrir. */
@@ -71,6 +72,8 @@ export function SessionProvider({ children, onSignedOut }: PropsWithChildren<{ o
   }, []);
 
   const signOut = useCallback(async () => {
+    // Spec 057: el teléfono deja de recibir avisos de esta persona; se intenta antes de olvidar el JWT.
+    await unregisterOnSignOut({ jwt: stateRef.current.token, companyId: stateRef.current.companyId }).catch(() => {});
     await clearSession();
     clearPrompted();
     setState(EMPTY);

@@ -59,6 +59,19 @@ e2e/                  # recorridos Maestro
 
 Compilaciones y envío a TestFlight y a la prueba interna de Google Play con EAS. Cuentas, credenciales, ficha y cómo subir la versión mínima en la API: [STORE.md](./STORE.md).
 
+## Avisos push (spec 057)
+
+`src/push/` registra el teléfono (`registration.ts`: token de Expo, `POST /push_devices`, baja al cerrar sesión con reintento de
+24 h), pide el permiso con una hoja previa (`permission.ts`, `components/push/permission-sheet.tsx`, una vez por persona), crea
+los canales de Android `orders` y `business` (`channels.ts`) y abre la pantalla del aviso al tocarlo, cambiando de empresa si
+hace falta (`open.ts`, `host.tsx`). Con la app a la vista no se dibuja la notificación del sistema. «Mis avisos» en Perfil
+(`components/push/my-notifications.tsx`) usa `/push_preference`.
+
+Necesita una compilación nueva de EAS (módulo nativo `expo-notifications`) y dos variables al compilar: `EAS_PROJECT_ID`
+(proyecto de EAS; sin él la app no pide token y «Mis avisos» dice que no están disponibles) y `GOOGLE_SERVICES_JSON`
+(archivo de Firebase para Android, variable de archivo de EAS; en local basta con `google-services.json` en la raíz, ignorado
+por git). En Jest, `expo-notifications` y `expo-device` están simulados en `jest.setup.ts`. Pasos completos en `STORE.md`.
+
 ## Lector de códigos (spec 056)
 
 `ScanSheet` (`src/components/scan/scan-sheet.tsx`) lee códigos de barras con `expo-camera` y siempre ofrece un campo para escribirlos. `expo-camera` es un módulo nativo y agrega el permiso de cámara: requiere una compilación nueva de EAS; no llega por actualización OTA.

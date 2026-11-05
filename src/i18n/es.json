@@ -666,5 +666,42 @@
     "notOnMenu": "{name} no está en el menú (código {code}).",
     "frame": "Marco de lectura",
     "added": "Agregado: {name}"
+  },
+  "push": {
+    "channels": {
+      "orders": "Comandas y órdenes",
+      "business": "Alertas del negocio"
+    },
+    "sheet": {
+      "title": "Activa los avisos",
+      "body": "Te avisamos en el teléfono, aunque la app esté cerrada, cuando tu comanda esté lista o te asignen una orden. Nunca mostramos montos en la pantalla bloqueada. Puedes elegir qué avisos recibir en Perfil → Mis avisos.",
+      "enable": "Activar",
+      "later": "Ahora no"
+    },
+    "prefs": {
+      "title": "Mis avisos",
+      "unavailable": "Los avisos no están disponibles en esta versión de la app.",
+      "blocked": "Los avisos están desactivados en este teléfono. Puedes elegir qué recibir, pero no llegarán hasta que los permitas en los ajustes.",
+      "openSettings": "Abrir ajustes",
+      "askable": "Este teléfono aún no tiene permiso para mostrar avisos.",
+      "enable": "Activar avisos",
+      "loadError": "No se pudieron cargar tus avisos.",
+      "none": "No hay avisos para tu rol en esta empresa."
+    },
+    "kinds": {
+      "check_ready": "Comanda lista",
+      "work_order_assigned": "Orden asignada",
+      "operational_alert": "Alertas operativas",
+      "low_stock": "Stock bajo"
+    },
+    "hints": {
+      "check_ready": "Cuando la cocina o la barra termina lo de tus cuentas.",
+      "work_order_assigned": "Cuando te asignan una orden de trabajo y tienes el turno abierto.",
+      "operational_alert": "Comandas tardadas, mesas abiertas mucho tiempo y órdenes estancadas.",
+      "low_stock": "Cuando productos bajan de su mínimo."
+    },
+    "open": {
+      "noAccess": "Ya no tienes acceso a esa empresa."
+    }
   }
 }
