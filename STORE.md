@@ -16,12 +16,18 @@ Guía para sacar la app a TestFlight (iOS) y a la prueba interna de Google Play 
 - Certificados y llaves de firma: déjalos que los administre EAS (`eas credentials`). No se suben al repo.
 - Para enviar a TestFlight: en `eas.json` → `submit.production.ios` agrega `ascAppId` (id numérico de la app en App Store Connect) o configura la llave de API de App Store Connect con `eas credentials`.
 - Para enviar a Google Play: sube la cuenta de servicio de Google con `eas credentials` (la primera versión de Android se sube a mano en la consola).
+- Avisos push (spec 057): en Firebase crea el proyecto y la app Android `com.draxuvo.app`, baja `google-services.json` y genera una
+  llave de cuenta de servicio; súbela con `eas credentials -p android` → «Google Service Account Key for FCM V1». Para iOS, crea una
+  llave APNs (`.p8`) en Apple Developer y súbela con `eas credentials -p ios`. Opcional: token de acceso de Expo como
+  `EXPO_ACCESS_TOKEN` en Render y «Enhanced push security» en el proyecto de Expo.
 
 ## 3. Secretos y variables
 
 | Dónde | Nombre | Valor |
 |---|---|---|
 | GitHub → Secrets | `EXPO_TOKEN` | Token de acceso de Expo |
+| EAS (`eas env:create`) | `EAS_PROJECT_ID` | Id del proyecto de EAS (`npx eas-cli init`); sin él no hay avisos push (spec 057) |
+| EAS (`eas env:create --type file`) | `GOOGLE_SERVICES_JSON` | `google-services.json` de Firebase (app Android `com.draxuvo.app`), para FCM |
 | EAS (`eas env:create`) | `EXPO_PUBLIC_API_URL` | URL de la API por entorno: `development`, `preview` (con datos de demo, la usan los recorridos Maestro) y `production` |
 
 ## 4. Ficha de la tienda
