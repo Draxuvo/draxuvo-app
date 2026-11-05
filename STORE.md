@@ -48,7 +48,7 @@ Guía para sacar la app a TestFlight (iOS) y a la prueba interna de Google Play 
 git tag v1.0.0 && git push origin v1.0.0
 ```
 
-Los perfiles `development`, `preview`, `production` y `e2e` están en `eas.json`. `production` sube el número de compilación solo.
+Los perfiles `development`, `preview`, `production`, `production-apk` y `e2e` están en `eas.json`. `production` sube el número de compilación solo. `production-apk` es `production` (mismas variables del ambiente `production` y misma firma) pero da un APK para instalar directo en Android sin Play Store (`eas build -p android --profile production-apk`); la app no se actualiza sola: cada versión se instala a mano.
 
 ## 6. Versión mínima
 
