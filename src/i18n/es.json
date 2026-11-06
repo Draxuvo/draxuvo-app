@@ -692,16 +692,26 @@
       "check_ready": "Comanda lista",
       "work_order_assigned": "Orden asignada",
       "operational_alert": "Alertas operativas",
-      "low_stock": "Stock bajo"
+      "low_stock": "Stock bajo",
+      "charge_pending": "Por cobrar"
     },
     "hints": {
       "check_ready": "Cuando la cocina o la barra termina lo de tus cuentas.",
       "work_order_assigned": "Cuando te asignan una orden de trabajo y tienes el turno abierto.",
       "operational_alert": "Comandas tardadas, mesas abiertas mucho tiempo y órdenes estancadas.",
-      "low_stock": "Cuando productos bajan de su mínimo."
+      "low_stock": "Cuando productos bajan de su mínimo.",
+      "charge_pending": "Cuando una venta, orden o mesa espera que la cobres (cobro solo por jefes)."
     },
     "open": {
-      "noAccess": "Ya no tienes acceso a esa empresa."
+      "noAccess": "Ya no tienes acceso a esa empresa.",
+      "posOnly": "Esta venta se cobra desde la caja del panel."
     }
+  },
+  "bossOnly": {
+    "notice": "El cobro lo hace un administrador o el dueño.",
+    "requestCharge": "Pedir cobro",
+    "requested": "Cobro pedido. Un administrador o el dueño cobrará la cuenta.",
+    "requestedAt": "Cobro pedido a las {time}",
+    "chargeRequested": "Cobro pedido"
   }
 }

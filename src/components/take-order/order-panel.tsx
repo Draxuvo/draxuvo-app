@@ -96,6 +96,8 @@ export function OrderPanel({
   onSend,
   onCharge,
   onRelease,
+  onRequestCharge,
+  requestingCharge = false,
   onReassign,
   onDeliver,
   onCancelItem,
@@ -118,6 +120,9 @@ export function OrderPanel({
   onSend: () => void;
   onCharge: () => void;
   onRelease: () => void;
+  /** Spec 058: «Pedir cobro» de una cuenta de mesa. */
+  onRequestCharge?: () => void;
+  requestingCharge?: boolean;
   /** Pasar la cuenta a otro mesero (solo encargados). */
   onReassign?: () => void;
   /** Entregar un producto listo y cancelar uno ya mandado (spec 025). */
@@ -206,7 +211,20 @@ export function OrderPanel({
             {formatMoney(current.total)}
           </AppText>
         </View>
+        {current.chargeRequestedAt ? (
+          <AppText variant="label" tone="primary" accessibilityRole="text">
+            {t("bossOnly.requestedAt", { time: new Date(current.chargeRequestedAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) })}
+          </AppText>
+        ) : null}
+        {current.chargeBlocked ? (
+          <AppText tone="muted" accessibilityRole="text">
+            {t("bossOnly.notice")}
+          </AppText>
+        ) : null}
         <View style={{ gap: space[2] }}>
+          {current.canRequestCharge && onRequestCharge ? (
+            <Button label={t("bossOnly.requestCharge")} icon="bell" loading={requestingCharge} onPress={onRequestCharge} />
+          ) : null}
           {current.canSend || current.canCharge ? (
             <View style={{ flexDirection: "row", flexWrap: "wrap", gap: space[3] }}>
               {current.canSend ? <Button label={sending ? t("check.sending") : t("check.send")} icon="send" loading={sending} onPress={onSend} style={{ flex: 1, minWidth: 140 }} /> : null}

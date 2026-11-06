@@ -24,6 +24,7 @@ export function CheckCard({ name, takeout, check, onPress }: { name: string; tak
             {title}
           </AppText>
           <AppText tone="muted" numberOfLines={1}>
+            {check.charge_requested_at ? `${t("bossOnly.chargeRequested")} · ` : ""}
             {toPay ? `${t("takeOrder.state.to_pay")} · ` : ""}
             {waiter}
             {elapsed}

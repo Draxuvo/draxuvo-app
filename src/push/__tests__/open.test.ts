@@ -36,3 +36,17 @@ describe("abrir un aviso push (spec 057)", () => {
     expect(planOpen({ kind: "operational_alert", companyId: 20, path: "/alertas" }, multiUser, 10)).toMatchObject({ path: "/ordenes" });
   });
 });
+
+describe("aviso de venta por cobrar (spec 058)", () => {
+  it("acepta la ruta de una venta, abre Órdenes y pide el aviso de la caja del panel", () => {
+    const data = parsePushData({ kind: "charge_pending", company_id: 20, path: "/venta?venta=12" });
+    expect(data?.path).toBe("/venta?venta=12");
+    expect(planOpen(data!, multiUser, 10)).toEqual({ action: "open", switchTo: 20, path: "/ordenes", notice: "posOnly" });
+  });
+
+  it("una ruta de venta mal formada cae en Órdenes sin aviso", () => {
+    const data = parsePushData({ kind: "charge_pending", company_id: 10, path: "/venta?venta=abc" });
+    expect(planOpen(data!, multiUser, 10)).toEqual({ action: "open", switchTo: null, path: "/ordenes" });
+  });
+});
+

@@ -10,6 +10,7 @@ export function describeError(error: unknown): string {
   if (error instanceof NetworkError) return t("errors.network");
   if (error instanceof ApiError) {
     if (error.code === "module_not_in_plan") return t("errors.moduleNotInPlan");
+    if (error.code === "charge_boss_only") return t("bossOnly.notice");
     if (error.status === 401) return t("errors.sessionExpired");
     if (error.status === 403) return typeof error.details === "string" ? error.details : t("errors.forbidden");
     if (error.status === 404) return t("errors.notFound");

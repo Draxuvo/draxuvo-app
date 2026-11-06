@@ -9,7 +9,9 @@ export interface PushData {
   path: string;
 }
 
-const ALLOWED = [/^\/pedido\?cuenta=\d+(&hoja=1)?$/, /^\/ordenes\/\d+$/, /^\/alertas$/];
+// Spec 058: `/venta?venta=<id>` es una venta de mostrador que espera cobro; la caja solo vive en el panel.
+const SALE = /^\/venta\?venta=\d+$/;
+const ALLOWED = [/^\/pedido\?cuenta=\d+(&hoja=1)?$/, /^\/ordenes\/\d+$/, /^\/alertas$/, SALE];
 const FALLBACK = "/ordenes";
 const BOSSES: CompanyRole[] = ["admin", "owner"];
 
@@ -23,13 +25,16 @@ export function parsePushData(raw: unknown): PushData | null {
   return { kind: data.kind, companyId, path };
 }
 
-export type OpenPlan = { action: "open"; switchTo: number | null; path: string } | { action: "noAccess" };
+/** `notice: "posOnly"` (spec 058): el aviso es de una venta de mostrador, que se cobra desde la caja del panel. */
+export type OpenPlan = { action: "open"; switchTo: number | null; path: string; notice?: "posOnly" } | { action: "noAccess" };
 
 /** Cambia de empresa si el aviso es de otra y la persona sigue en ella; Alertas solo para jefes (FR-018). */
 export function planOpen(data: PushData, user: User, activeCompanyId: number | null): OpenPlan {
   const target = data.companyId ?? activeCompanyId;
   if (target == null || !user.companies.some((company) => company.id === target)) return { action: "noAccess" };
   const role = roleIn(user, target);
+  const switchTo = target !== activeCompanyId ? target : null;
+  if (SALE.test(data.path)) return { action: "open", switchTo, path: FALLBACK, notice: "posOnly" };
   const path = data.path === "/alertas" && !(role && BOSSES.includes(role)) ? FALLBACK : data.path;
-  return { action: "open", switchTo: target !== activeCompanyId ? target : null, path };
+  return { action: "open", switchTo, path };
 }

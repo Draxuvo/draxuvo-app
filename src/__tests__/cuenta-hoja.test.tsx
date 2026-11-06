@@ -455,3 +455,21 @@ describe("cobrar desde la hoja", () => {
     expect(lastBody().confirm_incomplete).toBe(true);
   });
 });
+
+describe("pedir cobro con cobro solo por jefes (spec 058)", () => {
+  it("el mesero ve el aviso, pide el cobro y la hoja muestra la hora", async () => {
+    current = check([item(2, "Tacos al pastor", "delivered")], ["add_item", "request_charge"], { charge_blocked_reason: "boss_only" });
+    const requested = { ...current, allowed_actions: ["add_item"] as Check["allowed_actions"], charge_requested_at: "2026-10-19T20:00:00Z" };
+    route({ "POST /api/v1/restaurant/checks/31/charge_request": () => reply(200, requested) });
+    await renderScreen(<Pedido />);
+
+    expect(await screen.findByText("El cobro lo hace un administrador o el dueño.")).toBeTruthy();
+    expect(screen.queryByRole("button", { name: "Cobrar" })).toBeNull();
+    await fireEvent.press(screen.getByRole("button", { name: "Pedir cobro" }));
+
+    await waitFor(() => expect(calls("POST", "/checks/31/charge_request")).toHaveLength(1));
+    expect(await screen.findByText(/Cobro pedido a las/)).toBeTruthy();
+    expect(screen.queryByRole("button", { name: "Pedir cobro" })).toBeNull();
+  });
+});
+

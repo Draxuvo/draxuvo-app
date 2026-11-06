@@ -42,9 +42,16 @@ export function OrderActions({ order, onError }: { order: WorkOrder; onError: (e
     ),
   ].filter(Boolean);
 
-  if (buttons.length === 0) return null;
+  // Spec 058: con «Cobro solo por jefes» el responsable termina la orden y un jefe la cobra.
+  const bossOnly = order.charge_blocked_reason === "boss_only";
+  if (buttons.length === 0 && !bossOnly) return null;
   return (
     <View style={{ gap: space[2] }}>
+      {bossOnly ? (
+        <AppText variant="label" tone="stamp" style={{ letterSpacing: 0.2 }}>
+          {t("bossOnly.notice")}
+        </AppText>
+      ) : null}
       {allowed.includes("charge") && order.charge_blocked_reason === "no_items" ? (
         <AppText variant="label" tone="stamp" style={{ letterSpacing: 0.2 }}>
           {t("orders.actions.chargeBlocked")}

@@ -43,6 +43,8 @@ export default function Cobro() {
   const order = query.data;
   const total = Number(order.total ?? 0);
   const blocked = order.charge_blocked_reason === "no_items" || !(order.allowed_actions ?? []).includes("charge");
+  // Spec 058: con «Cobro solo por jefes» el aviso dice que cobra un jefe, no que falten conceptos.
+  const blockedReason = order.charge_blocked_reason === "boss_only" ? "boss_only" : "no_items";
 
   const submit = async (body: ChargeBody) => {
     try {
@@ -52,7 +54,7 @@ export default function Cobro() {
       if (charged.ticket) router.replace(`/ticket/${charged.ticket.id}` as never);
       else router.back();
     } catch (failure) {
-      if (failure instanceof ApiError && failure.status === 422) void query.refetch();
+      if (failure instanceof ApiError && (failure.status === 422 || failure.code === "charge_boss_only")) void query.refetch();
       haptic.warning();
       toast.error(describeError(failure));
     }
@@ -66,7 +68,7 @@ export default function Cobro() {
         <AppText variant="headline">{order.title}</AppText>
       </Animated.View>
       <Animated.View entering={rowEnter(1)}>
-        <ChargeForm total={total} blocked={blocked} terminals={terminals.data ?? []} onSubmit={submit} />
+        <ChargeForm total={total} blocked={blocked} blockedReason={blockedReason} terminals={terminals.data ?? []} onSubmit={submit} />
       </Animated.View>
     </Animated.ScrollView>
 </KeyboardFrame>
