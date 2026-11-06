@@ -130,6 +130,14 @@ export function TakeOrderScreen({ mode, initialCheckId, initialSheet }: { mode: 
     }
   };
 
+  // Spec 058: el mesero avisa que el cliente pidió la cuenta; un jefe la cobra.
+  const requestCharge = () =>
+    void run(async () => {
+      await source.requestCharge();
+      haptic.success();
+      toast.success(t("bossOnly.requested"));
+    });
+
   // Liberar la mesa: sin productos se cancela de una vez; con productos sin mandar se pide confirmar.
   const doRelease = async () => {
     setReleasing(true);
@@ -215,6 +223,8 @@ export function TakeOrderScreen({ mode, initialCheckId, initialSheet }: { mode: 
       onSend={() => void send()}
       onCharge={charge}
       onRelease={() => afterSheet(release)}
+      onRequestCharge={requestCharge}
+      requestingCharge={source.requestingCharge}
       onReassign={() => setView({ kind: "waiters" })}
       onDeliver={(item) => void deliver(item)}
       onCancelItem={(item) => setView({ kind: "cancel", item })}

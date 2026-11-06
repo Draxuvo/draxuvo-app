@@ -6,7 +6,8 @@ import { sendRound } from "@/api/restaurant";
 import type { Check, RoundResponse, TableState, WorkOrder } from "@/api/types";
 import { POLL_MS, useApplyCheck, useCheck, useCheckActions, useOpenCheck, useTables, useWaiters } from "@/hooks/use-restaurant";
 import { useOpenOrder, useOrder, useOrderItemActions } from "@/hooks/use-orders";
-import { useSession } from "@/session";
+import { isBossRole, useSession } from "@/session";
+import { roleIn } from "@/session/store";
 import { inOrderCount, tapProduct, type Line, type MenuCard } from "./lib";
 
 // La pantalla de tomar pedido se escribe una vez; este hook le da, según el modo, los mosaicos, la orden
@@ -28,6 +29,8 @@ export interface SourceTile {
   selection: Selection;
   /** Mesa libre: al tocarla se abre su cuenta. */
   tableId?: number;
+  /** Spec 058: el mesero pidió el cobro. */
+  chargeRequested?: boolean;
 }
 
 export interface CurrentOrder {
@@ -46,6 +49,12 @@ export interface CurrentOrder {
   readOnly: boolean;
   /** Ticket de la cuenta cobrada, si existe. */
   ticketId: number | null;
+  /** Spec 058: «Cobro solo por jefes» impide cobrar a quien la ve; se muestra el aviso en lugar de Cobrar. */
+  chargeBlocked: boolean;
+  /** Spec 058: el mesero puede avisar que el cliente pidió la cuenta. */
+  canRequestCharge: boolean;
+  /** Spec 058: cuándo se pidió el cobro, si ya se pidió. */
+  chargeRequestedAt: string | null;
   check?: Check;
   order?: WorkOrder;
 }
@@ -85,8 +94,11 @@ export function orderLines(order: WorkOrder): Line[] {
 }
 
 export function useOrderSource(mode: "restaurant" | "orders", selection: Selection, options: { waiters?: boolean } = {}) {
-  const { companyId } = useSession();
+  const { companyId, user } = useSession();
   const restaurant = mode === "restaurant";
+  // Spec 058: en modo pedido las órdenes no traen el motivo hasta terminarse; la sesión dice si el personal no cobra.
+  const company = user?.companies.find((item) => item.id === companyId);
+  const staffCannotCharge = !!company?.boss_only_charge && !isBossRole(user && companyId != null ? roleIn(user, companyId) : null);
   const apply = useApplyCheck();
   const sendKey = useRef<string | null>(null);
 
@@ -124,6 +136,7 @@ export function useOrderSource(mode: "restaurant" | "orders", selection: Selecti
         ready: t.check?.counts.ready ?? 0,
         selection: t.check ? { kind: "check", id: t.check.id } : null,
         tableId: t.id,
+        chargeRequested: !!t.check?.charge_requested_at,
       })),
       ...(overview.data?.takeouts ?? []).map((c): SourceTile => ({
         key: `check:${c.id}`,
@@ -135,6 +148,7 @@ export function useOrderSource(mode: "restaurant" | "orders", selection: Selecti
         mine: c.mine,
         ready: c.counts.ready,
         selection: { kind: "check", id: c.id },
+        chargeRequested: !!c.charge_requested_at,
       })),
     ];
   } else {
@@ -170,6 +184,9 @@ export function useOrderSource(mode: "restaurant" | "orders", selection: Selecti
       canReassign: open && c.allowed_actions.includes("reassign"),
       readOnly: !open,
       ticketId: c.ticket_id ?? null,
+      chargeBlocked: open && c.charge_blocked_reason === "boss_only",
+      canRequestCharge: open && c.allowed_actions.includes("request_charge"),
+      chargeRequestedAt: c.charge_requested_at ?? null,
       check: c,
     };
   } else if (!restaurant && order.data && selection?.kind === "order") {
@@ -183,11 +200,14 @@ export function useOrderSource(mode: "restaurant" | "orders", selection: Selecti
       total: num(o.total),
       canAdd: open,
       canSend: false,
-      canCharge: (o.items_count ?? 0) > 0 && (actions.includes("charge") || (open && actions.includes("finish"))),
+      canCharge: !staffCannotCharge && (o.items_count ?? 0) > 0 && (actions.includes("charge") || (open && actions.includes("finish"))),
       canRelease: false,
       canReassign: false,
       readOnly: !open,
       ticketId: null,
+      chargeBlocked: staffCannotCharge || o.charge_blocked_reason === "boss_only",
+      canRequestCharge: false,
+      chargeRequestedAt: null,
       order: o,
     };
   }
@@ -231,6 +251,11 @@ export function useOrderSource(mode: "restaurant" | "orders", selection: Selecti
   /** Libera la mesa cancelando su cuenta; los productos sin mandar se descartan. */
   async function release() {
     return checkActions.cancelCheck.mutateAsync(undefined);
+  }
+
+  /** Spec 058: el mesero avisa que el cliente pidió la cuenta. */
+  async function requestCharge() {
+    return checkActions.requestCharge.mutateAsync(undefined);
   }
 
   /** Marca un producto ya listo como entregado. */
@@ -285,6 +310,8 @@ export function useOrderSource(mode: "restaurant" | "orders", selection: Selecti
     remove,
     send,
     release,
+    requestCharge,
+    requestingCharge: checkActions.requestCharge.isPending,
     deliver,
     cancelItem,
     reassign,

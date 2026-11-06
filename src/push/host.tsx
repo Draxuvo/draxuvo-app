@@ -65,6 +65,7 @@ function PushRuntime({ userId }: { userId: number }) {
       }
       if (plan.switchTo != null) await current.setCompany(plan.switchTo);
       router.push(plan.path as never);
+      if (plan.notice === "posOnly") toast.info(t("push.open.posOnly"));
     },
     [router],
   );

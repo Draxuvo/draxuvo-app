@@ -153,3 +153,14 @@ describe("detalle de la orden", () => {
     expect(await screen.findByTestId("toast-info")).toBeTruthy();
   });
 });
+
+describe("cobro solo por jefes en la orden (spec 058)", () => {
+  it("el responsable ve el aviso y no Cobrar", async () => {
+    fetchMock.mockReturnValue(reply(200, order({ status: "done", charge_blocked_reason: "boss_only" }, ["reopen"])));
+    await renderScreen(<OrderDetail />);
+
+    expect(await screen.findByText("El cobro lo hace un administrador o el dueño.")).toBeTruthy();
+    expect(screen.queryByRole("button", { name: "Cobrar" })).toBeNull();
+  });
+});
+

@@ -692,16 +692,26 @@
       "check_ready": "Order ready",
       "work_order_assigned": "Work order assigned",
       "operational_alert": "Operational alerts",
-      "low_stock": "Low stock"
+      "low_stock": "Low stock",
+      "charge_pending": "To charge"
     },
     "hints": {
       "check_ready": "When the kitchen or bar finishes your checks' items.",
       "work_order_assigned": "When a work order is assigned to you while your shift is open.",
       "operational_alert": "Late orders, tables open too long and stalled work orders.",
-      "low_stock": "When products drop below their minimum."
+      "low_stock": "When products drop below their minimum.",
+      "charge_pending": "When a sale, order or table is waiting for you to charge it (owner-only charging)."
     },
     "open": {
-      "noAccess": "You no longer have access to that company."
+      "noAccess": "You no longer have access to that company.",
+      "posOnly": "This sale is charged from the panel's register."
     }
+  },
+  "bossOnly": {
+    "notice": "Charging is done by an administrator or the owner.",
+    "requestCharge": "Request charge",
+    "requested": "Charge requested. An administrator or the owner will charge the check.",
+    "requestedAt": "Charge requested at {time}",
+    "chargeRequested": "Charge requested"
   }
 }

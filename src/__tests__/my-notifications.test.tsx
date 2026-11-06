@@ -58,3 +58,16 @@ describe("Mis avisos (spec 057, US2)", () => {
     expect(screen.getByRole("switch", { name: "Comanda lista" })).toBeTruthy();
   });
 });
+
+describe("«Por cobrar» en Mis avisos (spec 058)", () => {
+  it("si la API lo ofrece, sale con su nombre y se puede apagar", async () => {
+    preference = { available: ["check_ready", "charge_pending"], check_ready: true, charge_pending: true };
+    await renderScreen(<MyNotifications />);
+
+    await fireEvent(await screen.findByRole("switch", { name: "Por cobrar" }), "valueChange", false);
+    await waitFor(() => expect(fetchMock.mock.calls.some(([, init]) => init?.method === "PATCH")).toBe(true));
+    const [, init] = fetchMock.mock.calls.find(([, i]) => i?.method === "PATCH")!;
+    expect(JSON.parse(init.body)).toEqual({ charge_pending: false });
+  });
+});
+

@@ -110,3 +110,12 @@ describe("formulario de cobro", () => {
     expect(onSubmit).not.toHaveBeenCalled();
   });
 });
+
+describe("formulario de cobro con cobro solo por jefes (spec 058)", () => {
+  it("bloqueado por la regla dice que cobra un jefe", async () => {
+    await render(<ChargeForm total={80} blocked blockedReason="boss_only" onSubmit={jest.fn()} />);
+    expect(screen.getByText("El cobro lo hace un administrador o el dueño.")).toBeTruthy();
+    expect(screen.queryByText(/concepto/)).toBeNull();
+  });
+});
+

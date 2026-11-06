@@ -22,6 +22,9 @@ export const getCheck = (id: number) => api.get<Check>(`${base}/checks/${id}`);
 export const reassignCheck = (id: number, waiterId: number) =>
   api.patch<Check>(`${base}/checks/${id}`, { body: { waiter_id: waiterId } });
 
+/** Spec 058: el mesero avisa que el cliente pidió la cuenta («Cobro solo por jefes»). */
+export const requestCharge = (id: number) => api.post<Check>(`${base}/checks/${id}/charge_request`, {});
+
 export const cancelCheck = (id: number, reason?: string) =>
   api.post<Check>(`${base}/checks/${id}/cancel`, { body: { reason } });
 

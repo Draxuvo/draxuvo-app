@@ -49,12 +49,15 @@ const emptyRow = (key: number, method: PaymentMethod): Row => ({
 export function ChargeForm({
   total,
   blocked,
+  blockedReason = "no_items",
   terminals = [],
   onSubmit,
 }: {
   total: number;
   /** La orden no tiene conceptos con precio. */
   blocked: boolean;
+  /** Spec 058: por qué no se puede cobrar (sin conceptos, o «Cobro solo por jefes»). */
+  blockedReason?: "no_items" | "boss_only";
   terminals?: PaymentTerminal[];
   onSubmit: (body: ChargeBody) => Promise<void>;
 }) {
@@ -158,7 +161,7 @@ export function ChargeForm({
       {blocked ? (
         <View accessibilityRole="alert" style={{ backgroundColor: c.stampSoft, borderRadius: radius.field, padding: space[3], flexDirection: "row", gap: space[2], alignItems: "center" }}>
           <Icon name="alert-circle" tone="stamp" />
-          <AppText style={{ color: c.onStampSoft, flex: 1 }}>{t("charge.noItems")}</AppText>
+          <AppText style={{ color: c.onStampSoft, flex: 1 }}>{blockedReason === "boss_only" ? t("bossOnly.notice") : t("charge.noItems")}</AppText>
         </View>
       ) : null}
 

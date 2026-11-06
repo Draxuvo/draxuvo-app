@@ -12,6 +12,8 @@ export interface UserCompany {
   role: CompanyRole;
   parent_company_id: number | null;
   order_mode: OrderMode;
+  /** «Cobro solo por jefes» (spec 058): el personal no cobra; la regla vive en la API. */
+  boss_only_charge?: boolean;
 }
 
 export interface User {
@@ -123,7 +125,8 @@ export interface WorkOrder {
   events?: WorkOrderEvent[];
   ticket?: Ticket | null;
   allowed_actions?: WorkOrderAction[];
-  charge_blocked_reason?: "no_items" | null;
+  /** "no_items": sin conceptos con precio; "boss_only": «Cobro solo por jefes» (spec 058), cobra un jefe. */
+  charge_blocked_reason?: "no_items" | "boss_only" | null;
   cancel_reason?: string | null;
 }
 
@@ -277,7 +280,7 @@ export interface ChargePaymentInput {
   reference?: string;
 }
 
-export type CheckAction = "add_item" | "send" | "pay" | "reassign" | "cancel" | "close";
+export type CheckAction = "add_item" | "send" | "pay" | "request_charge" | "reassign" | "cancel" | "close";
 
 export interface Check {
   id: number;
@@ -292,6 +295,11 @@ export interface Check {
   items: CheckItem[];
   payments: CheckPayment[];
   ticket_id: number | null;
+  /** Spec 058: «cobro pedido» (el mesero avisó que el cliente pidió la cuenta). */
+  charge_requested_at?: string | null;
+  charge_requested_by?: PersonName | null;
+  /** Spec 058: "boss_only" si «Cobro solo por jefes» impide cobrar a quien la ve. */
+  charge_blocked_reason?: "boss_only" | null;
   allowed_actions: CheckAction[];
 }
 
@@ -310,6 +318,8 @@ export interface CheckSummary {
   total?: string;
   counts: ItemCounts;
   mine: boolean;
+  /** Spec 058: «cobro pedido». */
+  charge_requested_at?: string | null;
 }
 
 /** Estado de la mesa que calcula la API a partir de su cuenta abierta (spec 032). */
@@ -415,7 +425,7 @@ export interface AlertsResponse {
 }
 
 /** Tipos de aviso push (spec 057, contracts/push-api.md). */
-export type PushKind = "check_ready" | "work_order_assigned" | "operational_alert" | "low_stock";
+export type PushKind = "check_ready" | "work_order_assigned" | "operational_alert" | "low_stock" | "charge_pending";
 
 /** Lo que la persona puede elegir en «Mis avisos» para la empresa activa y su valor. */
 export type PushPreference = { available: PushKind[] } & Partial<Record<PushKind, boolean>>;

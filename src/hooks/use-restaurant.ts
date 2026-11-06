@@ -13,6 +13,7 @@ import {
   openCheck,
   reassignCheck,
   removeItem,
+  requestCharge,
   updateItem,
 } from "@/api/restaurant";
 import { ApiError } from "@/api/client";
@@ -128,5 +129,6 @@ export function useCheckActions(checkId: number) {
     }),
     cancelCheck: useMutation({ mutationFn: (reason?: string) => cancelCheck(checkId, reason), onSuccess: apply }),
     reassign: useMutation({ mutationFn: (waiterId: number) => reassignCheck(checkId, waiterId), onSuccess: apply }),
+    requestCharge: useMutation({ mutationFn: () => requestCharge(checkId), onSuccess: apply }),
   };
 }

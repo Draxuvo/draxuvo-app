@@ -73,7 +73,7 @@ export function Plan({
         {visible.map((tile) => {
           const state = t(`takeOrder.state.${tile.state}`);
           const minutes = tile.state === "free" ? null : minutesOpen(tile.openedAt);
-          const label = [tile.name, state, minutes != null ? t("takeOrder.openFor", { time: formatOpen(minutes) }) : null, tile.state !== "free" && tile.total != null ? formatMoney(tile.total) : null]
+          const label = [tile.name, state, tile.chargeRequested ? t("bossOnly.chargeRequested") : null, minutes != null ? t("takeOrder.openFor", { time: formatOpen(minutes) }) : null, tile.state !== "free" && tile.total != null ? formatMoney(tile.total) : null]
             .filter(Boolean)
             .join(", ");
           return (
@@ -106,6 +106,11 @@ export function Plan({
                   <AppText variant="label" tone={tile.state === "free" ? "ok" : tile.state === "to_pay" ? undefined : "primary"} style={tile.state === "to_pay" ? { color: c.onMarker } : undefined}>
                     {state.toUpperCase()}
                   </AppText>
+                  {tile.chargeRequested ? (
+                    <AppText variant="label" tone="stamp">
+                      {t("bossOnly.chargeRequested").toUpperCase()}
+                    </AppText>
+                  ) : null}
                   {tile.state !== "free" ? (
                     <AppText variant="bodyStrong" numberOfLines={1} style={tile.state === "to_pay" ? { color: c.onMarker } : undefined}>
                       {[tile.total != null ? formatMoney(tile.total) : null, minutes != null ? formatOpen(minutes) : null].filter(Boolean).join(" · ")}

@@ -12,8 +12,9 @@ function minutesSince(iso: string): number {
 export function TableTile({ name, check, onPress }: { name: string; check: CheckSummary | null; onPress: () => void }) {
   const { c } = useTheme();
   const ready = check?.counts.ready ?? 0;
+  const requested = !!check?.charge_requested_at;
   const label = check
-    ? [name, check.waiter?.name, t("tables.elapsed", { minutes: minutesSince(check.opened_at) })].filter(Boolean).join(", ")
+    ? [name, check.waiter?.name, requested ? t("bossOnly.chargeRequested") : null, t("tables.elapsed", { minutes: minutesSince(check.opened_at) })].filter(Boolean).join(", ")
     : `${name}, ${t("tables.free")}`;
 
   return (
@@ -50,6 +51,11 @@ export function TableTile({ name, check, onPress }: { name: string; check: Check
             {t("tables.elapsed", { minutes: minutesSince(check.opened_at) })}
             {check.mine ? ` · ${t("tables.mine")}` : ""}
           </AppText>
+          {requested ? (
+            <AppText variant="label" tone="stamp">
+              {t("bossOnly.chargeRequested")}
+            </AppText>
+          ) : null}
         </View>
       ) : (
         <View style={{ alignSelf: "flex-start", borderRadius: radius.chip, borderWidth: 1, borderColor: c.line, paddingHorizontal: space[2], paddingVertical: 2 }}>
