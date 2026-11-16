@@ -3,7 +3,7 @@ import { AppState, Linking, View } from "react-native";
 import Animated from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { api } from "@/api/client";
-import { BrandMark } from "@/components/brand";
+import { CompanyLogo } from "@/components/company-mark";
 import { AppText, Button } from "@/components/ui";
 import { t } from "@/i18n";
 import { useSession } from "@/session";
@@ -17,7 +17,9 @@ const PANEL_URL = (process.env.EXPO_PUBLIC_PANEL_URL ?? "https://app.draxuvo.com
  */
 export function SuspendedScreen() {
   const { c } = useTheme();
-  const { suspension, role, clearSuspension, signOut } = useSession();
+  const { suspension, role, clearSuspension, signOut, user, companyId } = useSession();
+  // Spec 063: la empresa suspendida se identifica con su logo (o su inicial), no con la marca Draxuvo.
+  const company = user?.companies.find((item) => item.id === companyId) ?? user?.companies[0];
   const [checking, setChecking] = useState(false);
   const [stillSuspended, setStillSuspended] = useState(false);
   const canPay = role === "owner" || role === "admin";
@@ -47,7 +49,7 @@ export function SuspendedScreen() {
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: c.background }}>
       <Animated.View entering={fadeIn} style={{ flex: 1, justifyContent: "center", padding: space[6], gap: space[4] }}>
-        <BrandMark size={64} />
+        {company ? <CompanyLogo company={company} size={64} wide /> : null}
         <AppText variant="display" accessibilityRole="header">{t("suspended.title")}</AppText>
         <AppText>{canPay ? t("suspended.ownerBody") : t("suspended.memberBody")}</AppText>
         {suspension?.reason && (

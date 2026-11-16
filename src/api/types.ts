@@ -14,6 +14,8 @@ export interface UserCompany {
   order_mode: OrderMode;
   /** «Cobro solo por jefes» (spec 058): el personal no cobra; la regla vive en la API. */
   boss_only_charge?: boolean;
+  /** Logo de la empresa (spec 063): se muestra en lugar de la marca Draxuvo; null sin logo. */
+  logo_url?: string | null;
 }
 
 export interface User {

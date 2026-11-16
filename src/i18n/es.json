@@ -261,7 +261,8 @@
     },
     "expired": "Suscripción vencida: no podrás ver sus órdenes.",
     "noModule": "Su plan no incluye el módulo de órdenes.",
-    "checking": "Revisando…"
+    "checking": "Revisando…",
+    "logoAlt": "Logo de {name}"
   },
   "suspended": {
     "title": "Suscripción suspendida",

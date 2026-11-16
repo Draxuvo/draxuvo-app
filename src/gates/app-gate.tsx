@@ -4,8 +4,9 @@ import { ActivityIndicator, View } from "react-native";
 import Animated from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { BrandMark } from "@/components/brand";
+import { ActiveCompanyMark } from "@/components/company-mark";
 import { SuspendedScreen } from "@/components/suspended-screen";
-import { AppText, Button } from "@/components/ui";
+import { Button } from "@/components/ui";
 import { t, useLocale } from "@/i18n";
 import { useSession } from "@/session";
 import { fadeIn, space, useTheme } from "@/theme";
@@ -60,8 +61,8 @@ export function AppGate({ children }: PropsWithChildren) {
     return (
       <SafeAreaView style={{ flex: 1, backgroundColor: c.background }}>
         <Animated.View entering={fadeIn} style={{ flex: 1, justifyContent: "center", padding: space[6], gap: space[4] }}>
-          <BrandMark size={64} />
-          <AppText variant="display">Draxuvo</AppText>
+          {/* Spec 063: al desbloquear ya hay empresa activa, así que se ve su marca y no la de Draxuvo. */}
+          <ActiveCompanyMark size={64} />
           <Button label={t("profile.biometric")} icon="unlock" onPress={() => void unlock()} />
           <Button label={t("profile.biometricRetry")} variant="outline" onPress={() => void signOut()} />
         </Animated.View>

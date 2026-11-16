@@ -3,7 +3,7 @@ import type { CompanyAccess } from "@/api/orders";
 import type { UserCompany } from "@/api/types";
 import { t } from "@/i18n";
 import { space, useTheme } from "@/theme";
-import { Monogram } from "./order-card";
+import { CompanyLogo } from "./company-mark";
 import { AppText, Card, Icon } from "./ui";
 
 /** Una empresa de la persona con su rol y, si aplica, por qué no podrá usar órdenes. */
@@ -27,7 +27,7 @@ export function CompanyRow({
       style={{ flexDirection: "row", alignItems: "center", gap: space[3], borderColor: active ? c.primary : c.line, borderWidth: active ? 2 : 1 }}
       accessibilityLabel={`${company.name}, ${role}${active ? `, ${t("company.current")}` : ""}${notice ? `. ${notice}` : ""}`}
     >
-      <Monogram name={company.name} size={44} />
+      <CompanyLogo company={company} size={44} />
       <View style={{ flex: 1, gap: 2 }}>
         <AppText variant="title" numberOfLines={1}>
           {company.name}
