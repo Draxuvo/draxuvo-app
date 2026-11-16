@@ -8,7 +8,7 @@ import { useLogoutFlow } from "@/components/attendance/logout-modal";
 import { AvatarPicker } from "@/components/avatar-picker";
 import { describeError } from "@/components/error-view";
 import { LanguageSwitch } from "@/components/language-switch";
-import { Monogram } from "@/components/order-card";
+import { CompanyLogo } from "@/components/company-mark";
 import { MyNotifications } from "@/components/push/my-notifications";
 import { SoundPicker, useReadySoundName } from "@/components/sound-picker";
 import { AppText, Button, Card, Field, Icon, KeyboardFrame } from "@/components/ui";
@@ -80,7 +80,7 @@ export default function Perfil() {
         <Animated.View entering={rowEnter(1)}>
           <Card style={{ gap: space[3] }}>
             <View style={{ flexDirection: "row", alignItems: "center", gap: space[3] }}>
-              <Monogram name={company.name} size={48} />
+              <CompanyLogo company={company} size={48} />
               <AppText variant="headline" numberOfLines={2} style={{ flex: 1 }}>
                 {company.name}
               </AppText>
