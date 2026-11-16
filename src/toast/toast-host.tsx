@@ -1,4 +1,4 @@
-import { Feather } from "@expo/vector-icons";
+import Feather from "@expo/vector-icons/Feather";
 import { useEffect, useMemo, useSyncExternalStore } from "react";
 import { AccessibilityInfo, PanResponder, Pressable, View } from "react-native";
 import Animated, { FadeInUp, FadeOutUp } from "react-native-reanimated";
