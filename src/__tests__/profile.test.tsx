@@ -124,4 +124,21 @@ describe("perfil", () => {
     expect(await screen.findByRole("button", { name: "Save changes" })).toBeTruthy();
     expect(await SecureStore.getItemAsync("draxuvo.locale")).toBe("en");
   });
+  // Spec 066: la tarjeta de empresa de Perfil muestra el logo (spec 063), no solo la inicial.
+  it("muestra el logo de la empresa activa", async () => {
+    await clearStore();
+    await seedSession({ ...staffUser, companies: [{ ...staffUser.companies[0], logo_url: "https://api.test/volta.webp" }] }, 10);
+    await renderScreen(<Perfil />);
+
+    const logo = await screen.findByLabelText("Logo de Volta");
+    expect(logo.props.source).toEqual({ uri: "https://api.test/volta.webp" });
+  });
+
+  it("sin logo muestra la inicial de la empresa", async () => {
+    await renderScreen(<Perfil />);
+
+    expect(await screen.findByText("Volta")).toBeTruthy();
+    expect(screen.getByText("V")).toBeTruthy();
+    expect(screen.queryByLabelText("Logo de Volta")).toBeNull();
+  });
 });
