@@ -1,4 +1,4 @@
-import { Feather } from "@expo/vector-icons";
+import Feather from "@expo/vector-icons/Feather";
 import { Pressable } from "react-native";
 import { haptic } from "@/lib/haptics";
 import { MIN_TOUCH, radius, useTheme } from "@/theme";

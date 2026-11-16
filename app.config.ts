@@ -7,6 +7,10 @@ const easProjectId = process.env.EAS_PROJECT_ID;
 const googleServicesFile =
   process.env.GOOGLE_SERVICES_JSON ?? (existsSync("./google-services.json") ? "./google-services.json" : undefined);
 
+// Peso de la app: sin x86 (solo emuladores) el APK baja ~62 MB. ANDROID_ARCHS permite compilar otra lista,
+// por ejemplo "arm64-v8a,x86_64" para un emulador o solo "arm64-v8a" para el APK más chico.
+const androidArchs = (process.env.ANDROID_ARCHS ?? "arm64-v8a,armeabi-v7a").split(",").map((arch) => arch.trim());
+
 const config: ExpoConfig = {
   name: "Draxuvo",
   slug: "draxuvo-app",
@@ -31,6 +35,16 @@ const config: ExpoConfig = {
     },
   },
   plugins: [
+    [
+      "expo-build-properties",
+      {
+        android: {
+          buildArchs: androidArchs,
+          enableMinifyInReleaseBuilds: true,
+          enableShrinkResourcesInReleaseBuilds: true,
+        },
+      },
+    ],
     "expo-router",
     "expo-secure-store",
     "expo-audio",
