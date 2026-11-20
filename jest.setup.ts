@@ -131,3 +131,11 @@ jest.mock("expo-notifications", () => {
 });
 
 jest.mock("expo-device", () => ({ isDevice: true }));
+
+// Spec 071: el SDK de Sentry es nativo; en pruebas no se inicializa (sin EXPO_PUBLIC_SENTRY_DSN) y se simula.
+jest.mock("@sentry/react-native", () => ({
+  init: jest.fn(),
+  setUser: jest.fn(),
+  setTag: jest.fn(),
+  wrap: jest.fn((component: unknown) => component),
+}));

@@ -1,5 +1,6 @@
+import * as Sentry from "@sentry/react-native";
 import { QueryClientProvider } from "@tanstack/react-query";
-import { Stack } from "expo-router";
+import { Stack, usePathname } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import { useEffect, useState } from "react";
@@ -9,6 +10,7 @@ import { RestaurantAlertsHost } from "@/components/restaurant-alerts-host";
 import { AppGate } from "@/gates/app-gate";
 import { ToastHost } from "@/toast/toast-host";
 import { loadLocale } from "@/i18n";
+import { initMonitoring, isMonitoringActive, setMonitoringScreen } from "@/lib/monitoring";
 import { PushHost } from "@/push/host";
 import { createQueryClient } from "@/query/client";
 import { SessionProvider } from "@/session";
@@ -16,9 +18,13 @@ import { fontFamily, useTheme } from "@/theme";
 import { useAppFonts } from "@/theme/fonts";
 
 void SplashScreen.preventAutoHideAsync().catch(() => {});
+// Spec 071: lo antes posible (sin EXPO_PUBLIC_SENTRY_DSN no hace nada).
+initMonitoring();
 
 function Screens() {
   const { c } = useTheme();
+  const pathname = usePathname();
+  useEffect(() => setMonitoringScreen(pathname), [pathname]);
   const pushed = {
     headerShown: true,
     headerStyle: { backgroundColor: c.background },
@@ -48,7 +54,7 @@ function Screens() {
   );
 }
 
-export default function RootLayout() {
+function RootLayout() {
   const [queryClient] = useState(createQueryClient);
   const fontsReady = useAppFonts();
 
@@ -76,3 +82,6 @@ export default function RootLayout() {
     </GestureHandlerRootView>
   );
 }
+
+// Spec 071: con DSN, Sentry envuelve la raíz para atrapar los errores de render; sin DSN, la raíz queda tal cual.
+export default isMonitoringActive() ? Sentry.wrap(RootLayout) : RootLayout;

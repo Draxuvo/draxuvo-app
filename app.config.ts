@@ -46,6 +46,13 @@ const config: ExpoConfig = {
       },
     ],
     "expo-router",
+    // Spec 071: SDK nativo de Sentry (cierres nativos). Sin EXPO_PUBLIC_SENTRY_DSN no se inicializa; los source maps
+    // no se suben mientras eas.json tenga SENTRY_DISABLE_AUTO_UPLOAD=true (organización y proyecto solo hacen falta
+    // para subirlos).
+    [
+      "@sentry/react-native/expo",
+      { organization: process.env.SENTRY_ORG, project: process.env.SENTRY_PROJECT },
+    ],
     "expo-secure-store",
     "expo-audio",
     "expo-sqlite",
