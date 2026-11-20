@@ -8,25 +8,27 @@
       "developmentClient": true,
       "distribution": "internal",
       "environment": "development",
-      "env": { "ANDROID_ARCHS": "arm64-v8a,armeabi-v7a,x86_64" },
+      "env": { "ANDROID_ARCHS": "arm64-v8a,armeabi-v7a,x86_64", "SENTRY_DISABLE_AUTO_UPLOAD": "true" },
       "ios": { "simulator": true }
     },
     "e2e": {
       "distribution": "internal",
       "environment": "preview",
-      "env": { "ANDROID_ARCHS": "arm64-v8a,x86_64" },
+      "env": { "ANDROID_ARCHS": "arm64-v8a,x86_64", "SENTRY_DISABLE_AUTO_UPLOAD": "true" },
       "ios": { "simulator": true },
       "android": { "buildType": "apk" }
     },
     "preview": {
       "distribution": "internal",
       "environment": "preview",
-      "channel": "preview"
+      "channel": "preview",
+      "env": { "SENTRY_DISABLE_AUTO_UPLOAD": "true" }
     },
     "production": {
       "environment": "production",
       "channel": "production",
-      "autoIncrement": true
+      "autoIncrement": true,
+      "env": { "SENTRY_DISABLE_AUTO_UPLOAD": "true" }
     },
     "production-apk": {
       "extends": "production",

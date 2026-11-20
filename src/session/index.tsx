@@ -6,6 +6,7 @@ import { getLocale } from "@/i18n";
 import { authenticateBiometric, biometricAvailable } from "./biometric";
 import { clearPrompted } from "@/attendance/prompted";
 import { unregisterOnSignOut } from "@/push/registration";
+import { setMonitoringUser } from "@/lib/monitoring";
 import { clearSession, readSession, roleIn, writeSession } from "./store";
 
 /** La cuenta es válida pero no pertenece a ninguna empresa: no hay nada que abrir. */
@@ -92,6 +93,10 @@ export function SessionProvider({ children, onSignedOut }: PropsWithChildren<{ o
       onSubscriptionBlocked: (details) => setSuspension(details),
     });
   }, [signOut]);
+
+  // Spec 071: los errores llevan solo el id del usuario y de la empresa activa.
+  const userId = state.user?.id;
+  useEffect(() => setMonitoringUser(userId, state.companyId), [userId, state.companyId]);
 
   // Al abrir: restaura la sesión guardada; con biometría activa queda bloqueada hasta confirmar (FR-003).
   useEffect(() => {
