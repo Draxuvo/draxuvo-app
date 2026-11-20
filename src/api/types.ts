@@ -232,6 +232,10 @@ export interface CheckItem {
   kitchen_order_number: number | null;
   sent_at: string | null;
   ready_at: string | null;
+  /** Spec 070: motivo, hora y quién, solo en renglones cancelados. */
+  cancel_reason?: string | null;
+  cancelled_at?: string | null;
+  cancelled_by?: PersonName | null;
   allowed_actions: ("deliver" | "cancel")[];
 }
 
@@ -291,6 +295,11 @@ export interface Check {
   takeout_name: string | null;
   waiter: PersonName | null;
   opened_at: string;
+  /** Hora de cobro o de cancelación (spec 070). */
+  closed_at?: string | null;
+  /** Spec 070: solo en canceladas; `cancelled_by` es `null` en las canceladas antes del arreglo. */
+  cancel_reason?: string | null;
+  cancelled_by?: PersonName | null;
   total: string;
   paid: string;
   balance: string;
@@ -303,6 +312,21 @@ export interface Check {
   /** Spec 058: "boss_only" si «Cobro solo por jefes» impide cobrar a quien la ve. */
   charge_blocked_reason?: "boss_only" | null;
   allowed_actions: CheckAction[];
+}
+
+/** Cuenta cancelada para el filtro «Canceladas» (spec 070); la API ya recorta las del personal a las suyas. */
+export interface CancelledCheckSummary {
+  id: number;
+  /** `null` en las cuentas para llevar. */
+  table: { id: number; name: string } | null;
+  takeout_name: string | null;
+  waiter: PersonName | null;
+  opened_at: string;
+  cancelled_at: string;
+  cancel_reason: string | null;
+  cancelled_by: PersonName | null;
+  cancelled_items: number;
+  mine: boolean;
 }
 
 export interface ItemCounts {

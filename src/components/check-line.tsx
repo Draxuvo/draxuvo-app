@@ -72,6 +72,12 @@ export function CheckLine({
               {t("check.station", { name: item.station.name })}
             </AppText>
           ) : null}
+          {cancelled && (item.cancel_reason || item.cancelled_by) ? (
+            <AppText variant="label" tone="muted" testID={`check-line-${item.id}-cancel`}>
+              {item.cancel_reason ? t("check.cancelReason", { reason: item.cancel_reason }) : t("orders.cancelledChecks.noReason")}
+              {item.cancelled_by ? ` · ${t("check.cancelledBy", { name: item.cancelled_by.name })}` : ""}
+            </AppText>
+          ) : null}
         </View>
         </View>
         <View style={{ alignItems: "flex-end", gap: space[1] }}>

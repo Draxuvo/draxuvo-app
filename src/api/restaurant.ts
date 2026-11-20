@@ -1,6 +1,8 @@
 import { api } from "./client";
 import type {
+  CancelledCheckSummary,
   Check,
+  PaginatedResponse,
   MenuGroup,
   PaymentMethod,
   PaymentResponse,
@@ -18,6 +20,12 @@ export const openCheck = (body: { dining_table_id: number } | { takeout_name: st
 export const listWaiters = () => api.get<{ results: { id: number; name: string }[] }>(`${base}/checks/waiters`);
 
 export const getCheck = (id: number) => api.get<Check>(`${base}/checks/${id}`);
+
+/** Cuentas canceladas (spec 070), de la más reciente a la más antigua. */
+export const listCancelledChecks = (params: { page: number; waiter_id?: number }) =>
+  api.get<PaginatedResponse<CancelledCheckSummary>>(`${base}/checks`, {
+    query: { status: "cancelled", page_size: 20, ...params },
+  });
 
 export const reassignCheck = (id: number, waiterId: number) =>
   api.patch<Check>(`${base}/checks/${id}`, { body: { waiter_id: waiterId } });

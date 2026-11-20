@@ -1,5 +1,5 @@
 import { View } from "react-native";
-import type { CheckSummary, ClosedCheckSummary } from "@/api/types";
+import type { CancelledCheckSummary, CheckSummary, ClosedCheckSummary } from "@/api/types";
 import { t } from "@/i18n";
 import { formatMoney } from "@/lib/money";
 import { tableLabel } from "@/lib/table-label";
@@ -57,6 +57,40 @@ export function ClosedCheckCard({ check, onPress }: { check: ClosedCheckSummary;
           </AppText>
         </View>
         {check.total != null ? <AppText variant="figure">{formatMoney(check.total)}</AppText> : null}
+      </View>
+    </Card>
+  );
+}
+
+function dateTimeOf(iso: string): string {
+  return new Date(iso).toLocaleString([], { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
+}
+
+/** Cuenta cancelada dentro del filtro Canceladas (spec 070): mesa o para llevar, mesero, hora, motivo, renglones y quién; abre su hoja. */
+export function CancelledCheckCard({ check, onPress }: { check: CancelledCheckSummary; onPress: () => void }) {
+  const title = check.table
+    ? tableLabel("orders.openChecks.table", check.table.name)
+    : check.takeout_name
+      ? t("orders.openChecks.takeout", { name: check.takeout_name })
+      : t("orders.cancelledChecks.noTable");
+  const details = [
+    check.cancel_reason || t("orders.cancelledChecks.noReason"),
+    t("orders.cancelledChecks.items", { count: check.cancelled_items }),
+    check.cancelled_by ? t("orders.cancelledChecks.by", { name: check.cancelled_by.name }) : null,
+  ].filter(Boolean);
+  return (
+    <Card onPress={onPress} accessibilityLabel={t("orders.cancelledChecks.open", { name: title })} style={{ minHeight: 72, justifyContent: "center" }}>
+      <View style={{ gap: 2 }}>
+        <AppText variant="headline" numberOfLines={1}>
+          {title}
+        </AppText>
+        <AppText tone="muted" numberOfLines={2}>
+          {check.waiter ? `${t("orders.openChecks.waiter", { name: check.waiter.name })} · ` : ""}
+          {t("orders.cancelledChecks.at", { time: dateTimeOf(check.cancelled_at) })}
+        </AppText>
+        <AppText tone="muted" numberOfLines={2}>
+          {details.join(" · ")}
+        </AppText>
       </View>
     </Card>
   );
