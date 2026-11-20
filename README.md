@@ -72,6 +72,15 @@ Necesita una compilación nueva de EAS (módulo nativo `expo-notifications`) y d
 (archivo de Firebase para Android, variable de archivo de EAS; en local basta con `google-services.json` en la raíz, ignorado
 por git). En Jest, `expo-notifications` y `expo-device` están simulados en `jest.setup.ts`. Pasos completos en `STORE.md`.
 
+## Errores (spec 071)
+
+`src/lib/monitoring.ts` manda a Sentry los errores de JavaScript y los cierres nativos si la compilación tiene
+`EXPO_PUBLIC_SENTRY_DSN` (variable de EAS en `preview` y `production`); sin ella no se inicializa. Solo ids de usuario y
+empresa y la pantalla, sin capturas ni datos personales. El SDK es nativo (`@sentry/react-native` y su plugin en
+`app.config.ts`): llega con una compilación nueva de EAS. `eas.json` lleva `SENTRY_DISABLE_AUTO_UPLOAD=true` mientras no
+haya `SENTRY_AUTH_TOKEN` para subir source maps. En Jest el SDK está simulado en `jest.setup.ts`. Guía:
+`src/draxuvo-api/docs/monitoreo.md` del workspace.
+
 ## Lector de códigos (spec 056)
 
 `ScanSheet` (`src/components/scan/scan-sheet.tsx`) lee códigos de barras con `expo-camera` y siempre ofrece un campo para escribirlos. `expo-camera` es un módulo nativo y agrega el permiso de cámara: requiere una compilación nueva de EAS; no llega por actualización OTA.
