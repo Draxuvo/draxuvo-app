@@ -4,7 +4,7 @@ import { useRef } from "react";
 import { View } from "react-native";
 import Animated from "react-native-reanimated";
 import { ApiError } from "@/api/client";
-import { chargeOrder, type ChargeBody } from "@/api/orders";
+import { chargeOrder, getOrder, type ChargeBody } from "@/api/orders";
 import { useTerminals } from "@/api/terminals";
 import { ChargeForm } from "@/components/charge-form";
 import { describeError, ErrorView } from "@/components/error-view";
@@ -60,6 +60,15 @@ export default function Cobro() {
     }
   };
 
+  // Spec 069: la terminal aprobó y la API ya registró el cobro; se trae la orden cobrada y se abre su ticket.
+  const onTerminalApplied = async () => {
+    haptic.success();
+    const charged = await getOrder(orderId);
+    apply(charged);
+    if (charged.ticket) router.replace(`/ticket/${charged.ticket.id}` as never);
+    else router.back();
+  };
+
   return (
     <KeyboardFrame>
 <Animated.ScrollView style={{ backgroundColor: c.background }} contentContainerStyle={{ padding: space[4], gap: space[4] }} keyboardShouldPersistTaps="handled">
@@ -68,7 +77,15 @@ export default function Cobro() {
         <AppText variant="headline">{order.title}</AppText>
       </Animated.View>
       <Animated.View entering={rowEnter(1)}>
-        <ChargeForm total={total} blocked={blocked} blockedReason={blockedReason} terminals={terminals.data ?? []} onSubmit={submit} />
+        <ChargeForm
+          total={total}
+          blocked={blocked}
+          blockedReason={blockedReason}
+          terminals={terminals.data ?? []}
+          onSubmit={submit}
+          orderId={orderId}
+          onTerminalApplied={() => void onTerminalApplied()}
+        />
       </Animated.View>
     </Animated.ScrollView>
 </KeyboardFrame>

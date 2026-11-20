@@ -1,7 +1,10 @@
 import { useRef, useState } from "react";
 import { View } from "react-native";
 import type { PaymentBody } from "@/api/restaurant";
-import type { PaymentMethod, PaymentTerminal } from "@/api/types";
+import type { PaymentMethod, PaymentTerminal, TerminalCharge } from "@/api/types";
+import type { TerminalChargeInput } from "@/api/terminal-charges";
+import { TerminalWait } from "./terminal-charge/terminal-wait";
+import { isIntegrated, useTerminalCharge } from "./terminal-charge/use-terminal-charge";
 import { haptic } from "@/lib/haptics";
 import { t } from "@/i18n";
 import { changeOrMissing, formatMoney, parseMoney } from "@/lib/money";
@@ -28,10 +31,18 @@ export function PaymentForm({
   balance,
   terminals = [],
   onSubmit,
+  checkId,
+  onTerminalApplied,
+  onIncomplete,
 }: {
   balance: number;
   terminals?: PaymentTerminal[];
   onSubmit: (body: PaymentBody) => Promise<void>;
+  /** Spec 069: con la cuenta, un abono con tarjeta en terminal integrada se manda a la terminal. */
+  checkId?: number;
+  onTerminalApplied?: (charge: TerminalCharge) => void;
+  /** Artículos sin entregar al mandar a la terminal: la pantalla pregunta y vuelve a llamar con `confirm`. */
+  onIncomplete?: (pending: number, confirm: () => void) => void;
 }) {
   const [method, setMethod] = useState<PaymentMethod>("cash");
   const [amount, setAmount] = useState(fixed(balance));
@@ -41,6 +52,24 @@ export function PaymentForm({
   const terminal = terminalId ?? (terminals.length === 1 ? terminals[0].id : null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [manual, setManual] = useState(false);
+  const chosen = terminals.find((x) => x.id === terminal);
+  const toTerminal = checkId != null && method === "card" && !manual && isIntegrated(chosen);
+  const [lastInput, setLastInput] = useState<TerminalChargeInput | null>(null);
+  const terminalCharge = useTerminalCharge({
+    onApplied: (charge) => onTerminalApplied?.(charge),
+    onStartError: (err) => {
+      if (err.code !== "incomplete_items" || !lastInput) return false;
+      const retry = lastInput;
+      terminalCharge.reset();
+      onIncomplete?.(err.pending ?? 0, () => startTerminal({ ...retry, params: { confirm_incomplete: true } }));
+      return true;
+    },
+  });
+  const startTerminal = (input: TerminalChargeInput) => {
+    setLastInput(input);
+    terminalCharge.start(input);
+  };
   const inFlight = useRef(false);
 
   const due = parseMoney(amount);
@@ -59,6 +88,10 @@ export function PaymentForm({
       return fail(t("charge.insufficient"));
     }
     setError(null);
+    if (toTerminal && chosen && checkId != null) {
+      startTerminal({ terminal_id: chosen.id, amount: due, owner: { type: "check", id: checkId }, params: {} });
+      return;
+    }
     inFlight.current = true;
     setBusy(true);
     try {
@@ -85,6 +118,23 @@ export function PaymentForm({
     setError(message);
   };
 
+  if (terminalCharge.active && lastInput) {
+    return (
+      <TerminalWait
+        amount={lastInput.amount}
+        terminalName={chosen?.name ?? ""}
+        charge={terminalCharge.charge}
+        starting={terminalCharge.starting}
+        error={terminalCharge.startError}
+        canceling={terminalCharge.canceling}
+        onCancel={terminalCharge.cancel}
+        onRetry={() => terminalCharge.start(lastInput)}
+        onChooseOther={terminalCharge.reset}
+        onManual={() => void terminalCharge.abandon().then(() => setManual(true))}
+      />
+    );
+  }
+
   return (
     <View style={{ gap: space[4] }}>
       <View style={{ flexDirection: "row", gap: space[2], flexWrap: "wrap" }} accessibilityRole="radiogroup" accessibilityLabel={t("checkout.method")}>
@@ -104,8 +154,20 @@ export function PaymentForm({
         </>
       ) : (
         <>
-          {method === "card" ? <TerminalPicker terminals={terminals} value={terminal} onChange={setTerminalId} /> : null}
-          <Field label={method === "card" ? t("checkout.referenceOptional") : t("checkout.reference")} value={reference} onChangeText={setReference} placeholder={t("checkout.referencePlaceholder")} autoCapitalize="characters" />
+          {method === "card" ? (
+            <TerminalPicker
+              terminals={terminals}
+              value={terminal}
+              onChange={(id) => {
+                setTerminalId(id);
+                setManual(false);
+              }}
+            />
+          ) : null}
+          {manual && method === "card" && isIntegrated(chosen) ? <AppText tone="muted">{t("terminalCharge.manualHint", { terminal: chosen?.name ?? "" })}</AppText> : null}
+          {toTerminal ? null : (
+            <Field label={method === "card" ? t("checkout.referenceOptional") : t("checkout.reference")} value={reference} onChangeText={setReference} placeholder={t("checkout.referencePlaceholder")} autoCapitalize="characters" />
+          )}
         </>
       )}
       {error ? (
