@@ -266,6 +266,35 @@ describe("la cuenta cerrada se ve en solo lectura", () => {
     await fireEvent.press(screen.getByRole("button", { name: "Ver ticket" }));
     expect(mockPush).toHaveBeenCalledWith("/ticket/70");
   });
+
+  it("una cuenta cancelada dice cuándo, por qué y quién, y muestra el motivo de cada renglón (spec 070)", async () => {
+    current = check(
+      [item(2, "Tacos al pastor", "cancelled", { cancel_reason: "Agregado por error", cancelled_by: { id: 1, name: "Sara Staff" } })],
+      [],
+      { status: "cancelled", total: "0.00", balance: "0.00", closed_at: "2026-11-19T20:09:54Z", cancel_reason: "Se fueron", cancelled_by: { id: 3, name: "Ana" } },
+    );
+    route();
+    await renderScreen(<Pedido />);
+
+    expect(await screen.findByText(/^Cuenta cancelada · /)).toBeTruthy();
+    expect(screen.getByText("Motivo: Se fueron · Canceló: Ana")).toBeTruthy();
+    expect(screen.getByText("Motivo: Agregado por error · por Sara Staff")).toBeTruthy();
+    expect(screen.queryByText("Cuenta cerrada")).toBeNull();
+    expect(screen.queryByText("La cuenta se canceló")).toBeNull();
+    expect(screen.queryByRole("button", { name: "Mandar" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Cobrar" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Liberar mesa" })).toBeNull();
+  });
+
+  it("una cancelada antes del arreglo se ve sin quién la canceló", async () => {
+    current = check([], [], { status: "cancelled", total: "0.00", balance: "0.00", closed_at: "2026-11-15T23:50:28Z", cancel_reason: null, cancelled_by: null });
+    route();
+    await renderScreen(<Pedido />);
+
+    expect(await screen.findByText(/^Cuenta cancelada · /)).toBeTruthy();
+    expect(screen.getByText("Sin motivo")).toBeTruthy();
+    expect(screen.queryByText(/Canceló/)).toBeNull();
+  });
 });
 
 describe("cobrar desde la hoja", () => {

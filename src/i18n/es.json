@@ -171,6 +171,14 @@
     "closedChecks": {
       "at": "Cobrada a las {time}",
       "open": "Ver cuenta cobrada de {name}"
+    },
+    "cancelledChecks": {
+      "open": "Ver cuenta cancelada de {name}",
+      "at": "Cancelada el {time}",
+      "noReason": "Sin motivo",
+      "items": "Renglones cancelados: {count}",
+      "by": "Canceló: {name}",
+      "noTable": "Mesa eliminada"
     }
   },
   "errors": {
@@ -395,7 +403,9 @@
     "station": "Estación: {name}",
     "loadError": "No se pudo cargar la cuenta",
     "closed": "Cuenta cerrada",
-    "viewTicket": "Ver ticket"
+    "viewTicket": "Ver ticket",
+    "cancelReason": "Motivo: {reason}",
+    "cancelledBy": "por {name}"
   },
   "menuPicker": {
     "title": "Menú",
@@ -518,7 +528,8 @@
     "readOnly": "Cuenta cerrada",
     "round": "Comanda {number}",
     "reassigned": "Mesero cambiado",
-    "orderGone": "No se pudo abrir la orden."
+    "orderGone": "No se pudo abrir la orden.",
+    "cancelledBanner": "Cuenta cancelada · {time}"
   },
   "attendance": {
     "title": "Asistencia",

@@ -1,6 +1,6 @@
 import { fireEvent, screen, waitFor } from "@testing-library/react-native";
 import OrdersList from "../../app/(tabs)/ordenes/index";
-import type { TablesResponse, WorkOrder } from "@/api/types";
+import type { CancelledCheckSummary, TablesResponse, WorkOrder } from "@/api/types";
 import { apiError, clearStore, mockFetch, multiUser, reply, seedSession, staffUser } from "@/test/helpers";
 import { renderScreen } from "@/test/render";
 
@@ -10,6 +10,7 @@ jest.mock("expo-router", () => ({ useRouter: () => ({ push: mockPush }), useIsFo
 
 const fetchMock = mockFetch();
 let noTickets = false;
+let cancelledChecks: CancelledCheckSummary[] = [];
 
 const order = (id: number, title: string, status: WorkOrder["status"]): WorkOrder => ({
   id, title, status, priority: "medium", progress: 0, items_count: 0, steps_count: 2, steps_done: 1, created_at: "2026-10-15T10:00:00Z",
@@ -37,6 +38,9 @@ function serve(byStatus: Record<string, WorkOrder[]>, restaurant?: TablesRespons
     if (url.includes("/api/v1/tickets")) {
       return noTickets ? apiError(403, { code: "module_not_in_plan" }, "sin módulo") : reply(200, { info: { page_size: 20, page_index: 1, total: 1, page_start: 1, page_end: 1 }, results: [{ id: 7, folio: "T-0007", status: "paid", work_order_id: 1, total: 80, created_at: "2026-10-15T10:00:00Z", work_order: { id: 1, title: "Orden 1" } }] });
     }
+    if (url.includes("/restaurant/checks")) {
+      return reply(200, { info: { page_size: 20, page_index: 1, total: cancelledChecks.length, page_start: 1, page_end: cancelledChecks.length }, results: cancelledChecks });
+    }
     if (url.includes("/restaurant/tables")) {
       return restaurant ? reply(200, restaurant) : apiError(403, { code: "module_not_in_plan" }, "sin módulo");
     }
@@ -51,6 +55,7 @@ beforeEach(async () => {
   fetchMock.mockReset();
   mockPush.mockReset();
   noTickets = false;
+  cancelledChecks = [];
   await clearStore();
 });
 
@@ -340,5 +345,45 @@ describe("Cobradas: Hoy e Historial (spec 051)", () => {
     expect(await screen.findByText("Cobrada hoy")).toBeTruthy();
     expect(screen.queryByRole("radio", { name: "Historial" })).toBeNull();
     expect(screen.queryByRole("alert")).toBeNull();
+  });
+});
+
+describe("Cuentas canceladas en Canceladas (spec 070)", () => {
+  const cancelled = (over: Partial<CancelledCheckSummary> = {}): CancelledCheckSummary => ({
+    id: 26, table: { id: 2, name: "4" }, takeout_name: null, waiter: { id: 1, name: "Sara Staff" },
+    opened_at: "2026-11-16T22:53:56Z", cancelled_at: "2026-11-19T20:09:54Z", cancel_reason: "Se fueron",
+    cancelled_by: { id: 3, name: "Ana" }, cancelled_items: 7, mine: true, ...over,
+  });
+  const checkCalls = () => fetchMock.mock.calls.map(([url]) => new URL(url as string)).filter((u) => u.pathname === "/api/v1/restaurant/checks");
+
+  it("con mesas lista las cuentas canceladas antes de las órdenes y abre su hoja", async () => {
+    await seedSession(multiUser, 10);
+    cancelledChecks = [cancelled(), cancelled({ id: 19, table: null, takeout_name: "Rosa", cancel_reason: null, cancelled_by: null, cancelled_items: 0 })];
+    serve({ cancelled: [order(6, "Instalación cancelada", "cancelled")] }, tables());
+    await renderScreen(<OrdersList />);
+    await screen.findByRole("tab", { name: /^En curso/ });
+
+    await fireEvent.press(screen.getByRole("button", { name: "Canceladas" }));
+
+    const card = await screen.findByRole("button", { name: "Ver cuenta cancelada de Mesa 4" });
+    expect(screen.getByText("Se fueron · Renglones cancelados: 7 · Canceló: Ana")).toBeTruthy();
+    expect(screen.getByText("Sin motivo · Renglones cancelados: 0")).toBeTruthy();
+    expect(await screen.findByText("Instalación cancelada")).toBeTruthy();
+    expect(checkCalls()[0].searchParams.get("status")).toBe("cancelled");
+
+    await fireEvent.press(card);
+    expect(mockPush).toHaveBeenCalledWith("/pedido?cuenta=26&hoja=1");
+  });
+
+  it("no pide cuentas canceladas fuera del filtro ni sin mesas", async () => {
+    await seedSession(staffUser, 10);
+    serve({ cancelled: [order(6, "Instalación cancelada", "cancelled")] });
+    await renderScreen(<OrdersList />);
+    await screen.findByRole("tab", { name: /^Pendientes/ });
+    expect(checkCalls()).toHaveLength(0);
+
+    await fireEvent.press(screen.getByRole("button", { name: "Canceladas" }));
+    expect(await screen.findByText("Instalación cancelada")).toBeTruthy();
+    expect(checkCalls()).toHaveLength(0);
   });
 });

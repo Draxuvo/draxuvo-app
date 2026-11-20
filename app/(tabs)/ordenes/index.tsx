@@ -2,8 +2,8 @@ import { useIsFocused, useRouter } from "expo-router";
 import { useMemo, useRef, useState } from "react";
 import { RefreshControl, View, type NativeScrollEvent, type NativeSyntheticEvent } from "react-native";
 import Animated from "react-native-reanimated";
-import type { CheckSummary, ClosedCheckSummary, WorkOrder } from "@/api/types";
-import { CheckCard, ClosedCheckCard } from "@/components/check-card";
+import type { CancelledCheckSummary, CheckSummary, ClosedCheckSummary, WorkOrder } from "@/api/types";
+import { CancelledCheckCard, CheckCard, ClosedCheckCard } from "@/components/check-card";
 import { EmptyState } from "@/components/empty-state";
 import { ErrorView } from "@/components/error-view";
 import { Fab } from "@/components/fab";
@@ -15,7 +15,7 @@ import { TicketsHistory } from "@/components/orders/tickets-history";
 import { OrderListSkeleton } from "@/components/skeleton";
 import { AppText, Chip } from "@/components/ui";
 import { useScreenModeState } from "@/components/take-order/use-screen-mode";
-import { useTables } from "@/hooks/use-restaurant";
+import { useCancelledChecks, useTables } from "@/hooks/use-restaurant";
 import { useTicketsAvailable } from "@/hooks/use-tickets-available";
 import { todayISO, useEmployees, useOrderCounts, useOrders } from "@/hooks/use-orders";
 import { t, useLocale } from "@/i18n";
@@ -28,6 +28,7 @@ const ORDERS_POLL_MS = 10_000;
 type Row =
   | { kind: "check"; key: string; name: string; takeout: boolean; check: CheckSummary }
   | { kind: "closed"; key: string; check: ClosedCheckSummary }
+  | { kind: "cancelled"; key: string; check: CancelledCheckSummary }
   | { kind: "order"; key: string; order: WorkOrder };
 
 /**
@@ -87,22 +88,36 @@ export default function OrdersList() {
   }, [restaurant, tables.data, boss, waiterId]);
   const showClosed = !filters.cancelled && selected === "paid";
 
+  // Con mesas, Canceladas suma las cuentas canceladas (spec 070); la API recorta las del personal a las suyas.
+  const showCancelled = restaurant && !!filters.cancelled;
+  const cancelled = useCancelledChecks({ waiter_id: boss && waiterId != null ? waiterId : undefined }, showCancelled);
+  const cancelledRows = useMemo<Row[]>(
+    () => (showCancelled ? (cancelled.data?.pages.flatMap((page) => page.results) ?? []).map((check) => ({ kind: "cancelled" as const, key: `cancelled-${check.id}`, check })) : []),
+    [showCancelled, cancelled.data],
+  );
+
   const orders = useMemo<WorkOrder[]>(() => list.data?.pages.flatMap((page) => page.results) ?? [], [list.data]);
   const rows: Row[] = [
     ...(showChecks ? checkRows : []),
     ...(showClosed ? closedRows : []),
+    ...cancelledRows,
     ...orders.map((order) => ({ kind: "order" as const, key: `order-${order.id}`, order })),
   ];
 
   const tabCounts = { ...counts, in_progress: counts.in_progress + checkRows.length, paid: counts.paid + closedRows.length };
-  const loading = list.isLoading;
-  const error = list.error;
+  const loading = list.isLoading || (showCancelled && cancelled.isLoading);
+  const error = list.error ?? (showCancelled ? cancelled.error : null);
   const refreshing = list.isRefetching && !list.isFetchingNextPage;
   const refresh = () => {
     void list.refetch();
     void tables.refetch();
+    if (showCancelled) void cancelled.refetch();
   };
-  const loadMore = () => list.hasNextPage && !list.isFetchingNextPage && void list.fetchNextPage();
+  // Primero se terminan de cargar las cuentas canceladas, que van arriba; luego las órdenes.
+  const loadMore = () => {
+    if (showCancelled && cancelled.hasNextPage) return void (!cancelled.isFetchingNextPage && cancelled.fetchNextPage());
+    if (list.hasNextPage && !list.isFetchingNextPage) void list.fetchNextPage();
+  };
 
   const lastY = useRef(0);
   const onScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
@@ -165,6 +180,8 @@ export default function OrdersList() {
                 <CheckCard name={item.name} takeout={item.takeout} check={item.check} onPress={() => router.push(`/pedido?cuenta=${item.check.id}` as never)} />
               ) : item.kind === "closed" ? (
                 <ClosedCheckCard check={item.check} onPress={() => router.push(`/pedido?cuenta=${item.check.id}&hoja=1` as never)} />
+              ) : item.kind === "cancelled" ? (
+                <CancelledCheckCard check={item.check} onPress={() => router.push(`/pedido?cuenta=${item.check.id}&hoja=1` as never)} />
               ) : (
                 <OrderCard order={item.order} onPress={() => router.push(`/ordenes/${item.order.id}` as never)} />
               )}

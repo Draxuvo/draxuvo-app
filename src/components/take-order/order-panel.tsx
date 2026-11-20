@@ -195,7 +195,21 @@ export function OrderPanel({
         </View>
       ) : null}
 
-      {current.readOnly ? (
+      {current.readOnly && current.check?.status === "cancelled" ? (
+        <View style={{ gap: space[1] }} testID="check-cancelled">
+          <AppText variant="bodyStrong" tone="stamp">
+            {t("takeOrder.cancelledBanner", {
+              time: current.check.closed_at
+                ? new Date(current.check.closed_at).toLocaleString([], { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })
+                : "",
+            })}
+          </AppText>
+          <AppText tone="muted">
+            {current.check.cancel_reason ? t("check.cancelReason", { reason: current.check.cancel_reason }) : t("orders.cancelledChecks.noReason")}
+            {current.check.cancelled_by ? ` · ${t("orders.cancelledChecks.by", { name: current.check.cancelled_by.name })}` : ""}
+          </AppText>
+        </View>
+      ) : current.readOnly ? (
         <View style={{ gap: space[2] }}>
           <AppText variant="bodyStrong" tone="ok" testID="check-closed">
             {t("takeOrder.readOnly")}

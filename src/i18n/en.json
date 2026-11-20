@@ -171,6 +171,14 @@
     "closedChecks": {
       "at": "Paid at {time}",
       "open": "View paid check of {name}"
+    },
+    "cancelledChecks": {
+      "open": "View cancelled check of {name}",
+      "at": "Cancelled on {time}",
+      "noReason": "No reason",
+      "items": "Cancelled items: {count}",
+      "by": "Cancelled by: {name}",
+      "noTable": "Deleted table"
     }
   },
   "errors": {
@@ -395,7 +403,9 @@
     "station": "Station: {name}",
     "loadError": "Could not load the check",
     "closed": "Check closed",
-    "viewTicket": "View ticket"
+    "viewTicket": "View ticket",
+    "cancelReason": "Reason: {reason}",
+    "cancelledBy": "by {name}"
   },
   "menuPicker": {
     "title": "Menu",
@@ -518,7 +528,8 @@
     "readOnly": "Closed check",
     "round": "Order {number}",
     "reassigned": "Waiter changed",
-    "orderGone": "Couldn't open the order."
+    "orderGone": "Couldn't open the order.",
+    "cancelledBanner": "Cancelled check · {time}"
   },
   "attendance": {
     "title": "Attendance",

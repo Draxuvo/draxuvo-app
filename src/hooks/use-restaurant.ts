@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { AppState } from "react-native";
 import {
@@ -8,6 +8,7 @@ import {
   deliverItem,
   getCheck,
   getRestaurantMenu,
+  listCancelledChecks,
   listTables,
   listWaiters,
   openCheck,
@@ -81,6 +82,18 @@ export function useCheck(id: number, enabled = true) {
     queryFn: () => getCheck(id),
     enabled: enabled && !!id,
     refetchInterval: active ? POLL_MS : false,
+  });
+}
+
+/** Cuentas canceladas por páginas; solo con el filtro «Canceladas» y sin sondeo (spec 070). */
+export function useCancelledChecks(params: { waiter_id?: number }, enabled = true) {
+  const keys = useRestaurantKeys();
+  return useInfiniteQuery({
+    queryKey: [...keys.all, "cancelled", params] as const,
+    queryFn: ({ pageParam }) => listCancelledChecks({ ...params, page: pageParam }),
+    initialPageParam: 1,
+    getNextPageParam: (last) => (last.info.page_end < last.info.total ? last.info.page_index + 1 : undefined),
+    enabled,
   });
 }
 
