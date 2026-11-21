@@ -262,6 +262,36 @@ export interface PaymentTerminalRef {
 export interface PaymentTerminal extends PaymentTerminalRef {
   provider_label: string;
   active: boolean;
+  /** Spec 069: manual o integrada (ligada a la cuenta del proveedor). */
+  kind?: "manual" | "integrated";
+  /** Integrada, activa y con la conexión al corriente: se le pueden mandar cobros. */
+  chargeable?: boolean;
+  connection_status?: "connected" | "error" | "disconnected" | null;
+}
+
+// Terminal integrada (spec 069): solicitudes de cobro.
+export type TerminalChargeStatus =
+  | "pending" | "canceling" | "approved" | "applied" | "unapplied" | "declined" | "canceled" | "expired" | "abandoned" | "refunded";
+
+export type TerminalChargeOwnerType = "work_order" | "sale" | "check";
+
+export interface TerminalCharge {
+  id: number;
+  status: TerminalChargeStatus;
+  status_detail: string | null;
+  amount: string;
+  terminal: PaymentTerminalRef;
+  owner: { type: TerminalChargeOwnerType; id: number; label: string };
+  created_by: { id: number; name: string } | null;
+  created_at: string;
+  expires_at: string;
+  resolved_at: string | null;
+  provider_reference: string | null;
+  card_last4: string | null;
+  unapplied_reason: string | null;
+  result: Record<string, unknown> | null;
+  refund: { status: "requested" | "done" | "rejected" | "skipped"; amount: string; completed_at: string | null; error_code: string | null } | null;
+  allowed_actions: ("cancel" | "abandon" | "refund" | "dismiss")[];
 }
 
 /** Un pago del cobro de una orden; el de una cuenta trae solo los campos de CheckPayment. */
@@ -269,7 +299,9 @@ export interface TicketPayment extends CheckPayment {
   method_label?: string;
   authorization_code?: string | null;
   card_last4?: string | null;
-  source?: "manual";
+  /** Spec 069: `terminal` = confirmado por el proveedor; `manual` = registrado a mano. */
+  source?: "manual" | "terminal";
+  provider_reference?: string | null;
   created_by?: PersonRef | null;
   created_at?: string;
   voided_at?: string | null;

@@ -3,8 +3,9 @@ import { useRef } from "react";
 import { Alert, KeyboardAvoidingView, Modal, Pressable, ScrollView, StyleSheet, useWindowDimensions, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { ApiError, NetworkError } from "@/api/client";
-import { chargeOrder, type ChargeBody } from "@/api/orders";
-import { addPayment, type PaymentBody } from "@/api/restaurant";
+import { chargeOrder, getOrder, type ChargeBody } from "@/api/orders";
+import { addPayment, getCheck, type PaymentBody } from "@/api/restaurant";
+import type { TerminalCharge } from "@/api/types";
 import { useTerminals } from "@/api/terminals";
 import { ChargeForm } from "@/components/charge-form";
 import { describeError } from "@/components/error-view";
@@ -86,6 +87,27 @@ export function PaySheet({ current, visible, onClose, onPaid }: { current: Curre
     }
   };
 
+  // Spec 069: la terminal aprobó y la API ya registró el cobro; se traen la cuenta u orden al día y, si se cubrió, el ticket.
+  const onTerminalApplied = async (charge: TerminalCharge) => {
+    haptic.success();
+    if (check) {
+      const fresh = await getCheck(check.id);
+      applyCheck(fresh);
+      const ticketId = (charge.result as { ticket_id?: number | null } | null)?.ticket_id;
+      if (ticketId) onPaid(ticketId);
+    } else if (order) {
+      const charged = await getOrder(order.id);
+      applyOrder(charged);
+      if (charged.ticket) onPaid(charged.ticket.id);
+    }
+  };
+
+  const askIncomplete = (pending: number, confirm: () => void) =>
+    Alert.alert(t("checkout.incompleteTitle"), t("checkout.incompleteBody", { count: pending }), [
+      { text: t("common.cancel"), style: "cancel" },
+      { text: t("checkout.chargeAnyway"), onPress: confirm },
+    ]);
+
   const balance = Number(check?.balance ?? 0);
 
   return (
@@ -110,11 +132,26 @@ export function PaySheet({ current, visible, onClose, onPaid }: { current: Curre
                     <Row label={t("checkout.balance")} value={formatMoney(check.balance)} strong />
                   </View>
                   {balance > 0 && check.status === "open" ? (
-                    <PaymentForm key={check.payments.length} balance={balance} terminals={terminals.data ?? []} onSubmit={submitCheck} />
+                    <PaymentForm
+                      key={check.payments.length}
+                      balance={balance}
+                      terminals={terminals.data ?? []}
+                      onSubmit={submitCheck}
+                      checkId={check.id}
+                      onTerminalApplied={(charge) => void onTerminalApplied(charge)}
+                      onIncomplete={askIncomplete}
+                    />
                   ) : null}
                 </>
               ) : order ? (
-                <ChargeForm total={Number(order.total ?? 0)} blocked={order.charge_blocked_reason === "no_items"} terminals={terminals.data ?? []} onSubmit={submitOrder} />
+                <ChargeForm
+                  total={Number(order.total ?? 0)}
+                  blocked={order.charge_blocked_reason === "no_items"}
+                  terminals={terminals.data ?? []}
+                  onSubmit={submitOrder}
+                  orderId={order.id}
+                  onTerminalApplied={(charge) => void onTerminalApplied(charge)}
+                />
               ) : null}
             </ScrollView>
           </View>

@@ -2,7 +2,10 @@ import { useRef, useState } from "react";
 import { Pressable, View } from "react-native";
 import Animated, { useAnimatedStyle, useSharedValue, withSequence, withTiming } from "react-native-reanimated";
 import type { ChargeBody } from "@/api/orders";
-import type { ChargePaymentInput, PaymentMethod, PaymentTerminal } from "@/api/types";
+import type { ChargePaymentInput, PaymentMethod, PaymentTerminal, TerminalCharge } from "@/api/types";
+import { TerminalWait } from "./terminal-charge/terminal-wait";
+import { isIntegrated, useTerminalCharge } from "./terminal-charge/use-terminal-charge";
+import type { TerminalChargeInput } from "@/api/terminal-charges";
 import { haptic } from "@/lib/haptics";
 import { t } from "@/i18n";
 import { changeOrMissing, formatMoney, parseMoney } from "@/lib/money";
@@ -34,6 +37,8 @@ interface Row {
   authorization: string;
   last4: string;
   reference: string;
+  /** Spec 069: registrar a mano en una terminal integrada (respaldo). */
+  manual?: boolean;
 }
 
 const round = (value: number) => Math.round(value * 100) / 100;
@@ -52,6 +57,8 @@ export function ChargeForm({
   blockedReason = "no_items",
   terminals = [],
   onSubmit,
+  orderId,
+  onTerminalApplied,
 }: {
   total: number;
   /** La orden no tiene conceptos con precio. */
@@ -60,6 +67,9 @@ export function ChargeForm({
   blockedReason?: "no_items" | "boss_only";
   terminals?: PaymentTerminal[];
   onSubmit: (body: ChargeBody) => Promise<void>;
+  /** Spec 069: con la orden, una tarjeta en terminal integrada se manda a la terminal. */
+  orderId?: number;
+  onTerminalApplied?: (charge: TerminalCharge) => void;
 }) {
   const { c } = useTheme();
   const [rows, setRows] = useState<Row[]>([emptyRow(0, "cash")]);
@@ -75,6 +85,12 @@ export function ChargeForm({
   const cashDue = round(total - nonCash);
   const received = cashRow ? parseMoney(cashRow.received) : null;
   const diff = cashRow && received != null ? changeOrMissing(Math.max(0, cashDue), received) : null;
+
+  // Spec 069: la fila que va a una terminal integrada (a lo más una, FR-017).
+  const terminalOf = (row: Row) => terminals.find((x) => x.id === (row.terminalId ?? defaultTerminal));
+  const toTerminal = orderId != null ? rows.filter((r) => r.method === "card" && !r.manual && isIntegrated(terminalOf(r))) : [];
+  const [lastInput, setLastInput] = useState<TerminalChargeInput | null>(null);
+  const terminalCharge = useTerminalCharge({ onApplied: (charge) => onTerminalApplied?.(charge) });
 
   const shake = useSharedValue(0);
   const shakeStyle = useAnimatedStyle(() => ({ transform: [{ translateX: shake.value }] }));
@@ -102,6 +118,7 @@ export function ChargeForm({
   // Valida como la API (research R4) para avisar antes de enviar.
   const validate = (): string | null => {
     if (nonCash > total) return t("charge.exceeds");
+    if (toTerminal.length > 1) return t("terminalCharge.onlyOne");
     for (const row of rows) {
       if (row.method !== "cash" && !single && !(amountOf(row) > 0)) return t("charge.invalidAmount");
       if (row.method === "card" && terminals.length > 0 && (row.terminalId ?? defaultTerminal) == null) return t("charge.terminalRequired");
@@ -118,8 +135,8 @@ export function ChargeForm({
     return null;
   };
 
-  const payload = (): ChargePaymentInput[] =>
-    rows.map((row) => {
+  const payload = (list: Row[] = rows): ChargePaymentInput[] =>
+    list.map((row) => {
       if (row.method === "cash") return { method: "cash", amount_received: received ?? 0 };
       if (row.method === "transfer") return { method: "transfer", amount: amountOf(row), reference: row.reference.trim() };
       const terminal = row.terminalId ?? defaultTerminal;
@@ -137,6 +154,19 @@ export function ChargeForm({
     const problem = validate();
     if (problem) return fail(problem);
     setError(null);
+    const integrated = toTerminal[0];
+    const terminal = integrated ? terminalOf(integrated) : undefined;
+    if (integrated && terminal && orderId != null) {
+      const input: TerminalChargeInput = {
+        terminal_id: terminal.id,
+        amount: amountOf(integrated),
+        owner: { type: "work_order", id: orderId },
+        params: { payments: payload(rows.filter((r) => r.key !== integrated.key)) },
+      };
+      setLastInput(input);
+      terminalCharge.start(input);
+      return;
+    }
     inFlight.current = true;
     setBusy(true);
     try {
@@ -146,6 +176,27 @@ export function ChargeForm({
       setBusy(false);
     }
   };
+
+  if (terminalCharge.active && lastInput) {
+    return (
+      <TerminalWait
+        amount={lastInput.amount}
+        terminalName={terminals.find((x) => x.id === lastInput.terminal_id)?.name ?? ""}
+        charge={terminalCharge.charge}
+        starting={terminalCharge.starting}
+        error={terminalCharge.startError}
+        canceling={terminalCharge.canceling}
+        onCancel={terminalCharge.cancel}
+        onRetry={() => terminalCharge.start(lastInput)}
+        onChooseOther={terminalCharge.reset}
+        onManual={() => {
+          void terminalCharge.abandon().then(() =>
+            setRows((prev) => prev.map((r) => (toTerminal.some((x) => x.key === r.key) ? { ...r, manual: true } : r))),
+          );
+        }}
+      />
+    );
+  }
 
   return (
     <View style={{ gap: space[6] }}>
@@ -241,7 +292,12 @@ export function ChargeForm({
 
             {row.method === "card" ? (
               <>
-                <TerminalPicker terminals={terminals} value={row.terminalId ?? defaultTerminal} onChange={(id) => patch(row.key, { terminalId: id })} />
+                <TerminalPicker terminals={terminals} value={row.terminalId ?? defaultTerminal} onChange={(id) => patch(row.key, { terminalId: id, manual: false })} />
+                {row.manual && isIntegrated(terminalOf(row)) ? (
+                  <AppText tone="muted">{t("terminalCharge.manualHint", { terminal: terminalOf(row)?.name ?? "" })}</AppText>
+                ) : null}
+                {orderId != null && !row.manual && isIntegrated(terminalOf(row)) ? null : (
+                <>
                 <View style={{ flexDirection: "row", gap: space[2] }}>
                   <View style={{ flex: 1 }}>
                     <Field label={t("charge.authorization")} value={row.authorization} onChangeText={(value) => patch(row.key, { authorization: value })} maxLength={12} autoCapitalize="characters" testID={`charge-auth-${index}`} />
@@ -253,6 +309,8 @@ export function ChargeForm({
                 <AppText tone="muted">
                   {t("charge.optionalVoucher")}
                 </AppText>
+                </>
+                )}
               </>
             ) : null}
 

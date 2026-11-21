@@ -6,7 +6,7 @@ import { AppText, Chip } from "./ui";
 
 /**
  * Elige en qué terminal del negocio se pasó la tarjeta (spec 015, FR-020). Sin terminales no se dibuja;
- * con una sola, la pantalla ya la trae elegida.
+ * con una sola, la pantalla ya la trae elegida. Spec 069: las integradas dicen «Integrada»: el monto se manda a la terminal.
  */
 export function TerminalPicker({
   terminals,
@@ -27,7 +27,13 @@ export function TerminalPicker({
       </AppText>
       <View style={{ flexDirection: "row", flexWrap: "wrap", gap: space[2] }}>
         {terminals.map((terminal) => (
-          <Chip key={terminal.id} icon="credit-card" label={terminal.name} selected={value === terminal.id} onPress={() => onChange(terminal.id)} />
+          <Chip
+            key={terminal.id}
+            icon="credit-card"
+            label={terminal.chargeable ? `${terminal.name} · ${t("terminalCharge.integrated")}` : terminal.name}
+            selected={value === terminal.id}
+            onPress={() => onChange(terminal.id)}
+          />
         ))}
       </View>
       {error ? (

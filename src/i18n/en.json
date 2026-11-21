@@ -725,5 +725,63 @@
     "requested": "Charge requested. An administrator or the owner will charge the check.",
     "requestedAt": "Charge requested at {time}",
     "chargeRequested": "Charge requested"
+  },
+  "terminalCharge": {
+    "integrated": "Integrated",
+    "waiting": "Waiting for the terminal…",
+    "waitingHint": "Ask the customer to pay on the terminal.",
+    "canceling": "Canceling on the terminal…",
+    "cancel": "Cancel",
+    "retry": "Try again",
+    "chooseOther": "Choose another terminal or payment",
+    "manual": "Record manually",
+    "manualConfirm": "Yes, record manually",
+    "manualWarning": "Before recording manually, check on the terminal that the customer hasn't already paid.",
+    "manualHint": "It will be recorded as a manual payment on {terminal}.",
+    "onlyOne": "Only one payment can go to an integrated terminal.",
+    "unapplied": "The payment was approved, but the charge could no longer be recorded. It's in \"Unapplied payments\" for a manager to review.",
+    "statuses": {
+      "declined": "The terminal didn't complete the charge",
+      "canceled": "The charge was canceled",
+      "expired": "Expired without being charged",
+      "refunded": "The payment was refunded"
+    },
+    "errors": {
+      "generic": "Couldn't send the charge to the terminal",
+      "terminal_busy": "The terminal is busy with another charge",
+      "terminal_charge_pending": "A charge is already waiting on the terminal",
+      "terminal_not_chargeable": "That terminal can't take charges now",
+      "amount_out_of_range": "The amount is outside what the terminal accepts",
+      "one_integrated_payment": "Only one payment can go to an integrated terminal",
+      "provider_unavailable": "The terminal didn't respond",
+      "device_offline": "The terminal isn't available; check it's on and in point of sale mode",
+      "declined": "The provider declined the charge",
+      "not_cancelable": "The charge is already being processed on the terminal; wait for the result",
+      "charge_boss_only": "Only a manager can charge in this company"
+    },
+    "details": {
+      "created": "Sending to the terminal",
+      "at_terminal": "Waiting for payment on the terminal",
+      "cancellation_requested": "Canceling on the terminal",
+      "rejected_by_issuer": "The bank declined the card",
+      "insufficient_amount": "Insufficient funds",
+      "high_risk": "The charge was declined for security reasons",
+      "bad_filled_card_data": "Incorrect card details",
+      "card_disabled": "The card is disabled",
+      "amount_limit_exceeded": "The amount exceeds the card limit",
+      "max_attempts_exceeded": "Too many attempts with that card",
+      "required_call_for_authorize": "The bank requires phone authorization",
+      "processing_error": "Error processing the card",
+      "invalid_installments": "Installments not valid for that card",
+      "in_review": "The charge is under review",
+      "canceled_on_terminal": "Canceled on the terminal",
+      "canceled_by_api": "Canceled from Draxuvo",
+      "expired": "Expired without being charged",
+      "check_on_terminal": "Check the terminal: the charge couldn't be confirmed",
+      "waiting_payment": "Waiting for payment",
+      "provider_unavailable": "The terminal didn't respond",
+      "amount_out_of_range": "The amount is outside what the terminal accepts",
+      "device_offline": "The terminal isn't available"
+    }
   }
 }
