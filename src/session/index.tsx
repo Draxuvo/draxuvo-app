@@ -189,6 +189,11 @@ export function useSession(): SessionValue {
   return value;
 }
 
+/** La empresa activa, o null fuera de la sesión (componentes que también se pintan sin ella, como en sus pruebas). */
+export function useActiveCompanyId(): number | null {
+  return useContext(SessionContext)?.companyId ?? null;
+}
+
 /** Quien puede crear y editar órdenes de todo el negocio (FR-025). */
 export function isBossRole(role: CompanyRole | null): boolean {
   return role === "admin" || role === "owner";

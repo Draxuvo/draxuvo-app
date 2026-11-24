@@ -11,6 +11,7 @@ import { t } from "@/i18n";
 import { changeOrMissing, formatMoney, parseMoney } from "@/lib/money";
 import { radius, space, useTheme } from "@/theme";
 import { TerminalPicker } from "./terminal-picker";
+import { useRememberedTerminal } from "@/lib/remembered-terminal";
 import { AppText, Button, Card, Chip, Field, Icon, type IconName } from "./ui";
 
 const METHODS: { value: PaymentMethod; icon: IconName }[] = [
@@ -78,7 +79,8 @@ export function ChargeForm({
   const inFlight = useRef(false);
 
   const single = rows.length === 1;
-  const defaultTerminal = terminals.length === 1 ? terminals[0].id : null;
+  // Spec 069 (US4): la única terminal, o la última usada en este teléfono si sigue activa.
+  const { defaultTerminal, remember } = useRememberedTerminal(terminals);
   const amountOf = (row: Row) => (single ? total : parseMoney(row.amount) ?? 0);
   const nonCash = round(rows.filter((r) => r.method !== "cash").reduce((sum, r) => sum + amountOf(r), 0));
   const cashRow = rows.find((r) => r.method === "cash");
@@ -154,6 +156,8 @@ export function ChargeForm({
     const problem = validate();
     if (problem) return fail(problem);
     setError(null);
+    const cardRow = rows.find((r) => r.method === "card");
+    if (cardRow) remember(cardRow.terminalId ?? defaultTerminal);
     const integrated = toTerminal[0];
     const terminal = integrated ? terminalOf(integrated) : undefined;
     if (integrated && terminal && orderId != null) {

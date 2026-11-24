@@ -10,6 +10,7 @@ import { t } from "@/i18n";
 import { changeOrMissing, formatMoney, parseMoney } from "@/lib/money";
 import { space } from "@/theme";
 import { TerminalPicker } from "./terminal-picker";
+import { useRememberedTerminal } from "@/lib/remembered-terminal";
 import { AppText, Button, Chip, Field, type IconName } from "./ui";
 
 const METHODS: { value: PaymentMethod; icon: IconName }[] = [
@@ -49,7 +50,9 @@ export function PaymentForm({
   const [received, setReceived] = useState("");
   const [reference, setReference] = useState("");
   const [terminalId, setTerminalId] = useState<number | null>(null);
-  const terminal = terminalId ?? (terminals.length === 1 ? terminals[0].id : null);
+  // Spec 069 (US4): la única terminal, o la última usada en este teléfono si sigue activa.
+  const { defaultTerminal, remember } = useRememberedTerminal(terminals);
+  const terminal = terminalId ?? defaultTerminal;
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [manual, setManual] = useState(false);
@@ -88,6 +91,7 @@ export function PaymentForm({
       return fail(t("charge.insufficient"));
     }
     setError(null);
+    if (method === "card") remember(terminal);
     if (toTerminal && chosen && checkId != null) {
       startTerminal({ terminal_id: chosen.id, amount: due, owner: { type: "check", id: checkId }, params: {} });
       return;
